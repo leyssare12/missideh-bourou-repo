@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% load static%}
+{% block title %}<title>admin Subcribe</title>{%endblock%}
+{% block extra_css %}<link href="{% static 'css/client/data/show_data.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+<body class="depense-body" data-url="{% url 'Bapp:get_data' %}">
+<h1>Données des Modèles</h1>
+<!--
+  <table class="donnes-table">
+    <thead>
+      <tr>
+        <th>Inscrit par </th>
+        <th>Montant depenses </th>
+        <th>Motif depenses</th>
+        <th>Date de prelévement </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in donnees %}
+      <tr>
+        <td>{{ item.manager_name }}</td>
+        <td>{{ item.montant_depense }}</td>
+        <td>{{ item.motif_depense }}</td>
+        <td>{{ item.date_depense }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body> -->
+    <div class="depense-container">
+        <h1 class="depense-header">Données</h1>
+        <div class="depense-table-container">
+            <table class="depense-table">
+                <thead>
+                    <tr>
+                      <th>Inscrit par </th>
+                      <th>Montant dépensés  </th>
+                      <th>Motif dépenses</th>
+                      <th>Date de prélèvement </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Exemple de données statiques pour le preview -->
+                    {% for item in donnees %}
+                      <tr>
+                            <td>{{ item.manager_name }}</td>
+                            <td>{{ item.montant_depense }}</td>
+                            <td>{{ item.motif_depense }}</td>
+                            <td>{{ item.date_depense }}</td>
+                      </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+{% endblock %}
+{% block scripts%}<script src="{% static 'js/client/data/show_data.js'%}"></script> {% endblock %}

@@ -1,0 +1,29 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/admin/list_items/article_list.css' %}">{% endblock %}
+
+
+
+{% block content %}
+<!--Le ficchier css en bas est nécessaire ici-->
+
+  <div class="form-container">
+  <h1 class="form-title">
+    <i class="fas fa-edit"></i> Modifier l'Article
+  </h1>
+
+  <form method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <div class="form-actions">
+      <a href="{% url 'Bapp:article_list' %}" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Annuler
+      </a>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> Enregistrer
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

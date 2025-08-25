@@ -1,0 +1,67 @@
+{% extends 'site/admin/base_admin.html'%}
+
+{% load static %}
+{% block content %}
+<style>
+    /* static/css/users.css */
+.delete-confirmation-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.confirmation-content {
+    margin-top: 1.5rem;
+}
+
+.user-details {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.user-details p {
+    margin: 0.5rem 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+
+</style>
+
+<div class="delete-confirmation-container">
+    <h2>Confirmer la suppression</h2>
+
+    <div class="confirmation-content">
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Attention !</strong> Vous êtes sur le point de supprimer définitivement cet utilisateur.
+        </div>
+
+        <div class="user-details">
+            <p><strong>Identifiant :</strong> {{ user.identifiant }}</p>
+            <p><strong>Prenom :</strong> {{ user.prenoms }}</p>
+            <p><strong>Email :</strong> {{ user.email }}</p>
+            <p><strong>Date d'inscription :</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+        </div>
+
+        <form method="post" action="{% url 'Bapp:delete_user' user.id %}">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> Confirmer la suppression
+                </button>
+                <a href="{% url 'Bapp:list_users' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

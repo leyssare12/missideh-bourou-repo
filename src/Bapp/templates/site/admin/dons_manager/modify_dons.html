@@ -1,0 +1,246 @@
+{% extends "site/admin/base_admin.html" %}
+{% block content %}
+<style>
+    /* Design personnalisé */
+    .edit-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .edit-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: flex-start;
+    }
+
+    .edit-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background-color: #3498db;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(41, 128, 185, 0.3);
+    }
+
+    .edit-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .edit-card-header {
+        background: linear-gradient(135deg, #3498db, #2c3e50);
+        color: white;
+        padding: 1.5rem;
+    }
+
+    .edit-card-title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .edit-card-body {
+        padding: 2rem;
+    }
+
+    /* Styles du formulaire */
+    .form-group {
+        margin-bottom: 1.75rem;
+    }
+
+    .form-group p {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e0e6ed;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        outline: none;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #219955;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: #e0e6ed;
+        color: #2c3e50;
+    }
+
+    .btn-secondary:hover {
+        background-color: #d1d8e0;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .edit-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .edit-title {
+            font-size: 1.75rem;
+        }
+
+        .edit-card-body {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .edit-container {
+            padding: 0 0.75rem;
+            margin: 1.5rem auto;
+        }
+
+        .edit-title {
+            font-size: 1.5rem;
+        }
+
+        .edit-card-header {
+            padding: 1.25rem;
+        }
+
+        .edit-card-title {
+            font-size: 1.25rem;
+        }
+    }
+
+    /* Animation subtile */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .edit-card {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    .errorlist{
+     color:red;
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-header">
+        <h1 class="edit-title">Modifier ce don </h1>
+        <a href="{% url 'Bapp:list_dons' %}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="edit-card">
+        <div class="edit-card-header">
+            <h5 class="edit-card-title">Modification des détails</h5>
+        </div>
+
+        <div class="edit-card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    {{ form.as_p }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                    </button>
+                    <a href="{% url 'Bapp:list_dons' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Amélioration UX : focus sur le premier champ
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstInput = document.querySelector('input, select, textarea');
+        if (firstInput) firstInput.focus();
+    });
+</script>
+{% endblock %}

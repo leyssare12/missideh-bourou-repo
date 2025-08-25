@@ -1,0 +1,210 @@
+/* Style de base */
+.container {
+  padding: 15px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+h1 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.superuser-badge {
+  background-color: #ffd700;
+  color: #333;
+  padding: 8px 15px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* Style du tableau */
+.article-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px 0;
+}
+
+.superuser-badge {
+  margin: 0; /* Supprime la marge par défaut du paragraphe */
+}
+
+.mon_bouton {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.mon_bouton .add-article {
+  display: inline-block;
+  padding: 15px 15px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.mon_bouton .add-article:hover {
+  background-color: #45a049;
+}
+
+/* Adaptation pour les écrans mobiles */
+@media screen and (max-width: 780px) {
+  .header-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mon_bouton {
+    width: 100%;
+  }
+
+  .mon_bouton .add-article {
+    width: 100%;
+    text-align: center;
+  }
+
+  .superuser-badge {
+    width: 100%;
+    text-align: center;
+  }
+}
+/* Style pour les écrans < 780px */
+@media screen and (max-width: 780px) {
+  /* Convertir le tableau en disposition verticale */
+  .article-table,
+  .article-table thead,
+  .article-table tbody,
+  .article-table tr,
+  .article-table th,
+  .article-table td {
+    display: block;
+  }
+
+  .article-table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .article-table tr {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .article-table td {
+    position: relative;
+    padding: 10px 10px 10px 50%;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+
+  .article-table td:before {
+    position: absolute;
+    top: 12px;
+    left: 10px;
+    width: 45%;
+    font-weight: bold;
+    content: attr(data-label);
+  }
+
+  /* Ajustements spécifiques */
+  .actions-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px !important;
+  }
+
+  .action-btn {
+    display: block;
+    text-align: center;
+    padding: 8px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+    margin: 5px 0;
+  }
+
+  .edit-btn {
+    background-color: #4260ed;
+  }
+
+  .delete-btn {
+    background-color: #f72585;
+  }
+
+  /* Style de la pagination */
+  .pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .pagination-link {
+    padding: 8px 12px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+  }
+
+  .current-page {
+    padding: 8px 12px;
+    background-color:#4260ed;
+    color: white;
+    border-radius: 4px;
+  }
+
+  /* Style du bouton d'ajout */
+  .mon_bouton {
+    width: 100%;
+    margin: 10px 0;
+    padding: 0;
+    border: none;
+  }
+
+  .mon_bouton a {
+    display: block;
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+  }
+}
+
+/* Styles généraux pour tous les écrans */
+.article-title {
+  font-weight: bold;
+  color: #333;
+}
+
+.article-content {
+  color: #666;
+}
+
+.article-date {
+  color: #888;
+  font-size: 0.9em;
+}

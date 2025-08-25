@@ -1,0 +1,80 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block title %}<title>admin Subcribe</title>{%endblock%}
+    {% block extra_css %}<link href="{% static 'css/admin/admin_login_page.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+</head>
+
+{% block content %}
+<body>
+
+<section class="section-container">
+    <div class="login-container" style="margin-top:50px;">
+        <div class="login-header" >
+            <h1>Content de vous revoir</h1>
+            <p>Connectez-vous pour accéder à votre compte</p>
+        </div>
+        {% if message %}
+            <p class="para-success">{{message}}</p>
+        {% endif %}
+        {% if error %}
+            <p class="para-error">{{error}}</p>
+        {% endif %}
+        <form class="login-form" method="post">
+            {% csrf_token %}
+                <!-- Champ caché pour stocker l'URL de redirection -->
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <div class="form-group">
+                <label for="identifiant">Votre Identifiant </label>
+                <i class="fas fa-id-card input-icon"></i>
+                <input type="text" id="identifiant" class="input-field" name="identifiant" placeholder="votre identifiant" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" id="password" class="input-field" name="password" placeholder="••••••••" required>
+            </div>
+
+            <div class="options">
+                <div class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">Se souvenir de moi</label>
+                </div>
+                <div class="forgot-password">
+                    <a href="{% url 'Bapp:password_reset'%}">Mot de passe oublié ?</a>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">Se connecter</button>
+
+            <div class="social-login">
+                <p>Ou connectez-vous avec</p>
+                <div class="social-icons">
+                    <div class="social-icon facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </div>
+                    <div class="social-icon google">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div class="social-icon twitter">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="register-link">
+                <p>Vous n'avez pas de compte ? <a href="#">S'inscrire</a></p>
+            </div>
+        </form>
+    </div>
+</section>
+
+</body>
+
+{% endblock%}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% load static%}
+{% block title %}<title>Subcribe</title>{%endblock%}
+{% block extra_css %}<link href="{% static 'css/subcribe.css'%}" rel="stylesheet" type="text/css">{%endblock%}
+{% block content %}
+<body>
+     <div class="container_form">
+            <div class="error-message">
+                {% if form.non_field_errors %}
+                <ul>
+                    <li>Veuillez corriger les erreurs du formulaire ci-dessous.</li>
+                </ul>
+                {% endif %}
+            </div>
+    <div class="container">
+        <form method="post" action="{% url 'Bapp:subcribe'%}" class="registration-form" id="registrationForm">
+            {% csrf_token %}
+            <div class="form-header">
+                <h1>Créer un compte</h1>
+                <p>Rejoignez notre communauté dès aujourd'hui</p>
+            </div>
+
+            <div id="successMessage" class="success-message">
+                Inscription réussie! Merci de vérifier votre email.
+            </div>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="lastName">Nom</label>
+                        {{form.nom}}
+                        <div class="error-message" id="lastNameError">Veuillez entrer votre nom</div>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="firstName">Prénom</label>
+                        {{form.prenom}}
+                        <div class="error-message" id="firstNameError">Veuillez entrer votre prénom</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="country">Pays</label>
+                <select id="country" name="country" required>
+                    <option value="">Sélectionnez votre pays</option>
+                    <option value="FR">France</option>
+                    <option value="BE">Belgique</option>
+                    <option value="CH">Suisse</option>
+                    <option value="CA">Canada</option>
+                    <option value="LU">Luxembourg</option>
+                    <!-- Ajoutez d'autres pays au besoin -->
+                </select>
+                <div class="error-message" id="countryError">Veuillez sélectionner votre pays</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+                <div class="error-message" id="emailError">Veuillez entrer une adresse email valide</div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Téléphone</label>
+                <input type="tel" id="phone" name="phone" required>
+                <div class="error-message" id="phoneError">Veuillez entrer un numéro de téléphone valide</div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn">S'inscrire</button>
+            </div>
+
+            <div class="form-footer">
+                <p>Déjà membre? <a href="#">Connectez-vous</a></p>
+            </div>
+        </form>
+    </div>
+
+</body>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/subcribe.js'%}" type="text/javascript"></script> {% endblock%}

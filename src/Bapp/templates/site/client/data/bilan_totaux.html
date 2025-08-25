@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% load static%}
+{% block title %}<title>admin Subcribe</title>{%endblock%}
+{% block extra_css %}<link href="{% static 'css/client/data/show_data.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+    <div class="depense-container">
+        <h1 class="depense-header">Données</h1>
+        <div class="depense-table-container">
+            <table class="depense-table">
+                <thead>
+                    <tr>
+                      <th>Montant Annuel </th>
+                      <th>Montant Occasionnel  </th>
+                      <th>Montant dons</th>
+                      <th>Montant dépensés </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Exemple de données statiques pour le preview -->
+                    {% if resultat %}
+                    {% for item in resultat %}
+                      <tr>
+                            <td>{{ item.total_montant_annuel }}</td>
+                            <td>{{ item.total_montant_occasionnelle }}</td>
+                            <td>{{ item.total_montant_dons}}</td>
+                            <td>{{ item.total_montant_depenses }}</td>
+                      </tr>
+                    {% endfor %}
+                    {% elif error %}
+                        <p class="para" style="color:red;">{{error}}</p>
+                    {% endif %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

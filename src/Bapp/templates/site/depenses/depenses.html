@@ -1,0 +1,62 @@
+{% extends 'site/admin/base_admin.html' %}
+
+{% load static%}
+{% block title %}<title>admin Subcribe</title>{%endblock%}
+{% block extra_css %}<link href="{% static 'css/depenses/depenses.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+{% if message %}
+    <p class="para">{{message}}</p>
+{% endif %}
+   <!-- <div class="depense-body">
+
+        <div class="depense-container">
+        <h1 class="depense-title">Formulaire Moderne</h1>
+        <form id="depense-form" method="post">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button type="submit" class="depense-button">Soumettre</button>
+            <div class="depense-success-message" id="depense-successMessage">Formulaire soumis avec succès!</div>
+
+        </form>
+    </div>
+
+    </div> -->
+    <div class="container mt-4">
+        <div id="messageBox" class="message-box" style="display: none;">
+            <div class="message-box-content">
+                <div class="message-box-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="message-box-text"></div>
+                <div class="message-box-progress"></div>
+            </div>
+        </div>
+
+        <h2 class="titre">Ajouter une dépense</h2>
+
+        <div id="message-alert" class="alert" style="display: none;" role="alert"></div>
+
+        <form id="depenseForm" method="post" class="mt-3" data-url="{% url 'Bapp:add_depenses' %}">
+            {% csrf_token %}
+
+            <div class="form-group mb-3">
+                <label for="depense-numberInput" class="depense-label">Montant de la dépense</label>
+                {{ form.montant_depense }}
+                <div id="error-montant_depense" class="invalid-feedback"></div>
+
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="depense-textInput" class="depense-label">Motif de la dépense</label>
+                {{ form.motif_depense }}
+                <div id="error-motif_depense" class="invalid-feedback" style="color:red;"></div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer la dépense</button>
+        </form>
+</div>
+
+{% endblock %}
+
+{% block scripts%}<script src="{% static 'js/depenses/depenses.js'%}"></script> {% endblock %}

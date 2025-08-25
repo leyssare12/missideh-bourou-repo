@@ -1,0 +1,115 @@
+{% extends "site/client/base_client.html" %}
+
+
+{% load static %}
+{% block title %}<title>Home users</title>{% endblock %}
+
+{% block extra_css%}<link href="{% static 'css/client/members_authentification.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+{% block content %}
+    <style>
+    .alert-error{color:red; text-align:center;}
+    .alert-success{color:green; text-align:center;}
+</style>
+  <section class="login-container">
+        <div class="container-class">
+
+                {% if messages %}
+                    <div class="row justify-content-center mb-3">
+                        <div class="col-12 col-md-8 col-lg-6">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} text-center fade-in">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div id="container_id" class="">
+                    <div class="card p-3 p-md-4">
+                        <div class="card-body">
+                            <!-- Étape 1 : Identifiant (caché si step == 2) -->
+                            {% if step == 1 %}
+                            <h4 class="card-title text-center mb-3">Connexion sécurisée</h4>
+                            <p class="text-center text-muted mb-4">Identifiez-vous pour continuer.</p>
+
+                            <!-- Étape 1 : Identifiant -->
+                            <form method="post" class="step-form">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="identifiant" class="form-label">Votre numéro d'identifiant</label>
+                                    <input type="text" name="identifiant" id="identifiant" class="form-control" placeholder="Votre identifiant" required autocomplete="username" autofocus>
+                                </div>
+                                <button type="submit" class="btn btn-custom w-100">Continuer</button>
+                            </form>
+                            {% endif %}
+                            <!-- Étape 2 : Code 2FA -->
+                            {% if step == 2 %}
+                            <form method="post" class="step-form fade-in">
+                                {% csrf_token %}
+                                <div class="mb-3">
+
+                                    <label for="code" class="form-label">Code de sécurité</label>
+                                    <input type="text" name="code" id="code" class="form-control text-center code-input" placeholder="000000" required maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code" autofocus>
+                                    <div class="form-text">Saisissez le code à 6 chiffres envoyé sur votre appareil</div>
+                                </div>
+                                <button type="submit" class="btn btn-custom w-100">Vérifier</button>
+                            </form>
+                            <div class="text-center mt-3">
+                                <small class="text-muted">Vous n'avez pas reçu le code ?<br>
+                                Réessayez dans quelques minutes.</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Amélioration UX : focus automatique sur le champ approprié
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus sur le premier champ de formulaire
+            const firstInput = document.querySelector('form input');
+            if (firstInput) {
+                firstInput.focus();
+            }
+
+            // Validation et formatage du code 2FA
+            const codeInput = document.getElementById('code');
+            if (codeInput) {
+                codeInput.addEventListener('input', function(e) {
+                    // N'autoriser que les chiffres
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+
+                    // Auto-soumission si 6 chiffres saisis (UX pratique)
+                    if (e.target.value.length === 6) {
+                        e.target.form.submit();
+                    }
+                });
+            }
+        });
+        // empecher le scroll inutile
+          function toggleScroll() {
+            console.log('Appel de la fonction toggleScroll()')
+            if (document.body.scrollHeight <= window.innerHeight) {
+              // Le contenu tient dans l'écran → pas de scroll
+              document.body.style.overflow = "hidden";
+              console.log('Le contenu tient dans l écran.')
+            } else {
+              // Le contenu dépasse → scroll activé
+              document.body.style.overflow = "auto";
+              console.log('Le contenu ne tient pas il faut redimentionner. ')
+            }
+          }
+
+          // Vérifie au chargement
+          window.addEventListener("load", toggleScroll);
+          // Vérifie aussi au redimensionnement
+          window.addEventListener("resize", toggleScroll);
+    </script>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/client/members_authentification.js'%}"></script> {% endblock %}

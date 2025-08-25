@@ -1,0 +1,11 @@
+Cette notice sert de base pour retenir les decisions prises pour l'implementation et la mise en place de la structure du site.
+1. Dans la table gestion d'utilisateurs, on a ajouter un champ pour les mot de passe
+mais uniquement obligatoire pour les utilisateurs qui auront des tâches actifs sur le site, pour les utilisateurs
+lamda cette champs sera ignoré, celà veut dire qu'il faudra crée de type de formulaire, un formulaire pour les
+utilisateus lambda et un autre pour les utilisateurs qui ont de rôles sur le site.
+
+finaliser la creation de la base de donnés users, et parametres les user_login en inscrivant les donnes dans un fichier .env OK
+
+Creation d'un formulaire pour les admins avec mot de passe
+finaliser le formulaire d'iscription
+

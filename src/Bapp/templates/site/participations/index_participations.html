@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <title class="title">Index Participations</title> {% endblock %}
+{% block extra_css %}<link href="{% static 'css/participations/index_participations.css'%}" rel="stylesheet" type="text/css">{%endblock%}
+
+{% block content %}
+<body>
+    <h2>Enregistrer une participation</h2>
+    {% if message %}
+    <p>{{message}}</p>
+    {% endif %}
+    <div class="form-container">
+        <label for="type_select">Type de participation :</label>
+        <select id="type_select">
+            <option value="">Choisir un type</option>
+            <option value="annuelle">Participation Annuelle</option>
+            <option value="occasionnelle">Participation Occasionnelle</option>
+            <option value="don">Don</option>
+        </select>
+
+        <div id="search_form" style="display:none;">
+            <label>Rechercher un membre :</label>
+            <input type="text" id="search_input" data-url="{% url 'Bapp:search_user'%}" placeholder="Prenom ou Identifiant">
+            <ul id="search_results" style="list-style:none; padding:0;"></ul>
+        </div>
+
+        <div id="participation_form_container" data-url="{% url 'Bapp:submit_participation'%}" style="display:none;">
+
+        </div>
+
+        <p id="error_message"></p>
+    </div>
+{% block scripts%}<script src="{% static 'js/participations/index_participations.js'%}"></script> {% endblock %}
+</body>
+{% endblock %}

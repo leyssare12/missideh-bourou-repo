@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: sql_container
+    image: postgres:16.9
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # ✅ corrige le mapping
+    environment:
+      - POSTGRES_DB=bourou_test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Galle11
+    env_file:
+      - ./.login_env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aappg-network
+
+  bourou_test:
+    build:
+      context: ${BOUROU_TEST}
+      dockerfile: Dockerfile
+    container_name: btest_container
+    ports:
+      - "8001:8000"
+    env_file:
+      - ./.mail_login_env
+    depends_on:
+      - db
+    volumes:
+      - .:/Btest
+      - pdf_storage:/Btest/pdf  # Dossier PDF persistant
+      - ./Bapp/media/images:/Btest/Bapp/media/images
+    environment:
+      - PDF_DIR=/Btest/pdf      # Variable d'environnement utilisée dans le code
+
+    command: ["./entrypoint.sh", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+    networks:
+      - aappg-network
+  aappg:
+    build:
+      context: ./projet2
+      dockerfile: Dockerfile
+    container_name: aappg_container
+    volumes:
+      - ./projet2:/aappg
+      - sqlite_data:/aappg/db  # Volume spécifique pour la base SQLite
+    environment:
+      - DJANGO_SETTINGS_MODULE=src.settings
+      # Pour SQLite, le chemin de la base de données doit être dans le conteneur
+      - SQLITE_PATH=/db.sqlite3
+    ports:
+      - "8002:8000"
+
+
+volumes:        # ✅ déplacé ici
+  postgres_data:
+  pdf_storage:
+  image_storage:
+  sqlite_data:
+
+networks:
+  aappg-network:
+    driver: bridge

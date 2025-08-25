@@ -1,0 +1,296 @@
+/* Variables globales */
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --light-bg: #f8f9fa;
+  --dark-bg: #343a40;
+  --border-radius: 0.25rem;
+  --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --transition: all 0.3s ease;
+}
+
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+}
+
+.participations_container {
+    max-width: 50%;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.select-container {
+    margin-bottom: 2rem;
+}
+
+select {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.form-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form.hidden {
+    display: none;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+label {
+    font-weight: bold;
+    color: #555;
+}
+
+input {
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+button {
+    padding: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+
+/* Styles de base */
+.annual-participation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--light-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+/* Section de recherche */
+.annual-search-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+.annual-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.annual-form-group {
+  flex: 1;
+  min-width: 250px;
+}
+
+.annual-form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--dark-bg);
+  font-weight: 500;
+}
+
+.annual-btn-recherche {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.annual-btn-recherche:hover {
+  background-color: darken(var(--primary-color), 10%);
+  transform: translateY(-2px);
+}
+
+/* Carte membre */
+.annual-member-card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-top: 2rem;
+  box-shadow: var(--box-shadow);
+}
+
+.annual-member-info {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.annual-member-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.annual-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Formulaire de participation */
+.annual-participation-form {
+  padding-top: 1rem;
+}
+
+.annual-btn-submit {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 1rem;
+}
+
+.annual-btn-submit:hover {
+  background-color: darken(var(--success-color), 10%);
+  transform: translateY(-2px);
+}
+
+/* Alertes */
+.annual-alert {
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.annual-alert-warning {
+  background-color: var(--warning-color);
+  color: #856404;
+}
+
+.annual-alert-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+```
+
+
+@media (max-width: 768px) {
+    .participations_container {
+        padding: 1rem;
+        margin: 1rem;
+        max-width:90%;
+    }
+
+    .form-container {
+        padding: 1rem;
+    }
+     .annual-participation-container {
+      padding: 1rem;
+    }
+
+    .annual-search-form {
+      flex-direction: column;
+    }
+
+    .annual-form-group {
+      width: 100%;
+    }
+
+    .annual-btn-recherche {
+      width: 100%;
+    }
+
+    .annual-member-details {
+      grid-template-columns: 1fr;
+    }
+}
+
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.annual-member-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Améliorations pour l'accessibilité */
+.annual-btn-recherche:focus,
+.annual-btn-submit:focus {
+  outline: 3px solid rgba(0, 123, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* États de chargement */
+.annual-btn-recherche.loading,
+.annual-btn-submit.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* Effets de survol */
+.annual-member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}

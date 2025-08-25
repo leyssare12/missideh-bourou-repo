@@ -1,0 +1,190 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      {% block title %}{% endblock %}
+      {% block extra_css %}{% endblock %}
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/dashboard/dashboard2.css'%}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+     <div class="sidebar">
+        <div class="brand">
+            <img src="{% static 'images/logo.png' %}" alt="Logo">
+            <h2>Dashboard</h2>
+        </div>
+
+        <div class="profile-info">
+            <!-- Méthode 3: Avec gestion des fichiers manquants -->
+            {% if user.profile_picture%}
+                <img src="{{ MEDIA_URL }}{{ user.profile_picture.url }}" alt="Photo de profil" class="profile-pic">
+            {% else %}
+                <img src="{% static 'images/missidhe_bourou_img/cdd.jpeg' %}" alt="Profile" class="profile-pic">
+            {% endif %}
+
+
+            <h3>{{ user.prenoms }}</h3>
+            <p>{{ user.role }}</p>
+        </div>
+
+        <div class="user-info">
+            <div class="info-item">
+                <i class="fas fa-user"></i>
+                <span>{{ user.prenoms }}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-envelope"></i>
+                <span>{{ user.email }}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-phone"></i>
+                <span>{{ user.telephone }}</span>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ user.quartier }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header Amélioré -->
+    <!-- Modifiez le header pour inclure le bouton menu -->
+    <div class="header">
+        <button class="menu-toggle" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Rechercher...">
+        </div>
+        <button class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <a href="{% url 'Bapp:logout_view'%}" style="text-decoration:none; color:white;"><span class="logout-text">Déconnexion</span></a>
+        </button>
+    </div>
+    <div class="overlay"></div>
+
+
+    <!-- Contenu Principal Amélioré -->
+    <div class="main-content">
+        <div class="grid-container">
+             <a href="{% url 'Bapp:admin_subcribe'%}" class="grid-item">
+                <i class="fas fa-user-plus"></i>
+                <h3>Ajout membre</h3>
+                <p>Ajouter un membre ici</p>
+            </a>
+            <a href="{% url 'Bapp:list_users'%}" class="grid-item">
+                <i class="fas fa-user-edit"></i>
+                <h3>Manage users</h3>
+                <p>Modifier ou supprimer un membre ici</p>
+            </a>
+            <a href="{% url 'Bapp:article_list'%}" class="grid-item">
+                <i class="fas fa-info-circle"></i>
+                <h3>Information <span class="badge">3</span></h3>
+                <p>Ajouter, modifier ou publier une information</p>
+            </a>
+            <a href="{% url 'Bapp:list_participations_annuelles' %}" class="grid-item">
+                <i class="fas fa-money-check-alt"></i>
+                <h3>Cotisation annuelle</h3>
+                <p>Ajouter, modifer ou supprimer une cotisation annuelle</p>
+            </a>
+            <a href="{% url 'Bapp:list_participations_occasionnelles' %}" class="grid-item">
+                <i class="fas fa-money-check-alt"></i>
+                <h3>Cotisation Occasionnelle</h3>
+                <p>Ajouter, modifier un cotisation occasionnelle ici</p>
+            </a>
+            <a href="{% url 'Bapp:list_dons' %}" class="grid-item">
+                <i class="fas fa-money-check-alt"></i>
+                <h3>Gestion de dons </h3>
+                <p>Ajouter, modifier ou supprimer un don ici</p>
+            </a>
+            <a href="{% url 'Bapp:list_depenses' %}" class="grid-item">
+                <i class="fas fa-edit"></i>
+                <h3>Dépense effectuée</h3>
+                <p>Ajouter, modifier ou supprimer une dépense</p>
+            </a>
+            <a href="{% url 'Bapp:documents_pdf' %}" class="grid-item">
+                <i class="fas fa-file-alt"></i>
+                <h3>Documents</h3>
+                <p>Accédez à vos fichiers</p>
+            </a>
+            <a href="" class="grid-item">
+                <i class="fas fa-cog"></i>
+                <h3>Paramètres</h3>
+                <p>Configurez votre compte</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Ajoutez ici votre JavaScript pour les interactions
+        document.querySelector('.search-bar input').addEventListener('focus', function() {
+            this.parentElement.style.boxShadow = '0 0 0 5px rgba(67, 97, 238, 0.1)';
+        });
+
+        document.querySelector('.search-bar input').addEventListener('blur', function() {
+            this.parentElement.style.boxShadow = 'none';
+        });
+            // Gestion du menu mobile
+    const menuToggle = document.querySelector('.menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.overlay');
+    const body = document.body;
+
+    function toggleMenu() {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu);
+
+    // Fermer le menu si la fenêtre est redimensionnée au-dessus de 768px
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            body.style.overflow = '';
+        }
+    });
+
+    // Gestion du scroll
+    function handleScroll() {
+        const header = document.querySelector('.header');
+        if (window.scrollY > 0) {
+            header.style.boxShadow = '0 2px 15px rgba(0,0,0,0.1)';
+        } else {
+            header.style.boxShadow = 'none';
+        }
+    }
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Fermer le menu lors du clic sur un lien (pour mobile)
+    const sidebarLinks = document.querySelectorAll('.sidebar a');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                toggleMenu();
+            }
+        });
+    });
+
+    // Amélioration de l'accessibilité pour la navigation au clavier
+    menuToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleMenu();
+        }
+    });
+
+    </script>
+
+</body>
+</html>

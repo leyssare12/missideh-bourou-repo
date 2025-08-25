@@ -1,0 +1,154 @@
+{% extends "site/admin/base_admin.html" %}
+
+
+{% load static%}
+{% block title %}<title>Liste de documents pdf</title>{%endblock%}
+
+{% block extra_css%}<link href="{% static 'css/documents/list_pdfs.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+    <style>
+    body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .pdf-list {
+            list-style: none;
+            padding: 0;
+        }
+        .pdf-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pdf-item:hover {
+            background-color: #f8f9fa;
+        }
+        .download-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .download-btn:hover {
+            background-color: #0056b3;
+        }
+        .alert-success{
+        background-color:#0e9a3e;
+        color:white;
+        padding:5px;
+        text-align:center;
+        margin:5px;
+        }
+        .alert-error{
+        background-color:#ff2d2e;
+        color:white;
+        padding:5px;
+        text-align:center;
+        margin:5px;
+        }
+        .h3{
+            margin-top:10px;
+        }
+    </style>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+<!--
+    {% if pdfs %}
+    <h3 class="h3">PDFs disponibles maintenant en  téléchargement</h3>
+        <ul class="pdf-list">
+            {% for pdf in pdfs %}
+                <li class="pdf-item">
+                    <span>{{ pdf.nom }}</span>
+                    <a href="{% url 'Bapp:download_pdf' file_name=pdf.nom %}" class="download-btn">Télécharger</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucun PDF n'est disponible pour le moment.</p>
+    {% endif %}
+
+-->
+
+
+{% block content %}
+<div class="pdf-container">
+    <h2 class="page-title">
+        Documents PDF <span class="pdf-count">{{ total_pdfs }}</span>
+    </h2>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if pdfs %}
+    <div class="pdf-table-container">
+        <table class="pdf-table">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Date de création</th>
+                    <th>Créé par</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pdf in pdfs %}
+                <tr>
+                    <td data-label="Titre">{{ pdf.nom }}</td>
+                    <td data-label="Description">{{ pdf.description }}</td>
+                    <td data-label="Type">{{ pdf.type }}</td>
+                    <td data-label="Date">{{ pdf.date_creation|date:"d/m/Y H:i" }}</td>
+                    <td data-label="Créateur">{{ pdf.createur }}</td>
+                    <td data-label="Actions">
+                        <div class="action-buttons">
+                            <a href="{{ pdf.url }}" class="btn btn-view" target="_blank">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{{ pdf.url }}?download=true" class="btn btn-download">
+                                <i class="fas fa-download"></i> Télécharger
+                            </a>
+                            <a href="{% url 'Bapp:delete_pdf' pdf.id %}" class="btn btn-delete">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-docs">
+        <i class="fas fa-file-pdf fa-3x" style="color: var(--text-color); margin-bottom: 1rem;"></i>
+        <p>Aucun document PDF disponible.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

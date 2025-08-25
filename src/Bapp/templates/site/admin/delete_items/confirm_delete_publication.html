@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .container{
+    display: flex;
+    flex-direction:column;
+    justify-content: center; /* Centre horizontalement */
+    align-items: center;    /* Centre verticalement */          /* Pour occuper toute la hauteur de l'écran */
+}
+h2{
+    font-family: 'Inter', sans-serif;
+    font-size:20px;
+}
+.form{
+    width:100%;
+    max-width:600px;
+    display:flex;
+    justify-content: center; /* Centre horizontalement */
+    align-items: center;    /* Centre verticalement */
+    gap:50px;
+}
+.delete_link{
+    width:25%;
+    max-width:30%;
+    padding:10px;
+    margin:5px;
+    background-color:#003CA2;
+    color:white;
+    border-radius:5px;
+    font-family: 'Inter', sans-serif;
+    font-size:20px;
+    text-decoration:none;
+    text-align:center;
+}
+.btn{
+    max-width:25%;
+    border:none;
+    padding:10px;
+    margin:5px;
+    background-color:#FF3535;
+    color:white;
+    border-radius:5px;
+    font-family: 'Inter', sans-serif;
+    font-size:20px;
+    text-decoration:none;
+}
+.span{
+    color:#FF9335;
+    text-decoration:underline;
+}
+</style>
+
+    <div class="container">
+       <h2>Êtes-vous sûr de vouloir supprimer cet Article  <span class="span">"{{article.title}}" </span>?</h2>
+        <form method="post" class="form">
+          {% csrf_token %}
+          <button class="btn" type="submit">Delete</button>
+          <a class="delete_link" href="{% url 'Bapp:list_articles' %}">Cancel</a>
+      </form>
+    </div>
+{% endblock %}

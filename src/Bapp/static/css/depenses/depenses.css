@@ -1,0 +1,262 @@
+
+
+        :root {
+            --depense-primary-color: #4361ee;
+            --depense-secondary-color: #3f37c9;
+            --depense-error-color: #f72585;
+            --depense-success-color: #4cc9f0;
+            --depense-text-color: #2b2d42;
+            --depense-light-color: #f8f9fa;
+            --depense-border-radius: 8px;
+            --depense-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --depense-transition: all 0.3s ease;
+        }
+
+        .depense-body {
+            background-color: #f5f7fa;
+            color: var(--depense-text-color);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .depense-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--depense-border-radius);
+            box-shadow: var(--depense-box-shadow);
+        }
+
+        .depense-title, .para {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--depense-primary-color);
+            font-weight: 600;
+        }
+
+        .depense-form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .depense-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--depense-text-color);
+        }
+
+        .depense-input, .depense-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--depense-border-radius);
+            font-size: 1rem;
+            transition: var(--depense-transition);
+        }
+
+        .depense-input:focus, .depense-textarea:focus {
+            outline: none;
+            border-color: var(--depense-primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .depense-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .depense-error {
+            color: var(--depense-error-color);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .depense-error.show {
+            display: block;
+        }
+
+        .depense-button {
+            background-color: var(--depense-primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: var(--depense-border-radius);
+            cursor: pointer;
+            transition: var(--depense-transition);
+            width: 100%;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .depense-button:hover {
+            background-color: var(--depense-secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .depense-success-message {
+            text-align: center;
+            color: var(--depense-success-color);
+            font-weight: 500;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .depense-success-message.show {
+            display: block;
+        }
+    @media (max-width: 480px) {
+            .depense-container {
+                padding: 1.5rem;
+            }
+
+            .depense-title {
+                font-size: 1.5rem;
+            }
+        }
+
+.depense-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.depense-input,
+.depense-textarea {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.depense-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.depense-input:focus,
+.depense-textarea:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.invalid-feedback {
+    display: none;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+#message-alert {
+    margin-bottom: 1rem;
+    color:red;
+}
+.is-valid:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+.field-success {
+    color: #198754;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
+
+#message-alert {
+    transition: all 0.3s ease-in-out;
+}
+.message-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+    max-width: 400px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.5s ease;
+}
+
+.message-box.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.message-box-content {
+    padding: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.message-box-icon {
+    margin-right: 12px;
+    font-size: 24px;
+    color: #198754;
+}
+
+.message-box-text {
+    flex-grow: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.message-box-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: #198754;
+    width: 100%;
+    transform-origin: left;
+    animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+/* Animation de sortie */
+.message-box.hide {
+    animation: slideOut 0.5s ease forwards;
+}
+
+@keyframes slideOut {
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+.titre, .para{
+    color: var(--secondary-color);
+    text-align:center;
+}

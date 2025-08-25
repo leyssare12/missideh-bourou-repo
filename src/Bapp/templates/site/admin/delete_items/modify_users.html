@@ -1,0 +1,79 @@
+{% extends 'site/admin/base_admin.html'%}
+{% load static %}
+<!--Le ficchier css en bas est nécessaire ici-->
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/admin/delete_items/user_edit.css' %}">{% endblock %}
+{% block content %}
+
+<div class="user-edit-container">
+    <div class="edit-header">
+        <h1>{{ page_title }}</h1>
+        <a href="{% url 'Bapp:list_users' %}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="edit-content">
+        <form method="post" enctype="multipart/form-data" class="user-edit-form">
+            {% csrf_token %}
+
+            <div class="form-section">
+                <h3>Informations de base</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.prenoms.id_for_label }}">Prénom(s)</label>
+                        {{ form.prenoms }}
+                        {{ form.prenoms.errors }}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.name.id_for_label }}">Nom</label>
+                        {{ form.name }}
+                        {{ form.name.errors }}
+                    </div>
+                </div>
+                  <div class="form-group">
+                    <label for="{{ form.identifiant.id_for_label }}">Identifiant</label>
+                    {{ form.identifiant }}
+                    {{ form.identifiant.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Email</label>
+                    {{ form.email }}
+                    {{ form.email.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Email</label>
+                    {{ form.profile_picture }}
+                    {{ form.profile_picture.errors }}
+                </div>
+            </div>
+
+            {% if request.user.is_superuser %}
+            <div class="form-section">
+                <h3>Permissions avancées</h3>
+                <div class="form-group">
+                    <label for="{{ form.is_active.id_for_label }}">
+                        {{ form.is_active }} Compte actif
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Permissions spécifiques</label>
+                    {{ form.user.permissions }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i> Enregistrer les modifications
+                </button>
+                <a href="{% url 'Bapp:list_users' %}" class="btn btn-cancel">
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

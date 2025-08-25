@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <title class="title">Participations</title> {% endblock %}
+{% block extra_css %}<link href="{% static 'css/participations/participations.css'%}" rel="stylesheet" type="text/css">{%endblock%}
+
+{% block content %}
+<body>
+    <div class="participations_container">
+        {% if message %}
+            <p class="message">{{message}}</p>
+        {% endif %}
+        <h1>Choisissez votre type de contribution</h1>
+
+        <div class="select-container">
+            <select id="contributionType">
+                <option value="">-- Sélectionnez une option --</option>
+                <option value="cotisation_annuel">Cotisation Annuelle</option>
+                <option value="cotisation_occasional">Cotisation Occasionnelle</option>
+                <option value="dons">Dons</option>
+            </select>
+        </div>
+        <div class="form-container">
+            <div class="annual-participation-container form hidden" id="cotisation_annuel">
+                <div class="annual-search-section">
+                    <h2 class="annual-mb-4">Enregistrer une participation</h2>
+
+                    <!-- Formulaire de recherche -->
+                    <form method="GET" class="annual-search-form">
+                        <div class="annual-form-group">
+                            <label class="annual-form-label">{{ recherche_form.recherche.label }}</label>
+                            {{ recherche_form.recherche }}
+                        </div>
+                        <button type="submit" class="annual-btn-recherche">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Affichage du résultat de recherche et formulaire de participation -->
+                {% if utilisateur_trouve %}
+                    <div class="annual-member-card">
+                        <div class="annual-member-info">
+                            <h3>Membre trouvé</h3>
+                            <div class="annual-member-details">
+                                <div class="annual-detail-item">
+                                    <i class="fas fa-user"></i>
+                                    <strong>Prénom:</strong> {{ utilisateur_trouve.prenoms }}
+                                </div>
+                                <div class="annual-detail-item">
+                                    <i class="fas fa-id-card"></i>
+                                    <strong>Code Perso:</strong> {{ utilisateur_trouve.identifiant }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="annual-participation-form">
+                            <h4 class="annual-mb-3">Enregistrer la participation</h4>
+                            <form method="POST">
+                                {% csrf_token %}
+                                {% if participation_form.non_field_errors %}
+                                <div class="annual-alert annual-alert-danger">
+                                    {% for error in participation_form.non_field_errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <div class="annual-form-group">
+                                    {{ participation_form.montant_participation.label_tag }}
+                                    {{ participation_form.montant_participation }}
+                                    {% if participation_form.montant_participation.errors %}
+                                    <div class="annual-alert annual-alert-danger annual-mt-2">
+                                        {{participation_form.montant_participation.errors}}
+                                        {% for error in participation_form.montant_participation.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                        {% if error_messages %}
+                                        {{ error_messages }}
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    {% if participation_form.montant_participation.help_text %}
+                                    <small class="annual-form-text annual-text-muted">
+                                        {{ participation_form.montant_participation_.help_text }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+
+                                <input type="hidden" name="user_id" value="{{ utilisateur_trouve.id }}">
+                                <button type="submit" class="annual-btn-submit">
+                                    <i class="fas fa-save"></i> Enregistrer la participation
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% elif request.GET.recherche %}
+                    <div class="annual-alert annual-alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Aucun membre trouvé avec ces critères.
+                    </div>
+                {% endif %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="annual-alert annual-alert-{% if message.tags %}{{ message.tags }}{% endif %}" style="color:red;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                </div>
+
+<!--
+            <form id="cotisation_annuel" class="form hidden">
+                <h2>Cotisation Annuelle</h2>
+                <div class="form-group">
+                    <label for="nom_annuel">Nom</label>
+                    <input type="text" id="nom_annuel" required>
+                </div>
+                <div class="form-group">
+                    <label for="montant_annuel">Montant</label>
+                    <input type="number" id="montant_annuel" required>
+                </div>
+                <button type="submit">Valider</button>
+            </form>
+-->
+            <form id="cotisation_occasional" class="form hidden">
+                <h2>Cotisation Occasionnelle</h2>
+                <div class="form-group">
+                    <label for="nom_occasional">Nom</label>
+                    <input type="text" id="nom_occasional" required>
+                </div>
+                <div class="form-group">
+                    <label for="montant_occasional">Montant</label>
+                    <input type="number" id="montant_occasional" required>
+                </div>
+                <button type="submit">Valider</button>
+            </form>
+
+            <form id="dons" class="form hidden">
+                <h2>Dons</h2>
+                <div class="form-group">
+                    <label for="nom_dons">Nom</label>
+                    <input type="text" id="nom_dons" required>
+                </div>
+                <div class="form-group">
+                    <label for="montant_dons">Somme</label>
+                    <input type="number" id="montant_dons" required>
+                </div>
+                <button type="submit">Valider</button>
+            </form>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <!-- Ajoutez ceci à la fin de votre template -->
+<script>
+document.querySelector('.annual-search-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Décommentez pour tester
+    console.log('Formulaire soumis');
+    console.log('Valeur recherchée:', this.querySelector('[name="recherche"]').value);
+});
+</script>
+
+</body>
+{% block scripts%}<script src="{% static 'js/participations/participations.js'%}"></script> {% endblock %}
+{% endblock %}

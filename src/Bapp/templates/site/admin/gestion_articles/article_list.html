@@ -1,0 +1,81 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/admin/list_items/article_list.css' %}">{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/admin/gestion_articles/list_articles.css'%}">
+<div class="container">
+  <h1>Liste des Articles</h1>
+    <div class="header-controls">
+    {% if request.user.is_superuser %}
+      <p class="superuser-badge">
+        <i class="fas fa-shield-alt"></i> Mode Superutilisateur
+      </p>
+      {% elif request.user.is_authenticated %}
+       <p class="superuser-badge">
+        <i class="fas fa-shield-alt"></i> Mode Editeur
+      </p>
+    {% endif %}
+      <button class="mon_bouton">
+        <a href="{% url 'Bapp:edition_article' %}" class="add-article">
+          <i class="fas fa-book"></i> Ajouter un article
+        </a>
+      </button>
+  </div>
+
+  <table class="article-table">
+    <thead>
+      <tr>
+        <th>Titre</th>
+        <th>Contenu</th>
+        <th>Auteur</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for article in page_obj %}
+      <tr>
+        <td data-label="Titre:" class="article-title">{{ article.title }}</td>
+        <td data-label="Contenu:" class="article-content">{{ article.content }}</td>
+        <td data-label="Auteur:" class="article-author">{{ article.author }}</td>
+        <td data-label="Date:" class="article-date">{{ article.created_at|date:"d/m/Y" }}</td>
+        <td class="actions-cell">
+          <a href="{% url 'Bapp:edit_article' article.pk %}" class="action-btn edit-btn">
+            <i class="fas fa-edit"></i> Modifier
+          </a>
+          <a href="{% url 'Bapp:delete_article' article.pk %}" class="action-btn delete-btn">
+            <i class="fas fa-trash-alt"></i> Supprimer
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 2rem;">
+          Aucun article disponible.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Pagination (optionnel) -->
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1" class="pagination-link">&laquo; Première</a>
+      <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link">Précédent</a>
+    {% endif %}
+
+    <span class="current-page">
+      Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="pagination-link">Suivant</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link">Dernière &raquo;</a>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

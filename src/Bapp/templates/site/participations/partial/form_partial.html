@@ -1,0 +1,8 @@
+ <form id="participation_form" method="post" data-url="{% url 'Bapp:submit_participation'%}">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="user_id">
+                <input type="hidden" name="participation_type" id="participation_type">
+                <label>Montant :</label>
+                {{form_as.p}}
+                <button type="submit" >Enregistrer</button>
+            </form>

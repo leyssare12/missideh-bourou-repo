@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} <title class="title">Participation annuelle</title> {% endblock %}
+{% block extra_css %}<link href="{% static 'css/participations/annual_participation.css'%}" rel="stylesheet" type="text/css">{%endblock%}
+
+{% block content %}
+<div class="participation-container">
+    <div class="search-section">
+        <h2 class="mb-4">Enregistrer une participation</h2>
+
+        <!-- Formulaire de recherche -->
+        <form method="GET" class="search-form">
+            <div class="form-group">
+                <label class="form-label">{{ recherche_form.recherche.label }}</label>
+                {{ recherche_form.recherche }}
+            </div>
+            <button type="submit" class="btn-recherche">
+                <i class="fas fa-search"></i> Rechercher
+            </button>
+        </form>
+    </div>
+
+    <!-- Affichage du résultat de recherche et formulaire de participation -->
+    {% if utilisateur_trouve %}
+        <div class="member-card">
+            <div class="member-info">
+                <h3>Membre trouvé</h3>
+                <div class="member-details">
+                    <div class="detail-item">
+                        <i class="fas fa-user"></i>
+                        <strong>Prénom:</strong> {{ utilisateur_trouve.prenoms }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-id-card"></i>
+                        <strong>Code Perso:</strong> {{ utilisateur_trouve.identifiant }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="participation-form">
+                <h4 class="mb-3">Enregistrer la participation</h4>
+                <form method="POST">
+                    {% csrf_token %}
+                    {% if participation_form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in participation_form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        {{ participation_form.montant_participation.label_tag }}
+                        {{ participation_form.montant_participation }}
+                        {% if participation_form.montant_participation.errors %}
+                        <div class="alert alert-danger mt-2">
+                            {{participation_form.montant_participation.errors}}
+                            {% for error in participation_form.montant_participation.errors %}
+                                {{ error }}
+                            {% endfor %}
+                            {% if error_messages %}
+                            {{ error_messages }}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if participation_form.montant_participation.help_text %}
+                        <small class="form-text text-muted">
+                            {{ participation_form.montant_participation_.help_text }}
+                        </small>
+                        {% endif %}
+                    </div>
+
+                    <input type="hidden" name="user_id" value="{{ utilisateur_trouve.id }}">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Enregistrer la participation
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% elif request.GET.recherche %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            Aucun membre trouvé avec ces critères.
+        </div>
+    {% endif %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}" style="color:red;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

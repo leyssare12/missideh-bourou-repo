@@ -1,0 +1,117 @@
+<!-- templates/participation.html -->
+{% extends 'site/admin/base_admin.html' %}
+{% load static %}
+{% block title %}<title>Test participations</title>{% endblock %}
+
+{% block content %}
+{% block extra_css %}<link href="{% static 'css/participations/test_participations.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+<div class="container">
+    <h2>Formulaire de participation</h2>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+
+    <div class="form-group mb-4">
+        <label for="userType">Veillez selectionner le type de participation:</label>
+        <select id="userType" class="form-control type_select">
+            <option class="" value="">Sélectionnez le type de participation ici</option>
+            <option class="" value="user1">Cotisation annuel</option>
+            <option class="" value="user2">Cotisation occasionnelle</option>
+            <option class="" value="user3">Dons extérieure</option>
+        </select>
+    </div>
+
+    <!-- Bloc de recherche pour User1 et User2 -->
+    <div id="userSearchBlock" class="mb-4" style="display: none;" data-url="{% url 'Bapp:recherche_user'%}">
+        <div class="form-group">
+            {{ search_form.as_p }}
+        </div>
+              <!-- Conteneur pour la liste des résultats -->
+        <div id="searchResults" class="search-results-container"></div>
+
+        <!-- Bloc d'informations utilisateur -->
+        <div id="userInfo" class="selected-user-info shadow-sm" style="display: none;">
+            <div class="card border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Informations utilisateur
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="user-details">
+                        <div class="user-detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="detail-content">
+                                <label class="detail-label">Prénom</label>
+                                <p id="userPrenom" class="detail-value mb-0"></p>
+                            </div>
+                        </div>
+                        <div class="user-detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="detail-content">
+                                <label class="detail-label">Identifiant</label>
+                                <p id="userIdentifiant" class="detail-value mb-0"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire User1 -->
+    <div id="user1Form" class="form-container" style="display: none;">
+        <form method="post" class="participation-form" data-url="{% url 'Bapp:test_participation' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_type" value="user1">
+            <input type="hidden" name="user_id" id="user1Id">
+            {{ form1.as_p }}
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        </form>
+            <div class="form-messages" style="display:none;"></div>
+            <div class="field-errors"></div>
+    </div>
+
+    <!-- Formulaire User2 -->
+    <div id="user2Form" class="form-container" style="display: none;">
+        <form method="post" class="participation-form" data-url="{% url 'Bapp:test_participation' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_type" value="user2">
+            <input type="hidden" name="user_id" id="user2Id">
+            {{ form2.as_p }}
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        </form>
+        <div class="form-messages" style="display:none;"></div>
+        <div class="field-errors"></div>
+    </div>
+
+    <!-- Formulaire User3 -->
+    <div id="user3Form" class="form-container" style="display: none;">
+        <form method="post" class="participation-form" data-url="{% url 'Bapp:test_participation' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_type" value="user3">
+            {{ form3.as_p }}
+            <button type="submit" class="btn btn-primary">Envoyer</button>
+        </form>
+        <div class="form-messages"></div>
+         <div class="field-errors"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'js/participations/test_participations.js'%}"></script> {% endblock %}

@@ -1,0 +1,179 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Moderne</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard/dashboard.css'%}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-chart-line"></i> Dashboard</h2>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#dashboard" data-content="dashboard-content">
+                            <i class="fas fa-home"></i>
+                            <span>Accueil</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#analytics" data-content="analytics-content">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#messages" data-content="messages-content">
+                            <i class="fas fa-envelope"></i>
+                            <span>Messages</span>
+                            <span class="badge">5</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#settings" data-content="settings-content">
+                            <i class="fas fa-cog"></i>
+                            <span>Paramètres</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#calendar" data-content="calendar-content">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Calendrier</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#users" data-content="users-content">
+                            <i class="fas fa-users"></i>
+                            <span>Utilisateurs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                    <div class="user-info">
+                        <span class="user-name">Sophie Martin</span>
+                        <span class="user-role">Administrateur</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navigation -->
+            <div class="top-nav">
+                <div class="search-bar">
+                    <input type="text" placeholder="Rechercher...">
+                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="top-nav-right">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="logout-btn" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Déconnexion</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Default content (Dashboard) -->
+                <div class="content-section active" id="dashboard-content">
+                    <h2>Tableau de Bord</h2>
+                    <div class="cards-container">
+                        <div class="card">
+                            <div class="card-icon bg-blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>1,254</h3>
+                                <p>Utilisateurs</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon bg-green">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>568</h3>
+                                <p>Commandes</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon bg-orange">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>$12,540</h3>
+                                <p>Revenus</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-icon bg-purple">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="card-info">
+                                <h3>78%</h3>
+                                <p>Performance</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Analytics Content -->
+                <div class="content-section" id="analytics-content">
+                    <h2>Analytics</h2>
+                    <p>Contenu des analytics à afficher ici.</p>
+                </div>
+
+                <!-- Messages Content -->
+                <div class="content-section" id="messages-content">
+                    <h2>Messages</h2>
+                    <p>Contenu des messages à afficher ici.</p>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="content-section" id="settings-content">
+                    <h2>Paramètres</h2>
+                    <p>Contenu des paramètres à afficher ici.</p>
+                </div>
+
+                <!-- Calendar Content -->
+                <div class="content-section" id="calendar-content">
+                    <h2>Calendrier</h2>
+                    <p>Contenu du calendrier à afficher ici.</p>
+                </div>
+
+                <!-- Users Content -->
+                <div class="content-section" id="users-content">
+                    <h2>Utilisateurs</h2>
+                    <p>Contenu des utilisateurs à afficher ici.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'js/dashboard/dashboard.js' %}"></script>
+</body>
+</html>

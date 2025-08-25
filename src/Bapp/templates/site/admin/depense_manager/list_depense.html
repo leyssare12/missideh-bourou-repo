@@ -1,0 +1,137 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static%}
+{% block title %}<title>List dons</title>{%endblock%}
+
+{% block extra_css%}<link href="{% static 'css/admin/list_items/list_cotisation_annuel.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+{% block content %}
+<body>
+<div class="cotisation-container">
+       <!--Affichage de message pour confirmer la reussite de suppression d'un article-->
+    <div id="message-container">
+        {% if messages %}
+        <div class="message" id="info-message">
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="cotisation-header">
+        <h1 class="cotisation-title">Liste des dépenses</h1>
+        <a href="{% url 'Bapp:add_depenses' %}" class="add-cotisation-btn">
+            <i class="bi bi-plus-circle"></i> Ajouter une dépense
+        </a>
+    </div>
+
+    <div class="cotisation-card">
+        <div class="cotisation-card-header">
+            <h5 class="cotisation-card-title">Historique de dépenses effectuées </h5>
+            <a href="{% url 'Bapp:list_depenses'%}"><button class="actualiser">Actualiser</button></a>
+        </div>
+
+        <div class="cotisation-card-body">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="cotisation-table">
+                    <thead>
+                        <tr>
+                            <th>Montant dépenses</th>
+                            <th>Motif dépenses</th>
+                            <th>Mise à jour</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbody">
+                        {% for cotisation in page_obj %}
+                        <tr class="table_tr">
+                            <td data-label="Montant dépense :">{{ cotisation.montant_depense}}</td>
+                            <td data-label="Motif dépense :">{{ cotisation.motif_depense }}</td>
+                            <td data-label="Mise à jour le :">{{ cotisation.updated_at|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    {% if request.user.is_authenticated %}
+                                    <a href="{% url 'Bapp:edit_depenses' cotisation.id %}" class="action-btn edit-btn" title="Modifier">
+                                        <i class="bi bi-pencil">Edit</i>
+                                    </a>
+                                    <a href="{% url 'Bapp:delete_depenses' cotisation.id %}" class="action-btn delete-btn" title="Supprimer">
+                                        <i class="bi bi-trash">Delete</i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {# Pagination #}
+            <div class="pagination-container">
+                <nav aria-label="Pagination">
+                    <ul class="pagination">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1" aria-label="Première">
+                                    <span aria-hidden="true">&laquo;&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Précédente">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Suivante">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière">
+                                    <span aria-hidden="true">&raquo;&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                <div class="pagination-info">
+                    Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} - {{ page_obj.paginator.count }} éléments au total
+                </div>
+            </div>
+            </div>
+            {% else %}
+            <div class="no-cotisation-alert">
+                <i class="bi bi-info-circle-fill"></i> Aucune cotisation enregistrée à votre compte pour le moment.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/admin/text_truncate.js'%}" type="text/javascript"></script>
+    <!-- Ajoutez le script pour geŕer la truncation du text au niveau des td -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const troncature = new TexteTronque({
+        longueurMax: 20, // Ajustez selon vos besoins
+        selector: 'td[data-label]'
+    });
+});
+</script>
+
+
+</body>
+{% endblock %}

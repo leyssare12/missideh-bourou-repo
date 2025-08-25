@@ -1,0 +1,71 @@
+{% extends "site/admin/base_admin.html" %}
+
+{% load static %}
+
+{% block title %}<title>Liste d'articles </title>{% endblock%}
+{% block extra_css%}<link href="{% static 'css/admin/list_items/list_articles.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+    <div class="w-layout-blockcontainer w-container">
+        {% if user_session %}
+            <p>{{user_session}} - {{session_expired}}</p>
+            <p><span id='countdownDisplay' data-url="{% url 'Bapp:manager_login_page'%}"></span> Secondes, avant la fin de session</p>
+        {% endif %}
+     {% if user_has_published_articles %}
+        <div class="div-block_principal">
+             {% if user.is_superuser %}
+                <h2 class="user_accueil_message">Bonjour <span class="user_welcome">{{user_name}}</span>, voici la liste d'articles publié sur ce site.</h2>
+            {% else %}
+            <h2 class="user_accueil_message">Bonjour <span class="user_welcome">{{user_name}}</span>, voici la liste d&#x27;articles que vous avez publié sur ce site</h2>
+            {% endif %}
+            <!--Affichage de message pour confirmer la reussite de suppression d'un article-->
+            <div id="message-container">
+                {% if messages %}
+                <div class="message" id="info-message">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% for article in articles %}
+           <div class="w-layout-vflex title_container">
+            <div class="sommeur"><span class="intro">Article No: {{ forloop.counter }}</span></div>
+            <h3 class="article_title"><span>Titre: </span>{{article.title}}</h3>
+            <p class="article_content"><span>Contenue:</span> {{ article.content }}</p>
+            <div class="author_container">
+              <h4 class="author">Auteur:</h4>
+              <div class="author_name">{{ article.author}}</div>
+            </div>
+            <div class="date_published_container">
+              <h4 class="publied_date">Publié:</h4>
+              <div class="published_date">{{ article.created_at }}</div>
+            </div>
+            <div class="date_updated_container">
+              <h4 class="updated_date">Mis à jour:</h4>
+              <div class="update_date">{{article.updated_at}}</div>
+            </div>
+            <a class="article_update" href="{% url 'Bapp:modify_article' article.id %} ">Modifiez l&#x27;article</a>
+            <a class="article_update" href="{% url 'Bapp:delete_article' article.id %} ">Supprimer cet article </a>
+
+           </div>
+            {% endfor %}
+
+        </div>
+     {% else %}
+        <h2 class="user_accueil_message">Bonjour <span class="user_welcome">{{user_name}}</span>, Vous n'avez pas encore publié un article sur ce site.</h2>
+    {% endif %}
+  </div>
+
+        <script>
+        <!--Message de bienvenu personnalisé -->
+        document.addEventListener('DOMContentLoaded', function () {
+            const message = document.getElementById('info-message');
+            if (message) {
+                setTimeout(() => {
+                    message.classList.add('hidden');
+                }, 10000);  // Hide after 5 seconds
+            }
+        });
+    </script>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/admin/timer_utils.js'%}" type="text/javascript"></script>{% endblock %}

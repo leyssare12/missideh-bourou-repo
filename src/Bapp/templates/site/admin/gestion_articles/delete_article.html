@@ -1,0 +1,32 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/admin/list_items/article_list.css' %}">{% endblock %}
+{% block content %}
+
+<div class="form-container">
+  <h1 class="form-title">
+    <i class="fas fa-trash-alt"></i> Supprimer l'Article
+  </h1>
+
+  <div class="delete-alert">
+    <h3><i class="fas fa-exclamation-triangle"></i> Attention !</h3>
+    <p>Vous êtes sur le point de supprimer définitivement l'article :</p>
+    <p><strong>"{{ article.title }}"</strong> (créé le {{ article.created_at|date:"d/m/Y" }}) par {{article.author}}</p>
+    <p>Cette action est irréversible.</p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <a href="{% url 'Bapp:article_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Annuler
+      </a>
+      <button type="submit" class="btn btn-danger">
+        <i class="fas fa-trash-alt"></i> Confirmer la suppression
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

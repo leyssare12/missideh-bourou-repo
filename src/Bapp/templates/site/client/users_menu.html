@@ -1,0 +1,57 @@
+{% extends "site/client/base_client.html" %}
+
+
+{% load static %}
+{% block title %}<title>Home users</title>{% endblock %}
+
+{% block extra_css%}<link href="{% static 'css/client/users_menu.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+{% block content %}
+<!-- CONTENU PRINCIPAL -->
+   {% if messages %}
+        <div class="c">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} ">
+                <p>{{ message }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+<div class="grid-container">
+
+    <a class="card" href="{% url 'Bapp:missideh_bourou_members'%}">
+        <i class="fas fa-users"></i>
+        <h2>Membres</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
+    </a>
+
+    <a class="card">
+        <i class="fas fa-table"></i>
+        <h2>Tableau</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
+    </a>
+
+    <a class="card">
+        <i class="fas fa-file-alt"></i>
+        <h2>Documents</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
+    </a>
+
+    <a class="card">
+        <i class="fas fa-clipboard-list"></i>
+        <h2>Rapports</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
+    </a>
+    <a class="card">
+        <i class="fas fa-clipboard-list"></i>
+        <h2>Rapports</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
+    </a>
+    <a class="card">
+        <i class="fas fa-clipboard-list"></i>
+        <h2>Rapports</h2>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
+    </a>
+</div>
+
+{% endblock %}

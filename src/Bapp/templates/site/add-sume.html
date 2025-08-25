@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% load static%}
+{% block title %}<title>Add-sume</title>{%endblock%}
+{% block content %}
+  <div class="w-embed w-script">
+    <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const select = document.getElementById("liste_choice");
+    const input = document.getElementById("name");
+    const secondSelect = document.getElementById("user-names");
+    function handleSelectChange() {
+      const value = select.value;
+      // Tout cacher d'abord
+      input.style.display = "none";
+      secondSelect.style.display = "none";
+      // Afficher en fonction du choix
+      if (value === "don") {
+        input.style.display = "block";
+      } else if (value === "cotisation_annuel") {
+        secondSelect.style.display = "block";
+      }
+    }
+    // Initial hide (si besoin)
+    handleSelectChange();
+    // Écoute le changement de valeur
+    select.addEventListener("change", handleSelectChange);
+  });
+</script>
+  </div>
+
+  <section>
+    <div class="w-layout-vflex flex-block-2">
+      <h1>Ajouter la participation d&#x27;un utilisateur</h1>
+      <div class="w-form">
+        <form id="email-form" name="email-form" data-name="Email Form" redirect="/" data-redirect="/" method="get" data-wf-page-id="682fa560237ce539e5ac0850" data-wf-element-id="b4b07a06-d438-793e-1f36-a120a8c3c3f2"><label for="liste_choice" class="lbl_choice">Type de participation</label><select id="liste_choice" name="liste_choice" data-name="liste_choice" class="select_choice w-select">
+            <option value="cotisation_annuel">Cotisation annuel</option>
+            <option value="cotisation_occasionnel">Cotisation occasionnel</option>
+            <option value="don">Don </option>
+            <option value="Third">Third choice</option>
+          </select><label for="name" class="lbl_name">User Name:</label><input class="input_name w-input" maxlength="256" name="name" data-name="Name" placeholder="" type="text" id="name"><select id="user-names" name="user-names" data-name="user names" placeholde="" class="select_users w-select">
+            <option value="user">Bassir</option>
+            <option value="user">Aliou</option>
+            <option value="user">Ousmane</option>
+            <option value="Third">Third choice</option>
+          </select><input type="submit" data-wait="Please wait..." class="w-button" value="Submit"></form>
+        <div class="w-form-done">
+          <div>Thank you! Your submission has been received!</div>
+        </div>
+        <div class="w-form-fail">
+          <div>Oops! Something went wrong while submitting the form.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+   {% endblock %}

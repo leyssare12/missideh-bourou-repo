@@ -1,0 +1,281 @@
+{% extends "site/admin/base_admin.html" %}
+{% block content %}
+<style>
+    /* Design personnalisé */
+    .delete-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .delete-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: flex-start;
+    }
+
+    .delete-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background-color: #3498db;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        background-color: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(41, 128, 185, 0.3);
+    }
+
+    .delete-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .delete-card-header {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+        padding: 1.5rem;
+    }
+
+    .delete-card-title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .delete-card-body {
+        padding: 2rem;
+    }
+
+    /* Alerte */
+    .warning-alert {
+        background-color: #fef3f2;
+        border-left: 4px solid #e74c3c;
+        padding: 1.25rem;
+        border-radius: 0 8px 8px 0;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .warning-alert i {
+        color: #e74c3c;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .warning-alert-content {
+        color: #7a2717;
+    }
+
+    /* Détails */
+    .cotisation-details {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border: 1px solid #eee;
+    }
+
+    .cotisation-details h6 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .cotisation-details p {
+        margin-bottom: 0.75rem;
+        color: #34495e;
+    }
+
+    .cotisation-details strong {
+        color: #2c3e50;
+    }
+
+    /* Actions */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-danger {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: #e0e6ed;
+        color: #2c3e50;
+    }
+
+    .btn-secondary:hover {
+        background-color: #d1d8e0;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .delete-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .delete-title {
+            font-size: 1.75rem;
+        }
+
+        .delete-card-body {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .delete-container {
+            padding: 0 0.75rem;
+            margin: 1.5rem auto;
+        }
+
+        .delete-title {
+            font-size: 1.5rem;
+        }
+
+        .delete-card-header {
+            padding: 1.25rem;
+        }
+
+        .delete-card-title {
+            font-size: 1.25rem;
+        }
+
+        .warning-alert {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    /* Animation */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-5px); }
+        40%, 80% { transform: translateX(5px); }
+    }
+
+    .delete-card-header {
+        animation: shake 0.5s ease-in-out;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-header">
+        <h1 class="delete-title">Confirmer la suppression</h1>
+        <a href="{% url 'Bapp:list_dons' %}" class="back-btn">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    <div class="delete-card">
+        <div class="delete-card-header">
+            <h5 class="delete-card-title">
+                <i class="bi bi-exclamation-octagon-fill"></i>
+                Attention - Action irréversible
+            </h5>
+        </div>
+
+        <div class="delete-card-body">
+            <div class="warning-alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div class="warning-alert-content">
+                    <strong>Vous êtes sur le point de supprimer définitivement ce don.</strong>
+                    <p class="mb-0">Cette action ne peut pas être annulée. Toutes les données associées seront perdues.</p>
+                </div>
+            </div>
+
+            <div class="cotisation-details">
+                <h6>Détails de la cotisation :</h6>
+                <p><strong>Membre :</strong> {{ dons.prenom }}</p>
+                <p><strong>Montant :</strong> {{ dons.montant_don }} €</p>
+                <p><strong>Date :</strong> {{ dons.date_don|date:"d/m/Y" }}</p>
+            </div>
+
+            <form method="post" class="confirmation-form">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Confirmer la suppression
+                    </button>
+                    <a href="{% url 'Bapp:list_dons' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Effet de confirmation supplémentaire
+    document.querySelector('.btn-danger').addEventListener('mouseover', function() {
+        this.innerHTML = '<i class="bi bi-trash-fill"></i> Cliquez pour confirmer';
+    });
+
+    document.querySelector('.btn-danger').addEventListener('mouseout', function() {
+        this.innerHTML = '<i class="bi bi-trash-fill"></i> Confirmer la suppression';
+    });
+</script>
+{% endblock %}

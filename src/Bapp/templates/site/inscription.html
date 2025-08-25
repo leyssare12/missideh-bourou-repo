@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static%}
+{% block title %}<title>Inscription</title>{%endblock%}
+{% block content %}
+  <div class="w-layout-blockcontainer container-2 w-container">
+    <div class="w-layout-vflex flex-block">
+      <div class="w-form">
+        <form id="email-form" name="email-form" data-name="Email Form" method="get" class="form" data-wf-page-id="682e5e9d58e904da88e3dfd8" data-wf-element-id="60dc4091-9101-29dd-421f-04c541e9c1eb"><label for="name">Name</label><input class="w-input" maxlength="256" name="name" data-name="Name" placeholder="Name" type="text" id="name"><label for="email">Email Address</label><input class="w-input" maxlength="256" name="email" data-name="Email" placeholder="Email" type="email" id="email" required=""><label for="Telephone">Telephone</label><input class="w-input" maxlength="256" name="Telephone" data-name="Telephone" placeholder="Telphone" type="tel" id="Telephone" required=""><input type="submit" data-wait="Please wait..." class="submit-button w-button" value="Submit"></form>
+        <div class="w-form-done">
+          <div>Thank you! Your submission has been received!</div>
+        </div>
+        <div class="w-form-fail">
+          <div>Oops! Something went wrong while submitting the form.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

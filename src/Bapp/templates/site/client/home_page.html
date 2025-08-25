@@ -1,0 +1,100 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missideh Bourou</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/client/home_page.css'%}">
+</head>
+<body>
+      <header class="navbar">
+    <div class="nav-content">
+      <a class="logo" href="{% url 'Bapp:home_page'%}" style="text-decoration:none;">
+        <img src="{% static 'images/logo.png'%}"
+             alt="Logo"
+             class="logo-img">
+        <span>Missideh Bourou</span>
+      </a>
+      <nav class="nav-links" id="nav-links">
+        <a href="#">Membres</a>
+        <a href="#">Contacts</a>
+        <a href="#">Pays</a>
+        <a href="#" class="auth-btn">S'authentifier</a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <i class="fas fa-bars"></i>
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </header>
+
+
+
+
+  <section class="hero">
+    <div class="hero-container">
+      <div class="hero-text">
+        <h1>Missideh Bourou ko fii Fow</h1>
+        <p>Une plateforme pour connecter, partager et grandir ensemble.s simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+        <a href="{% url 'Bapp:members_authentification'%}" class="btn-primary">Rejoindre en tant que membre</a>
+      </div>
+      <div class="hero-image">
+        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d" alt="Collaboration">
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <h2>À propos</h2>
+      <p>Une communauté engagée pour le partage et l'entraide.</p>
+      <div class="footer-socials">
+        <a href="#"><i class="fab fa-html5"></i></a>
+        <a href="#"><i class="fab fa-google"></i></a>
+        <a href="#"><i class="fab fa-facebook"></i></a>
+      </div>
+      <p class="footer-copy">© 2025 Missideh Bourou. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('nav-links');
+    const body = document.body;
+
+    hamburger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+      // Empêcher le défilement du body quand le menu est ouvert
+      body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+    });
+
+    // Fermer le menu lors du clic sur un lien
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+        body.style.overflow = '';
+      });
+    });
+
+    // Fermer le menu lors du clic en dehors
+    document.addEventListener('click', (e) => {
+      if (navLinks.classList.contains('active') &&
+          !navLinks.contains(e.target) &&
+          !hamburger.contains(e.target)) {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+        body.style.overflow = '';
+      }
+    });
+  </script>
+
+
+</body>
+</html>
