@@ -11,3 +11,4 @@ src/.login_env
 src/.mail_login_env
 src/media
 .idea/
+src/.dockerignroe
