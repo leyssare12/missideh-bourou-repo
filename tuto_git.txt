@@ -22,4 +22,5 @@ le brach master en tant qu'on a pas faire la fusion avec git merge
 
 6) Pour savoir sur quel commit ou branch nous nous situons, il faut toujours voir oú se place le HEAD
 
+7) Il faut savoir que si on se deplace sur une branch git specifique, on a accés uniqument qu'aux fichiers lié à cette branche, tout le reste ne nous sera pas accessible même en dehors de git
 
