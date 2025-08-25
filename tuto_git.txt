@@ -1,0 +1,25 @@
+1) Creation du depot git dans le repertoire du travail du projet
+	git status
+	git add
+	git commit
+2) Se déplacé entre les commits
+	git checkout sha du commit
+	git log -> Afficher les commits
+3) On peut renommer les sha de commit en tag, car il est plus facile de se souvenir d'un
+nom de tag que le sha du commit, 
+	Pour le faire on doit se deplacé vers le commit et faire
+	git tag <nom_du_tag>
+
+4) Crée une branche et se deplacé vers cette branch
+	pour crée une branch il faut d'abord se déplacé vers un commit specifique 
+	git branch <nom_du_branch>
+Important ! si on fait un commit sur une branch spécifique, cette commit ne sera pas visible dans 
+le brach master en tant qu'on a pas faire la fusion avec git merge
+
+5) Pour fusionner notre travail avec le brach master
+	Il faut se placer dans le branch master à l'aide de la commade switch <nom_du_branch>
+	Et faire la commande git merge
+
+6) Pour savoir sur quel commit ou branch nous nous situons, il faut toujours voir oú se place le HEAD
+
+
