@@ -111,6 +111,9 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
     profile_picture = models.ImageField(upload_to=get_profile_image_path, blank=True, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_by_user')
 
+    otp_secret = models.CharField(max_length=32, blank=True, null=True)
+    otp_enabled = models.BooleanField(default=False)
+
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)

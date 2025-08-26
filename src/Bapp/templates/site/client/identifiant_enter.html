@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <h2>Activation 2FA</h2>
+        {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <label>Nom d'utilisateur :</label>
+          <input type="text" name="identifiant" required>
+          <button type="submit">Continuer</button>
+        </form>
+
+</body>
+</html>

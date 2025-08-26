@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Activation 2FA</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+    .qr-container { margin: 20px auto; }
+    img.qr { width: 250px; height: 250px;  border:1px solid black; padding:15px;}
+    .error { color: red; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Activez la double authentification</h2>
+  <p>Scannez le QR code ci-dessous avec votre application Google Authenticator :</p>
+
+  <div class="qr-container">
+    <img class="qr" src="data:image/png;base64,{{ qr_b64|safe }}" alt="QR Code">
+  </div>
+
+  {% if error %}
+    <p class="error">{{ error }}</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Entrez le code affiché dans votre application :</label><br>
+    <input type="text" name="code" required>
+    <button type="submit">Vérifier</button>
+  </form>
+</body>
+</html>

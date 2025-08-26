@@ -5,6 +5,12 @@ from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
+from infobip_api_client.models import SmsRequest, SmsMessage, SmsMessageContent, SmsTextContent, SmsDestination, \
+    SmsResponse
+from infobip_api_client.api.sms_api import SmsApi
+# myapp/services.py
+import json
+from django.conf import settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,6 +33,7 @@ APP_ID = (os.getenv("INFOBIP_2FA_APP_ID") or "YOUR_APP_ID").strip()
 SENDER = (os.getenv("INFOBIP_WHATSAPP_SENDER") or "447860099299").strip()
 MESSAGE_ID = (os.getenv("INFOBIP_2FA_MESSAGE_ID") or "").strip()  # peut être vide si on va le créer
 TO = (os.getenv("INFOBIP_TOP") or "whatsapp:+4915778590981").strip()  # destinataire
+DJANGO_APP_OTP = (os.getenv("DJANGO_APP_OTP") or "YOUR_APP_OTP").strip()
 
 print(f"BASE_URL: {BASE_URL}")
 print(f"API_KEY: {API_KEY}")
@@ -35,36 +42,70 @@ print(f"SENDER: {SENDER}")
 print(f"MESSAGE_ID: {MESSAGE_ID}")
 print(f"TO: {TO}")
 
-
-conn = http.client.HTTPSConnection('1g4lyx.api.infobip.com')
-payload = json.dumps({
-    "messages": [
-        {
-            "from": SENDER,
-            "to": TO,
-            "messageId": MESSAGE_ID,
-            "content": {
-                "templateName": "test_whatsapp_template_en",
-                "templateData": {
-                    "body": {
-                        "placeholders": ["test"]
-                    }
-                },
-                "language": "en"
+def send_whatsapp_template():
+    conn = http.client.HTTPSConnection('1g4lyx.api.infobip.com')
+    payload = json.dumps({
+        "messages": [
+            {
+                "from": SENDER,
+                "to": TO,
+                "messageId": MESSAGE_ID,
+                "content": {
+                    "templateName": "test_whatsapp_template_en",
+                    "templateData": {
+                        "body": {
+                            "placeholders": ["test"]
+                        }
+                    },
+                    "language": "en"
+                }
             }
-        }
-    ]
-})
-headers = {
-    'Authorization': API_KEY,
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-}
-conn.request("POST", "/whatsapp/1/message/template", payload, headers)
-res = conn.getresponse()
-data = res.read()
-print(data.decode("utf-8"))
+        ]
+    })
+    headers = {
+        'Authorization': API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+    conn.request("POST", "/whatsapp/1/message/template", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+    print(data.decode("utf-8"))
 
+def send_sms():
+    #On configure l'API client
+    from infobip_api_client.api_client import ApiClient, Configuration
+
+    client_config = Configuration(
+        host=BASE_URL,
+        api_key={"APIKeyHeader": DJANGO_APP_OTP},
+        api_key_prefix={"APIKeyHeader": "App"},
+    )
+    #On initialise l'API client'
+    api_client = ApiClient(client_config)
+
+    sms_request = SmsRequest(
+        messages=[
+            SmsMessage(
+                destinations=[
+                    SmsDestination(
+                        to="4915778590981",
+                    ),
+                ],
+                sender=SENDER,
+                content=SmsMessageContent(actual_instance=SmsTextContent(text="This is a dummy SMS message sent using Python library"))
+            )
+        ]
+    )
+
+    api_instance = SmsApi(api_client)
+
+    api_response: SmsResponse = api_instance.send_sms_messages(sms_request=sms_request)
+    print(api_response)
+
+if __name__ == "__main__":
+    #send_whatsapp_template()
+    send_sms()
 
 '''
 if not API_KEY.startswith("App "):

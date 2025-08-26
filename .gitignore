@@ -1,5 +1,6 @@
 *.jepg
 *.jpg
+*.png
 *.pyc
 *.pdf
  .dockerignore

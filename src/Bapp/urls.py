@@ -8,7 +8,8 @@ from .reset_password import (password_reset_success, password_reset_confirm, pas
 from .add_or_delete_items import (delete_article, modify_article, delete_user, edit_user, confirm_delete_user, \
                                   edit_cotisation_annuel, delete_cotisation_annuel)
 from .list_items import (list_articles, list_subscribed_users, list_participations_annuel, delete_article, edit_article)
-from .users_views import (home_page, users_menu, missideh_bourou_members, search_member, members_authentification)
+from .users_views import (home_page, users_menu, missideh_bourou_members, search_member, members_authentification,
+                          members_authentification_qrcode, verify_2fa, identifiant_otp)
 from .views import index, inscription, add_sume, subcribe, data_recup, admin_subcribe, enregistrer_participation, \
     users_participations, search_user, participation_page, submit_participation, participation_view, \
     recherche_utilisateurs, depenses_view, get_data, gestion_totaux, manager_login_page, logout_view, editorial_view, \
@@ -98,6 +99,10 @@ urlpatterns = [
     path('home_page/', home_page, name='home_page'),
 
     path('members-authentification/', members_authentification, name='members_authentification'),
+
+    path('identifiant/', identifiant_otp, name='identifiant_over_otp'),
+    path('tfa-auth/', members_authentification_qrcode, name='two_fa_auth'),
+    path('tfa-auth/success/', verify_2fa, name='two_fa_auth_success'),
 
     path('menu/', users_menu, name='users_menu'),
     path('membres', missideh_bourou_members, name='missideh_bourou_members'),
