@@ -1,4 +1,6 @@
+import requests
 from django.contrib import messages
+
 from django.utils import timezone
 from datetime import timedelta
 
@@ -10,6 +12,16 @@ from BTest import settings
 from twilio.rest import Client
 
 from Bapp.models import TwoFactorAuth
+
+TELEGRAM_TOKEN = "7954170802:AAHh-TBDEKagGbxZLd_1sjyr93Sn9d8EW3M"
+TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+def send_telegram_message(chat_id, text):
+    url = f"{TELEGRAM_API}/sendMessage"
+    data = {"chat_id": chat_id, "text": text}
+    requests.post(url, data=data)
+
+
 
 
 def send_2fa_code_email(user, code):
@@ -55,18 +67,19 @@ def get_or_create_2fa(user, channel='email'):
     print("'Le code n'existe pas d'abord'")
     # Nouveau code
     try:
-        if channel == "whatsapp":
+        if channel == "telegram":
             # Duré de vie de code  d'un mois pour les utilisateurs whatsapp
             time_to_live = 43200
             token = TwoFactorAuth.create_token(user=user, channel=channel, ttl_minutes=time_to_live)
-            print("'l'utilisateur a whastapp comme option")
-            send_2fa_code_whatsapp(user, token.token_code)
+            print("'l'utilisateur a Telegram comme option")
+            send_telegram_message(user, token.token_code)
         else:
             #Durer de vie de code de 5mn pour les utilisateurs ayant des emails verifiés
             time_to_live = 3
             token = TwoFactorAuth.create_token(user=user, channel=channel, ttl_minutes=time_to_live)
             print("L'utilisateur a email comme option")
-            send_2fa_code_email(user, token.token_code)
+            message = f"Votre code est : {token.token_code}"
+            send_2fa_code_email(user, message)
         print("Nouvelle token crée", token.token_code)
         return token
     except Exception as e:

@@ -3,6 +3,8 @@ from django.urls import path
 from django.conf.urls.static import static
 
 from .models_manager import (ParticipationAnnuelManager, ParticipationOcasionnelleManager, DonsManager, DepensesManager)
+from .otp_authentication import qrcode_view
+from .otp_telegram import telegram_otp_login, cofirm_telegram_otp_login
 from .pdf_manager import PDFView
 from .reset_password import (password_reset_success, password_reset_confirm, password_reset_email_sent, request_password_reset)
 from .add_or_delete_items import (delete_article, modify_article, delete_user, edit_user, confirm_delete_user, \
@@ -102,7 +104,11 @@ urlpatterns = [
 
     path('identifiant/', identifiant_otp, name='identifiant_over_otp'),
     path('tfa-auth/', members_authentification_qrcode, name='two_fa_auth'),
+    path('qrcode/<int:user_id>/', qrcode_view, name='qrcode'),
     path('tfa-auth/success/', verify_2fa, name='two_fa_auth_success'),
+
+    path('telegram-otp/',telegram_otp_login , name='telegram_otp_login'),
+    path('confirm-otp', cofirm_telegram_otp_login, name='telegram_otp_confirm'),
 
     path('menu/', users_menu, name='users_menu'),
     path('membres', missideh_bourou_members, name='missideh_bourou_members'),

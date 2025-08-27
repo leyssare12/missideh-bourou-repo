@@ -307,7 +307,7 @@ User = get_user_model() # on recupere un pointeur ver BtestCustomUser
 class TwoFactorAuth(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='two_factor_auth')
     token_code = models.CharField(max_length=8)
-    channel = models.CharField(max_length=20, choices=(('email', 'email'), ('whatsapp', 'whatsapp')))
+    channel = models.CharField(max_length=20, choices=(('email', 'email'), ('whatsapp', 'whatsapp'), ('telegram', 'telegram')), default='email')
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h2>Le code qui vous a été envoyé par Telegram </h2>
+    <form method="post">
+  {% csrf_token %}
+      <input type="text" name="otp" placeholder="Code reçu sur Telegram" required>
+      <button type="submit">Valider</button>
+    </form>
+    {% if success %}
+        <p>{{success}}</p>
+    {% endif %}
+    {% if error %}
+        <p>{{error}}</p>
+    {% endif %}
+</body>
+</html>
