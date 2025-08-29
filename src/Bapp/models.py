@@ -3,6 +3,7 @@ import uuid
 from datetime import timedelta
 from urllib import request
 
+import pyotp
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -303,6 +304,18 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
 
 User = get_user_model() # on recupere un pointeur ver BtestCustomUser
 
+class TwoFactorSettingsTelegram(models.Model):
+    """
+    Profil 2FA par utilisateur:
+    - Stocke l'identité Telegram (chat_id) pour l'envoi de codes par bot.
+    - Peut contenir le canal préféré et la date de liaison.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="twofa_settings")
+    telegram_chat_id = models.BigIntegerField(null=True, blank=True, unique=True)
+    telegram_linked_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"2FA settings for {getattr(self.user, 'identifiant', self.user.pk)}"
 
 class TwoFactorAuth(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='two_factor_auth')
@@ -337,6 +350,33 @@ class TwoFactorAuth(models.Model):
         return not self.is_used and not self.token_expired
     def __str__(self):
         return f"{self.user.identifiant} - {self.channel}"
+
+
+class TelegramOTP2FA(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    secret_key = models.CharField(max_length=32, default=pyotp.random_base32)
+    last_used = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_otp(self):
+        """Génère un code OTP temporaire"""
+        totp = pyotp.TOTP(self.secret_key, interval=300)  # 5 minutes de validité
+        return totp.now()
+
+    def verify_otp(self, otp_code):
+        """Vérifie un code OTP"""
+        totp = pyotp.TOTP(self.secret_key, interval=300)
+        is_valid = totp.verify(otp_code)
+        if is_valid:
+            self.last_used = timezone.now()
+            self.save()
+        return is_valid
+
+    @classmethod
+    def get_or_create_for_user(cls, user):
+        obj, created = cls.objects.get_or_create(user=user)
+        return obj
 
 class PDFManager(models.Model):
     DOCUMENT_TYPES = [
@@ -378,6 +418,7 @@ class PDFManager(models.Model):
     @property
     def file_name(self):
         return self.file.name.split('/')[-1]
+
 
 
 class DashboardModule(models.Model):

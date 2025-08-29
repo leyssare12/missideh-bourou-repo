@@ -3,6 +3,7 @@
 *.png
 *.pyc
 *.pdf
+*.txt
  .dockerignore
 /src/dumps
 src/entrypoint.sh

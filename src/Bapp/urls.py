@@ -4,7 +4,8 @@ from django.conf.urls.static import static
 
 from .models_manager import (ParticipationAnnuelManager, ParticipationOcasionnelleManager, DonsManager, DepensesManager)
 from .otp_authentication import qrcode_view
-from .otp_telegram import telegram_otp_login, cofirm_telegram_otp_login
+from .otp_telegram import telegram_otp_login, telegram_otp_login_success, telegram_webhook, request_new_otp_telegram, \
+    login_with_2fa_by_telegram, check_telegram_link_status
 from .pdf_manager import PDFView
 from .reset_password import (password_reset_success, password_reset_confirm, password_reset_email_sent, request_password_reset)
 from .add_or_delete_items import (delete_article, modify_article, delete_user, edit_user, confirm_delete_user, \
@@ -108,7 +109,11 @@ urlpatterns = [
     path('tfa-auth/success/', verify_2fa, name='two_fa_auth_success'),
 
     path('telegram-otp/',telegram_otp_login , name='telegram_otp_login'),
-    path('confirm-otp', cofirm_telegram_otp_login, name='telegram_otp_confirm'),
+    path('login-with-otp-telegram/', login_with_2fa_by_telegram, name='telegram_otp_login_success'),
+    path('check-telegram-link/', check_telegram_link_status, name='check_telegram_link'),
+    path('request-new-opt-telegram/', request_new_otp_telegram, name='request_new_otp_telegram'),
+    path('confirm-otp', telegram_otp_login_success, name='telegram_otp_success'),
+    path('telegram-webhook/', telegram_webhook, name='telegram_webhook'),
 
     path('menu/', users_menu, name='users_menu'),
     path('membres', missideh_bourou_members, name='missideh_bourou_members'),

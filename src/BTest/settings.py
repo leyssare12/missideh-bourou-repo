@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import base64
 import os
 from ast import literal_eval
 from pathlib import Path
@@ -51,7 +52,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 #        for host in os.getenv('ALLOWED_HOSTS', default_hosts).split(',')
 #        if host.strip()
 #    ]
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.109', 'bourou_test.local']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.109', 'bourou_test.local', '17f9bb403c65.ngrok-free.app']
 
 print(ALLOWED_HOSTS)
 #CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
@@ -73,6 +74,12 @@ print(DB_NAME, PG_ADMIN_USER, PG_PASSWORD_PASSWORD, PG_HOST, PG_PORT, SECRET_KEY
 #EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', default=True).lower() == 'true'
 #EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', default=False).lower() == 'true'
 
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.ngrok.io',
+        'https://*.ngrok-free.app',
+    ]
 
 EMAIL_HOST='smtp.ionos.de'
 EMAIL_PORT=587
@@ -92,11 +99,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_pgviews',
     'rest_framework',
+    'corsheaders',
     'Bapp',
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -228,3 +237,10 @@ print(PDFS_ROOT, PDFS_URL, sep='\n')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuration de l'application pour l'utilisation de Telegram 2FA'
+TELEGRAM_BOT_USERNAME = 'thiaghel_bot'
+TELEGRAM_BOT_TOKEN = "7954170802:AAHh-TBDEKagGbxZLd_1sjyr93Sn9d8EW3M"
+TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
+TELEGRAM_WEBHOOK_SECRET = 'mSuUShtYYR68MqR9dLsEfwYXJOO3X_eStdu78GhvLKkCA2dfTb7Vs9oPzBuz20kD'
+
