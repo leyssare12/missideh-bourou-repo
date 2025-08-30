@@ -32,6 +32,30 @@ def _get_telegram_api_base() -> str:
     return f"https://api.telegram.org/bot{token}"
 
 
+#Creation d'une fonction de bienvenue
+def create_welcome_text(name):
+    return f"""
+<b>🌸 Salam {name} !</b>
+
+Je suis le bot officiel de <b>Missideh-Bourou</b>, votre compagnon de sécurité. 
+
+🔒 <b>Pour activer la vérification en 2 étapes :</b>
+1. Connectez-vous à votre compte Missideh-Bourou
+2. Allez dans <i>Télégram → 2FA</i>
+3. Tapez votre ID Missideh-Bourou dans le champ <b>"Identifiant"</b>
+4. Cliquez sur <b>Lié mon compte</b>
+5. Completez le formulaire de liaison
+6. Si votre compte Télégram est dèjá lié à votre compte Mssideh Bourou!
+    a. Tapez la commande: /moncode -> pour recevoir un nouveau code OTP
+    b. Tapez le code OTP que vous recevrez par Telegram dans le champ <b>Code OTP</b> dans Missideh-Bourou online
+
+💁 <b>Besoin d'aide ?</b>
+Contactez notre équipe support pour vous guider.
+
+<i>Restez connecté·e en toute sécurité !</i> 🌺
+"""
+
+
 #Normalise l'envoie du message via le bot Telegram
 def send_telegram_message(chat_id, text, *, parse_mode: str | None = None, disable_notification: bool = True):
     """
@@ -132,11 +156,11 @@ def _link_telegram_chat_id(user, chat_id: int):
         return existing_obj
 
 #Recupère les messages à envoyer et les transmet à la methode send_telegram_message()
-def _safe_send(chat_id, text):
+def _safe_send(chat_id, text, parse_mode=None):
     """Envoi Telegram tolérant, pour ne pas casser le webhook."""
     try:
         print(f"🔄 Tentative d'envoi à {chat_id}: '{text}'")
-        result = send_telegram_message(chat_id, text, disable_notification=False)
+        result = send_telegram_message(chat_id, text, disable_notification=False, parse_mode=parse_mode)
 
         if result and result.get('ok'):
             print(f"✅ Message envoyé avec succès")
@@ -164,6 +188,8 @@ def telegram_webhook(request):
     print(f"=== NOUVELLE REQUÊTE RECUE ===")
     print(f"Path: {request.path}")
     print(f"Méthode: {request.method}")
+
+
 
     # Vérifier le secret token
     expected = getattr(settings, "TELEGRAM_WEBHOOK_SECRET", None)
@@ -206,6 +232,25 @@ def telegram_webhook(request):
     chat_id = message.get("chat", {}).get("id")
     print(f"Private message: '{text}' from chat_id: {chat_id}")
 
+    # Extraire les informations de l'utilisateur pour lui envoyer un message
+    from_user = message.get("from", {})
+    first_name = from_user.get('first_name', '')
+    last_name = from_user.get('last_name', '')
+    username = from_user.get('username', '')
+
+    # Créer un nom d'affichage personnalisé
+    if first_name and last_name:
+        display_name = f"{first_name} {last_name}"
+    elif first_name:
+        display_name = first_name
+    elif username:
+        display_name = f"@{username}"
+    else:
+        display_name = "cher utilisateur"
+
+    message_welcome = create_welcome_text(display_name)
+    print(f"Display name: {display_name}")
+
     # Vérifier si c'est une commande /start
     if text.startswith("/start"):
         print("✅ Commande /start détectée")
@@ -227,6 +272,7 @@ def telegram_webhook(request):
             try:
                 user = BTestCustomUser.objects.get(pk=user_id)
                 print(f"✅ Utilisateur trouvé: {user}")
+                _safe_send(chat_id, f'Salam {display_name}')
             except BTestCustomUser.DoesNotExist:
                 print(f"❌ User {user_id} not found")
                 _safe_send(chat_id, "Utilisateur introuvable.")
@@ -239,7 +285,7 @@ def telegram_webhook(request):
                 print("✅ Compte lié avec succès")
 
                 _safe_send(chat_id,
-                           "Votre compte est maintenant lié à ce bot. Nous pouvons vous envoyer des messages ici.")
+                           "Votre compte est maintenant lié à ce bot. Vous pouvez désormais recevoir vos codes OTP via ce Chat Telegram.")
                 print("✅ Message de confirmation envoyé")
 
             except Exception as e:
@@ -250,13 +296,13 @@ def telegram_webhook(request):
         else:
             # /start sans paramètre
             print("⚠️ /start sans paramètre (nonce manquant)")
-            _safe_send(chat_id, "Utilisez le lien de liaison depuis votre compte pour connecter Telegram.")
+            _safe_send(chat_id, message_welcome, parse_mode="HTML")
             return HttpResponse("ok")
-    elif text.startswith("/otp") or text.startswith("/code"):
+    elif text.startswith("/otp") or text.startswith("/moncode"):
         # Demander un nouveau code OTP
         user = get_user_by_chat_id(chat_id)
         if user:
-            if send_otp_code(user):
+            if send_otp_code(request, user):
                 _safe_send(chat_id, "✅ Code OTP envoyé! Vérifiez vos messages.")
             else:
                 _safe_send(chat_id, "❌ Impossible de générer un code OTP.")
@@ -277,7 +323,7 @@ def telegram_webhook(request):
 
     else:
         _safe_send(chat_id,
-                   "🤖 Commandes disponibles:\n/start - Lier votre compte\n/otp - Générer un code OTP\n/code - Générer un code OTP")
+                   "🤖 Commandes disponibles:\n/start - Lier votre compte\n/otp - Générer un code OTP\n/moncode - Générer un code OTP")
 
     return HttpResponse("ok")
 def _get_telegram_chat_id_for_user(user):
@@ -420,32 +466,23 @@ def login_with_2fa_by_telegram(request):
         # Étape 1: Vérifier les identifiants
         if not identifiant:
             messages.error(request, "Identifiant invalide")
-            context['error'] = "Identifiant invalide"
             return render(request, template_name=template_name, context=context)
         user = BTestCustomUser.objects.filter(identifiant=identifiant).first()
         if user is not None:
-            # Vérifier si l'utilisateur demande à skip le 2FA
-            if action == 'skip_2fa':
-                login(request, user)
-                messages.info(request, "Connexion sans 2FA réussie.")
-                return redirect('Bapp:telegram_otp_success')
-
             # Vérifier si l'utilisateur a le 2FA activé
             if is_telegram_linked(user):
                 if not otp_code:
                     # Demander le code OTP
                     try:
                         # Envoyer immédiatement un code OTP
-                        send_otp_code(user)
+                        send_otp_code(request, user)
                     except Exception as e:
                         print(f"Erreur envoi OTP: {e}")
-
-                    return render(request, template_name, {
-                        'identifiant': identifiant,
-                        'show_otp': True,
-                        'user_id': user.id,
-                        'telegram_linked': True
-                    })
+                    context['identifiant'] = identifiant
+                    context['user_id'] = user.id
+                    context['telegram_linked'] = True
+                    context['show_otp'] = True
+                    return render(request, template_name, context)
 
                 # Vérifier le code OTP
                 telegram_otp = TelegramOTP2FA.get_or_create_for_user(user)
@@ -455,34 +492,31 @@ def login_with_2fa_by_telegram(request):
                     return redirect('Bapp:telegram_otp_success')
                 else:
                     messages.error(request, "Code OTP invalide")
-                    return render(request, template_name, {
-                        'identifiant': identifiant,
-                        'show_otp': True,
-                        'user_id': user.id,
-                        'telegram_linked': True,
-                        'error': 'Code OTP invalide'
-                    })
+                    context['identifiant'] = identifiant
+                    context['user_id'] = user.id
+                    context['telegram_linked'] = True
+                    context['show_otp'] = True
+                    context['error'] = 'Code OTP invalide'
+                    return render(request, template_name, context)
             else:
                 # Utilisateur non lié - proposer la liaison
                 if action == 'link_telegram':
                     # Générer un nonce pour la liaison
                     nonce = generate_enrollment_nonce(user)
                     bot_username = getattr(settings, "TELEGRAM_BOT_USERNAME", "")
+                    context['identifiant'] = identifiant
+                    context['nonce'] = nonce
+                    context['show_link_qr'] = True
+                    context['bot_username'] = bot_username
+                    context['user_id'] = user.id
 
-                    return render(request, template_name, {
-                        'identifiant': identifiant,
-                        'show_link_qr': True,
-                        'nonce': nonce,
-                        'bot_username': bot_username,
-                        'user_id': user.id
-                    })
+                    return render(request, template_name, context)
 
                 # Première visite - proposer les options
-                return render(request, template_name, {
-                    'identifiant': identifiant,
-                    'show_options': True,
-                    'user_id': user.id
-                })
+                context['identifiant'] = identifiant
+                context['show_options'] = True
+                context['user_id'] = user.id
+                return render(request, template_name, context)
         else:
             messages.error(request, "Identifiants invalides")
 
@@ -490,13 +524,15 @@ def login_with_2fa_by_telegram(request):
 
 
 # telegram_utils.py
-def send_otp_code(user):
+def send_otp_code(request, user):
     """Génère et envoie un code OTP à l'utilisateur via Telegram"""
     if not is_telegram_linked(user):
+        messages.error(request, "Vous n'avez pas encore lié votre compte Telegram. Veuillez le faire avant d'utiliser ce service.")
         return False
 
     chat_id = _get_telegram_chat_id_for_user(user)
     if not chat_id:
+        messages.error(request, "Vous n'avez pas encore lié votre compte Telegram. Veuillez le faire avant d'utiliser ce service.")
         return False
 
     # Générer le code OTP
@@ -506,9 +542,11 @@ def send_otp_code(user):
     # Envoyer le code
     message = f"🔐 Votre code de vérification est:  {otp_code}\n\nCe code expire dans 5 minutes."
     try:
-        send_telegram_message(chat_id, message)
+        #On appel la méthode _save_send() qui elle même appelle la méthode send_telegram_message()
+        _safe_send(chat_id, message)
         return True
     except Exception as e:
+        messages.error(request, f"Erreur lors de l'envoi du code OTP: {e}")
         print(f"Erreur envoi OTP: {e}")
         return False
 
@@ -539,16 +577,17 @@ def check_telegram_link_status(request):
 
     return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
 
+#Demande de renvoie de code OTP
 def request_new_otp_telegram(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            identifiant = data.get('identifiant')
-
+            user_id = data.get('user_id')
             User = get_user_model()
             try:
-                user = User.objects.get(identifiant=identifiant)
-                if send_otp_code(user):
+                user = User.objects.get(pk=user_id)
+                print(f"user: {user}")
+                if send_otp_code(request, user):
                     return JsonResponse({'success': True})
                 else:
                     return JsonResponse({'success': False, 'error': 'Impossible d\'envoyer le code'})

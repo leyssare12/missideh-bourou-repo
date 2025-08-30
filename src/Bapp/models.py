@@ -360,7 +360,7 @@ class TelegramOTP2FA(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def generate_otp(self):
-        """Génère un code OTP temporaire"""
+        """Génère un code OTP temporaire  de 6 chiffres à partir du secret key de l'utilisateur."""
         totp = pyotp.TOTP(self.secret_key, interval=300)  # 5 minutes de validité
         return totp.now()
 

@@ -108,8 +108,8 @@ urlpatterns = [
     path('qrcode/<int:user_id>/', qrcode_view, name='qrcode'),
     path('tfa-auth/success/', verify_2fa, name='two_fa_auth_success'),
 
-    path('telegram-otp/',telegram_otp_login , name='telegram_otp_login'),
-    path('login-with-otp-telegram/', login_with_2fa_by_telegram, name='telegram_otp_login_success'),
+    #path('telegram-otp/',telegram_otp_login , name='telegram_otp_login'),
+    path('login-with-otp-telegram/', login_with_2fa_by_telegram, name='telegram_otp_login'),
     path('check-telegram-link/', check_telegram_link_status, name='check_telegram_link'),
     path('request-new-opt-telegram/', request_new_otp_telegram, name='request_new_otp_telegram'),
     path('confirm-otp', telegram_otp_login_success, name='telegram_otp_success'),
