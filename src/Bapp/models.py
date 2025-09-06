@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import timedelta
+from datetime import timedelta, date
 from urllib import request
 
 import pyotp
@@ -26,6 +26,15 @@ def get_profile_image_path(instance, filename):
     # Retourner le chemin complet
     return os.path.join('images/profile_pictures', new_filename)
 
+
+def current_year():
+    # Fournit l'année courante sous forme d'entier pour les champs "year"
+    return date.today().year
+
+
+def default_email_verification_expiration():
+    # Fournit un datetime dynamique à la création de l'objet
+    return timezone.now() + timedelta(days=1)
 
 # Create your models here.
 """User Manager"""
@@ -126,7 +135,7 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
 
     email_verified = models.BooleanField(default=False)
     email_verification_token = models.UUIDField(null=True, blank=True, unique=True)
-    email_verification_expiration = models.DateTimeField(default=timezone.now() + timedelta(days=1), blank=True, null=True)
+    email_verification_expiration = models.DateTimeField(default=default_email_verification_expiration, blank=True, null=True)
     password_changed = models.BooleanField(default=False)
 
     #Est-ce-que l'utilisateur fait partie de ceux qui finance le maintien du site
@@ -340,17 +349,18 @@ class TwoFactorAuth(models.Model):
     @property
     def token_expired(self):
         """Vérifie si le code a expiré et le marque comme utilisé."""
-        if timezone.now() > self.expires_at:
-            if not self.is_used:  # ✅ marquer seulement si pas déjà marqué
-                self.is_used = True
-                self.save(update_fields=["is_used"])
         return timezone.now() > self.expires_at
     @property
     def token_valid(self):
         return not self.is_used and not self.token_expired
+    def mark_as_used(self):
+        """Marque explicitement le token comme utilisé."""
+        if not self.is_used:
+            self.is_used = True
+            self.save(update_fields=["is_used"])
+
     def __str__(self):
         return f"{self.user.identifiant} - {self.channel}"
-
 
 class TelegramOTP2FA(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -364,7 +374,7 @@ class TelegramOTP2FA(models.Model):
         totp = pyotp.TOTP(self.secret_key, interval=300)  # 5 minutes de validité
         return totp.now()
 
-    def verify_otp(self, otp_code):
+    def verify_otp_telegram(self, otp_code):
         """Vérifie un code OTP"""
         totp = pyotp.TOTP(self.secret_key, interval=300)
         is_valid = totp.verify(otp_code)
@@ -445,13 +455,14 @@ class ResetPasswordToken(models.Model):
         return not self.used and self.expiration > timezone.now()
 
 
-#Gestions de participations.css annuel
+#Gestions de participations annuel
 
 class ParticipationAnnual(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
                                    related_name='manager_participation_annuel')
     participant_id = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     montant_participation = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    year = models.PositiveIntegerField(default=current_year)
     date_participation = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
@@ -463,6 +474,7 @@ class ParticipationOccasionnelle(models.Model):
     participant_id = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     montant_participation = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     motif_participation = models.TextField(null=False, blank=False)
+    year = models.PositiveIntegerField(default=current_year)
     date_participation = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -525,3 +537,104 @@ class MissidehBourouMembersView(pgview.View):
     class Meta:
         managed = False
         db_table = 'missideh_bourou_members_view'
+
+class CotisationOccasionnelleView(pgview.View):
+    prenom = models.CharField(max_length=100)
+    quartier = models.CharField(max_length=100)
+    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    motif_cotisation = models.TextField()
+    date_cotisation = models.DateTimeField()
+
+    sql = """
+    select b.prenoms,
+    b.quartier,  
+    p.montant_participation, 
+    p.motif_participation, 
+    to_char(p.updated_at, 'DD/MM/YYYY')
+    from "Bapp_btestcustomuser" b 
+    inner join "Bapp_participationoccasionnelle" p on b.id = p.participant_id_id
+    order by p.updated_at desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'cotisation_occasionnelle_view'
+
+class CotisationAnnuelleView(pgview.View):
+    prenom = models.CharField(max_length=100)
+    quartier = models.CharField(max_length=100)
+    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    date_cotisation = models.DateTimeField()
+
+    sql = """
+    select b.prenoms, 
+    b.quartier,  
+    p.montant_participation,  
+    to_char(p.updated_at, 'DD/MM/YYYY')
+    from "Bapp_btestcustomuser" b 
+    inner join "Bapp_participationannual" p on b.id = p.participant_id_id
+    order by p.updated_at desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'cotisation_annuelle_view'
+
+class DonsView(pgview.View):
+    nom = models.CharField(max_length=100)
+    prenom = models.CharField(max_length=100)
+    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    motif_don = models.TextField()
+    date_don = models.DateTimeField()
+
+    sql = """
+    select prenom, 
+    nom, 
+    montant_don, 
+    motif_don, 
+    to_char(updated_at, 'DD/MM/YYY') as date_don
+    from "Bapp_dons" 
+    order by updated_at desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'dons_view'
+class DepensesView(pgview.View):
+    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    motif_depense = models.TextField()
+    date_depense = models.DateTimeField()
+
+    sql = """
+        select montant_depense, 
+        motif_depense, 
+        to_char(date_depense, 'DD/MM/YYYY') as date_depense
+        from "Bapp_adddepenses"
+        order by date_depense desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'depenses_view'
+class TotauxView(pgview.View):
+    montant_cotisationannuel = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_cotisationoccasionnelle = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_dons = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_depenses = models.DecimalField(max_digits=10, decimal_places=2)
+
+    sql = """
+    select 'TOTAL COTISATION ANNUEL' as type_total, coalesce(sum(montant_participation), 0) as total,
+    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
+    from "Bapp_participationannual"
+    union all
+    select 'TOTAL COTISATION OCCASIONNELLE' as type_total, coalesce(sum(montant_participation), 0) as total,
+    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
+    from "Bapp_participationoccasionnelle"
+    union all
+    select 'TOTAL DONS ' as type_total, coalesce(sum(montant_don), 0) as total,
+    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
+    from "Bapp_dons"
+    union all
+    select 'TOTAL DEPENSE' as type_total, coalesce(sum(montant_depense), 0) as total,
+    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
+    from "Bapp_adddepenses";
+    """
+    class Meta:
+       managed = False
+       db_table = 'totaux_view'

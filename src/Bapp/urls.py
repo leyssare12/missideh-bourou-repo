@@ -3,16 +3,17 @@ from django.urls import path
 from django.conf.urls.static import static
 
 from .models_manager import (ParticipationAnnuelManager, ParticipationOcasionnelleManager, DonsManager, DepensesManager)
-from .otp_authentication import qrcode_view
-from .otp_telegram import telegram_otp_login, telegram_otp_login_success, telegram_webhook, request_new_otp_telegram, \
+from .otp_email_2fa import members_authentification_email
+from .otp_qrcode_2fa import qrcode_view, identifiant_otp, members_authentification_qrcode
+from .otp_telegram import telegram_webhook, request_new_otp_telegram, \
     login_with_2fa_by_telegram, check_telegram_link_status
 from .pdf_manager import PDFView
 from .reset_password import (password_reset_success, password_reset_confirm, password_reset_email_sent, request_password_reset)
 from .add_or_delete_items import (delete_article, modify_article, delete_user, edit_user, confirm_delete_user, \
                                   edit_cotisation_annuel, delete_cotisation_annuel)
 from .list_items import (list_articles, list_subscribed_users, list_participations_annuel, delete_article, edit_article)
-from .users_views import (home_page, users_menu, missideh_bourou_members, search_member, members_authentification,
-                          members_authentification_qrcode, verify_2fa, identifiant_otp)
+from .users_views import (home_page, users_menu, missideh_bourou_members, search_member, members_login,
+                          select_2fa_method, load_2fa_method, member_login_view)
 from .views import index, inscription, add_sume, subcribe, data_recup, admin_subcribe, enregistrer_participation, \
     users_participations, search_user, participation_page, submit_participation, participation_view, \
     recherche_utilisateurs, depenses_view, get_data, gestion_totaux, manager_login_page, logout_view, editorial_view, \
@@ -101,18 +102,21 @@ urlpatterns = [
 
     path('home_page/', home_page, name='home_page'),
 
-    path('members-authentification/', members_authentification, name='members_authentification'),
+    #path('member-login/', members_login, name='check_identifiant'),
+    path('member-login/', member_login_view, name='member_login_view'),
+    path('charge-2fa/', load_2fa_method, name='load_2fa_method'),
+    path('select-method/<str:method>/', select_2fa_method, name='select_2fa_method'),
+
+    path('members-authentification/', members_authentification_email, name='members_authentification_email'),
 
     path('identifiant/', identifiant_otp, name='identifiant_over_otp'),
-    path('tfa-auth/', members_authentification_qrcode, name='two_fa_auth'),
+    path('tfa-auth/', members_authentification_qrcode, name='two_fa_qrcode_auth'),
     path('qrcode/<int:user_id>/', qrcode_view, name='qrcode'),
-    path('tfa-auth/success/', verify_2fa, name='two_fa_auth_success'),
 
     #path('telegram-otp/',telegram_otp_login , name='telegram_otp_login'),
     path('login-with-otp-telegram/', login_with_2fa_by_telegram, name='telegram_otp_login'),
     path('check-telegram-link/', check_telegram_link_status, name='check_telegram_link'),
     path('request-new-opt-telegram/', request_new_otp_telegram, name='request_new_otp_telegram'),
-    path('confirm-otp', telegram_otp_login_success, name='telegram_otp_success'),
     path('telegram-webhook/', telegram_webhook, name='telegram_webhook'),
 
     path('menu/', users_menu, name='users_menu'),

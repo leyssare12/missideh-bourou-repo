@@ -12,9 +12,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from .models import MissidehBourouMembersView, TwoFactorAuth, BTestCustomUser
-from .otp_authentication import verify_otp, generate_otp_secret, get_qr_code_uri, generate_qr_code_base64, qrcode_view
-from .utils import get_or_create_2fa
+from .models import MissidehBourouMembersView, TwoFactorAuth
 
 PER_PAGE = 10  # constante utilisée partout pour garder la cohérence d'affichage par page
 
@@ -22,169 +20,73 @@ PER_PAGE = 10  # constante utilisée partout pour garder la cohérence d'afficha
 Members = get_user_model()
 
 #Authetification de Membres Missideh Bourou
-
-def members_authentification_qrcode_save(request):
-    template_name = 'site/client/members_authentification_qrcode.html'
-    context = {}
-    user_id = request.session.get("2fa_setup_user_id")
-    if not user_id:
-        return redirect("Bapp:'identifiant_over_otp")
-
-    user = BTestCustomUser.objects.get(id=user_id)
-    print('On affiche le OTP secret', user.otp_secret)
-    uri = get_qr_code_uri(user, user.otp_secret)
-    qr_b64 = generate_qr_code_base64(uri)
-    with open(f"{user.prenoms}.png", "wb") as f:
-        f.write(base64.b64decode(qr_b64))
-    if request.method == "POST":
-        code = request.POST.get("code")
-        #Si l'utilisateur a dèjà activé l'authentification 2FA via Authentification QRCode'
-        #On redirige vers la page de confirmation de l'authentification 2FA'
-        if user.otp_enabled:
-            print("L'utilisateur a dèjà un QRcode actif ")
-            if verify_otp(user.otp_secret, code):
-                del request.session["user_otp_enabled"]
-                return redirect("Bapp:two_fa_auth_success")
-        #Si c'est la première fois on generer le QRCode et on l'affiche dans le template'
-        if verify_otp(user.otp_secret, code):
-            user.otp_enabled = True
-            user.save()
-            del request.session["2fa_setup_user_id"]
-            messages.success(request, f'Bonjour {user.prenoms} Authentification reussi.')
-            return redirect("Bapp:two_fa_auth_success")
-        else:
-            context["error"] = "Code invalide"
-            context["qr_b64"] = qr_b64
-            print('Voici les 100 premiers caractères du QRCODE:', qr_b64[:100])
-            return render(request, template_name=template_name, context=context)
-
-    return render(request, template_name=template_name, context=context)
-
-def members_authentification_qrcode(request):
-    template_name = 'site/client/members_authentification_qrcode.html'
-    context = {}
-
-    user_id = request.session.get("2fa_setup_user_id")
-    if not user_id:
-        return redirect("Bapp:identifiant_over_otp")
-
-    user = BTestCustomUser.objects.get(id=user_id)
-    print('On affiche le OTP secret', user.otp_secret)
-
-    # 🔹 Ici, on donne directement l’URL de l’image
-    qr_code_url = reverse("Bapp:qrcode", kwargs={"user_id": user.id})
-    context["qr_code_url"] = qr_code_url
-
-    if request.method == "POST":
-        code = request.POST.get("code")
-
-        # Utilisateur déjà activé
-        if user.otp_enabled:
-            print("L'utilisateur a déjà un QR code actif")
-            if verify_otp(user.otp_secret, code):
-                del request.session["user_otp_enabled"]
-                return redirect("Bapp:two_fa_auth_success")
-
-        # Première activation
-        if verify_otp(user.otp_secret, code):
-            user.otp_enabled = True
-            user.save()
-            del request.session["2fa_setup_user_id"]
-            messages.success(request, f'Bonjour {user.prenoms}, authentification réussie.')
-            return redirect("Bapp:two_fa_auth_success")
-        else:
-            context["error"] = "Code invalide"
-            return render(request, template_name=template_name, context=context)
-
-    return render(request, template_name=template_name, context=context)
-def verify_2fa(request):
-
-    template_name = 'site/client/verify_2fa.html'
-    context = {}
-    return render(request, template_name=template_name, context=context)
-
-def identifiant_otp(request):
-    template_name = 'site/client/identifiant_enter.html'
+def members_login(request):
+    template = "site/client/authentication_choices.html"
     context = {}
     if request.method == "POST":
         identifiant = request.POST.get("identifiant")
-        print(identifiant)
+        user = Members.objects.filter(identifiant=identifiant).first()
+        if user:
+            context['user_exists'] = True
+            message = mark_safe(f"Salam,  <strong> {user.prenoms}</strong>")
+            messages.success(request, message)
+            return redirect('Bapp:select_2fa_method')
+        else:
+            messages.error(request, "Identifiant incorrect")
+    context['message_info'] = 'Veuillez entrer votre identifiant'
+    return render(request, template_name=template, context=context)
+def member_login_view(request):
+    template = "site/client/Login/member_login.html"
+    if request.method == "POST":
+        identifiant = request.POST.get("identifiant")
         try:
-            user = BTestCustomUser.objects.get(identifiant=identifiant)
-        except BTestCustomUser.DoesNotExist:
-            context["error"] = "Utilisateur introuvable, veillez revoyez votre identifiant."
-            return render(request, template_name=template_name, context=context)
+            user = Members.objects.get(identifiant=identifiant)
+            # ✅ Stocker temporairement l’utilisateur en session
+            request.session["pending_user_id"] = user.id
+            message = mark_safe(f"Salam, <strong> {user.prenoms}</strong>")
+            messages.success(request, message)
+            return redirect("Bapp:load_2fa_method")
+        except Members.DoesNotExist:
+            messages.error(request, "Identifiant incorrect")
+    return render(request, template_name=template)
 
-        # Génération d’un secret si pas déjà défini
-        if not user.otp_secret:
-            user.otp_secret = generate_otp_secret()
-            user.save()
 
-        request.session["2fa_setup_user_id"] = user.id
-        request.session["user_otp_enabled"] = user.otp_enabled
-        # Stocker l'ID dans la session pour étape suivante
-        print(request.session["2fa_setup_user_id"])
-        return redirect("Bapp:two_fa_auth")
-
-    return render(request, template_name=template_name)
-
-def members_authentification(request):
-    step = 1  # étape par défaut
-    template_name = 'site/client/members_authentification.html'
+def load_2fa_method(request):
+    template = "site/client/Login/login_choices.html"
     context = {}
-    user_id = request.session.get("user_id")  # clé temporaire 2FA
-    channel = ''
-
-    # 🔹 Si utilisateur déjà connecté (via login), on le redirige direct
-    if request.user.is_authenticated:
-        message = mark_safe(f'Bonjour <strong>{request.user.prenoms}</strong> Bienvenue sur Missideh Bourou Dashboard')
-        messages.success(request, message)
-        return redirect("Bapp:users_menu")
+    if "pending_user_id" not in request.session:
+        return redirect("Bapp:member_login_view")  # sécurité
 
     if request.method == "POST":
-        identifiant = request.POST.get("identifiant")
+        method = request.POST.get("method")
+        if method in ["email", "telegram", "qrcode"]:
+            # ✅ Sauvegarder le choix
+            request.session["2fa_method"] = method
+            return redirect("Bapp:select_2fa_method", method=method)
+        messages.error(request, 'Vous devez choisir une méthode parmi ces trois en bas pour vous authentifier.')
+    return render(request, template_name=template, context=context)
+# views.py
+def select_2fa_method(request, method):
+    user_id = request.session.get("pending_user_id")
+    if not user_id:
+        return redirect('Bapp:member_login_view')
+    # 'method' contiendra la valeur passée dans l'URL ('authenticator', 'telegram' ou 'email')
+    if method == 'qrcode':
+        # Traiter la méthode authenticator
+        request.session["2fa_qrcode_user_id"] = user_id
+        return redirect('Bapp:identifiant_over_otp')
+    elif method == 'telegram':
+        # Traiter la méthode telegram
+        return redirect('Bapp:telegram_otp_login')
+    elif method == 'email':
+        # Traiter la méthode email
+        print(f"Methode choisi: {method}")
+        return redirect('Bapp:members_authentification_email')
+    else:
+        # Gérer une méthode inconnue
+        messages.error(request, "Méthode d'authentification invalide")
+        return redirect('Bapp:load_2fa_method')
 
-        # Étape 1 : saisie identifiant
-        if identifiant:
-            try:
-                user = Members.objects.get(identifiant=identifiant)
-                channel = "email" if user.email_verified else "whatsapp"
-
-                try:
-                    get_or_create_2fa(user, channel=channel)
-                    request.session["user_id"] = user.pk  # stockage temporaire
-                    step = 2
-                except Exception as e:
-                    messages.error(request, str(e))
-            except Members.DoesNotExist:
-                messages.error(request, "Identifiant invalide.")
-
-        # Étape 2 : saisie code
-        elif "code" in request.POST and user_id:
-            code = request.POST.get("code")
-            user = Members.objects.get(id=user_id)
-            try:
-                two_fa = TwoFactorAuth.objects.get(user=user, token_code=code)
-                if two_fa.token_expired:
-                    messages.error(request, "⚠️ Code expiré. Un nouveau code vous a été envoyé.")
-                    get_or_create_2fa(user, channel=channel)
-                    step = 2
-                else:
-                    # ✅ connexion définitive
-                    login(request, user)
-                    request.session.pop("user_id", None)  # on supprime l’ID temporaire
-
-                    message = mark_safe(
-                        f'Bonjour <strong>{request.user.prenoms}</strong> Bienvenue sur Missideh Bourou Dashboard ✅')
-                    messages.success(request, message)
-                    return redirect("Bapp:users_menu")
-            except TwoFactorAuth.DoesNotExist:
-                messages.error(request, "❌ Code invalide.")
-                step = 2
-
-    # Sinon (GET ou POST échoué)
-    context["step"] = step
-    return render(request, template_name=template_name, context=context)
 
 #Home page
 def home_page(request):

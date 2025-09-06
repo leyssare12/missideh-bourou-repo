@@ -52,7 +52,7 @@ DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 #        for host in os.getenv('ALLOWED_HOSTS', default_hosts).split(',')
 #        if host.strip()
 #    ]
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.109', 'bourou_test.local', '0d30d6ed9c89.ngrok-free.app']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.109', 'bourou_test.local', '5aae3298d30b.ngrok-free.app']
 
 print(ALLOWED_HOSTS)
 #CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS

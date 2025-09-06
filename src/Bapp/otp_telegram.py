@@ -1,27 +1,23 @@
 import json
-import os
+
 import secrets
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 
 import requests
 from django.apps import apps
 from django.contrib import messages
 from django.core.cache import cache
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import login, get_user_model
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from BTest import settings
-from .models import TwoFactorAuth, BTestCustomUser, TwoFactorSettingsTelegram, TelegramOTP2FA
-from .utils import get_or_create_2fa
+from .models import BTestCustomUser, TelegramOTP2FA
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BTest.settings')
 
-# views.py
+
 #Retourne le token et l'url de base'
 def _get_telegram_api_base() -> str:
     token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
@@ -183,6 +179,8 @@ def get_user_by_chat_id(chat_id):
         return settings_obj.user
     except TwoFactorSettingsTelegram.DoesNotExist:
         return None
+
+#Méthode appelé par la route /telegram_webhook
 @csrf_exempt
 def telegram_webhook(request):
     print(f"=== NOUVELLE REQUÊTE RECUE ===")
@@ -265,7 +263,7 @@ def telegram_webhook(request):
 
             if not user_id:
                 print("❌ Invalid or expired nonce")
-                _safe_send(chat_id, "Lien invalide ou expiré. Merci de relancer la liaison depuis votre compte.")
+                _safe_send(chat_id, "Lien invalide ou expiré. Merci de relancer la liaison depuis votre compte Missideh-Bourou.online")
                 return HttpResponse("ok")
 
             # Charger l'utilisateur
@@ -314,7 +312,7 @@ def telegram_webhook(request):
         user = get_user_by_chat_id(chat_id)
         if user:
             telegram_otp = TelegramOTP2FA.get_or_create_for_user(user)
-            if telegram_otp.verify_otp(text.strip()):
+            if telegram_otp.verify_otp_telegram(text.strip()):
                 _safe_send(chat_id, "✅ Code OTP valide!")
             else:
                 _safe_send(chat_id, "❌ Code OTP invalide ou expiré.")
@@ -344,130 +342,23 @@ def is_telegram_linked(user) -> bool:
     return bool(_get_telegram_chat_id_for_user(user))
 
 
-def telegram_otp_login(request):
-    """
-    Vue principale:
-    - GET: affiche le formulaire identifiant ou le bloc Telegram selon session.
-    - POST identifiant: vérifie l'utilisateur, génère nonce et affiche liens Telegram.
-    - POST action=check: vérifie si Telegram est lié; si oui, envoie un message test/OTP et redirige.
-    """
-    template_name = "site/client/Telegram/telegram_login_otp.html"
-    context = {}
-
-    user_id = request.session.get("user_id")
-    user_exist = bool(request.session.get("user_exist"))
-    context["user_exist"] = user_exist
-
-    if request.method == "POST":
-        identifiant = (request.POST.get("identifiant") or "").strip()
-        action = (request.POST.get("action") or "").strip()
-
-        if identifiant:
-            try:
-                # Adaptez le champ de lookup selon votre modèle (ex: .get(user=identifiant) ou .get(identifiant=identifiant))
-                user = BTestCustomUser.objects.get(identifiant=identifiant)
-            except BTestCustomUser.DoesNotExist:
-                messages.error(request, "Identifiant invalide.")
-                request.session.pop("user_id", None)
-                request.session["user_exist"] = False
-                context["user_exist"] = False
-                return render(request, template_name, context)
-
-            request.session["user_id"] = user.pk
-            request.session["user_exist"] = True
-            context["user_exist"] = True
-
-            try:
-                start_token = generate_enrollment_nonce(user)
-                print(f"start_token premier niveau: {start_token}")
-            except Exception as e:
-                messages.error(request, f"Impossible de générer le lien Telegram: {e}")
-                return render(request, template_name, context)
-
-            context["bot_username"] = getattr(settings, "TELEGRAM_BOT_USERNAME", "")
-            context["start_token"] = start_token
-            return render(request, template_name, context)
-
-        if action == "check":
-            if not user_id:
-                messages.error(request, "Session expirée, veuillez ressaisir votre identifiant.")
-                request.session["user_exist"] = False
-                context["user_exist"] = False
-                return render(request, template_name, context)
-
-            user = get_object_or_404(BTestCustomUser, pk=user_id)
-
-            if not is_telegram_linked(user):
-                messages.warning(request, "Le bot n'est pas encore lié. Démarrez le bot puis réessayez.")
-                try:
-                    start_token = generate_enrollment_nonce(user)
-                    print(f"start_token niveau 2: {start_token}")
-                except Exception:
-                    start_token = None
-                context["user_exist"] = True
-                context["bot_username"] = getattr(settings, "TELEGRAM_BOT_USERNAME", "")
-                context["start_token"] = start_token
-                return render(request, template_name, context)
-
-            # À ce stade: Telegram lié → test d'envoi (ou OTP réel)
-            try:
-                chat_id = _get_telegram_chat_id_for_user(user)
-                if not chat_id:
-                    raise RuntimeError("Aucun chat_id Telegram trouvé malgré la liaison.")
-                send_telegram_message(chat_id, "✅ Liaison confirmée. Nous pouvons vous envoyer des messages ici.")
-                messages.success(request, "Message de confirmation envoyé via Telegram.")
-            except Exception as e:
-                messages.error(request, f"Échec d'envoi Telegram: {e}")
-                return render(request, template_name, context)
-
-            return redirect("Bapp:telegram_otp_confirm")
-
-    # GET: si déjà en étape 2, réafficher les liens; si déjà lié, vous pouvez rediriger
-    if user_exist and user_id:
-        user = get_object_or_404(BTestCustomUser, pk=user_id)
-        if is_telegram_linked(user):
-            # Option: envoi direct d’un message/OTP ici, puis redirection
-            try:
-                chat_id = _get_telegram_chat_id_for_user(user)
-                if chat_id:
-                    send_telegram_message(chat_id, "✅ Vous êtes déjà lié. Procédons.")
-            except Exception:
-                pass
-            return redirect("Bapp:telegram_otp_confirm")
-        try:
-            start_token = generate_enrollment_nonce(user)
-            print(f"start_token niveau 3: {start_token}")
-        except Exception:
-            start_token = None
-        context["bot_username"] = getattr(settings, "TELEGRAM_BOT_USERNAME", "")
-        context["start_token"] = start_token
-
-    return render(request, template_name, context)
-# ... existing code ...
-
-
-
-def telegram_otp_login_success(request):
-    template_name = "site/client/Telegram/valide_otp.html"
-    context = {}
-    context["success"] = "Bienvenue sur Missideh Bourou Dashboard"
-    return render(request, template_name=template_name, context=context)
-
-
+#Methode view principale de la route /telegram_otp_login
 def login_with_2fa_by_telegram(request):
     template_name = "site/client/Telegram/login_view.html"
     context = {}
+
+    user_id = request.session.get("pending_user_id")
+
+    # Étape 1: Vérifier les identifiants
+    if not user_id:
+        messages.error(request, "Identifiant invalide")
+        return redirect("Bapp:member_login_view")  # sécurité : retour login
     if request.method == 'POST':
-        identifiant = request.POST.get('identifiant')
 
         otp_code = request.POST.get('otp_code')
         action = request.POST.get('action')
-
-        # Étape 1: Vérifier les identifiants
-        if not identifiant:
-            messages.error(request, "Identifiant invalide")
-            return render(request, template_name=template_name, context=context)
-        user = BTestCustomUser.objects.filter(identifiant=identifiant).first()
+        user = BTestCustomUser.objects.filter(pk=user_id).first()
+        identifiant = user.identifiant
         if user is not None:
             # Vérifier si l'utilisateur a le 2FA activé
             if is_telegram_linked(user):
@@ -486,10 +377,10 @@ def login_with_2fa_by_telegram(request):
 
                 # Vérifier le code OTP
                 telegram_otp = TelegramOTP2FA.get_or_create_for_user(user)
-                if telegram_otp.verify_otp(otp_code):
+                if telegram_otp.verify_otp_telegram(otp_code):
                     login(request, user)
                     messages.success(request, "Connexion réussie avec 2FA!")
-                    return redirect('Bapp:telegram_otp_success')
+                    return redirect('Bapp:users_menu')
                 else:
                     messages.error(request, "Code OTP invalide")
                     context['identifiant'] = identifiant
@@ -519,7 +410,8 @@ def login_with_2fa_by_telegram(request):
                 return render(request, template_name, context)
         else:
             messages.error(request, "Identifiants invalides")
-
+    #Si on vient d'arrivé sur la page
+    context['show_options'] = True
     return render(request, template_name=template_name, context=context)
 
 

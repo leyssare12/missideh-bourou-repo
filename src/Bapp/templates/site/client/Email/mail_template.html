@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .code { color: #1e40af; font-size: 18px; font-weight: bold; }
+        .footer { color: #666; font-size: 12px; margin-top: 20px; }
+        span{text-size:18px;}
+    </style>
+</head>
+<body>
+    <p>Bonjour <span>{{ prenom }}</span>,</p>
+
+    <p>Votre code de vérification 2FA est: <span class="code">{{ code }}</span></p>
+
+    <p>Il expire dans 5 minutes.</p>
+
+    <div class="footer">
+        <p>Ne partagez jamais ce code avec personne.</p>
+    </div>
+</body>
+</html>

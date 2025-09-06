@@ -1,0 +1,113 @@
+{% extends "site/client/base_client.html" %}
+
+{% load static %}
+{% block title %}<title>Connexion - Espace Membre</title>{% endblock %}
+
+{% block extra_css %}<link href="{% static 'css/client/Login/members_choices.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> Vérification de Sécurité</h1>
+            <p>Sélectionnez votre méthode d'authentification à deux facteurs préférée </p>
+        </div>
+
+        <div class="content">
+            <!-- Conteneur des messages d'alerte -->
+            <div class="alert-container">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <div>La double authentification ajoute une couche supplémentaire de sécurité à votre compte.</div>
+                </div>
+
+                    {% if messages %}
+                    <div class="mt-3">
+                        {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>{{ message }}
+                        </div>
+                        {% elif message.tags == 'error' %}
+                        <div class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>{{ message }}
+                        </div>
+                        {% elif message.tags == 'warning' %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>{{ message }}
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>{{ message }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+            </div>
+
+            <!-- Formulaire de sélection -->
+            <div class="form-container">
+                <h2>Choisissez votre méthode de 2FA</h2>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="method-buttons">
+                        <label class="method-button">
+                            <input type="radio" name="method" value="email" hidden>
+                            <i class="fas fa-envelope"></i>
+                            <div class="method-content">
+                                <h3>E-mail</h3>
+                                <p>Recevez un code de vérification par e-mail</p>
+                            </div>
+                        </label>
+
+                        <label class="method-button">
+                            <input type="radio" name="method" value="telegram" hidden>
+                            <i class="fab fa-telegram"></i>
+                            <div class="method-content">
+                                <h3>Telegram</h3>
+                                <p>Recevez vos codes via le messager Telegram</p>
+                            </div>
+                        </label>
+
+                        <label class="method-button">
+                            <input type="radio" name="method" value="qrcode" hidden>
+                            <i class="fas fa-qrcode"></i>
+                            <div class="method-content">
+                                <h3>QR Code</h3>
+                                <p>Utilisez une application d'authentification avec QR Code</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-lock"></i> Activer la protection
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script pour gérer la sélection des méthodes
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.method-button');
+
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Désélectionner tous les boutons
+                    buttons.forEach(btn => btn.classList.remove('selected'));
+
+                    // Sélectionner le bouton cliqué
+                    this.classList.add('selected');
+
+                    // Cocher le radio button correspondant
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                });
+            });
+        });
+    </script>
+
+{% endblock %}
