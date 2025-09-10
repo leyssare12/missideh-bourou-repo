@@ -2,56 +2,110 @@
 
 
 {% load static %}
-{% block title %}<title>Home users</title>{% endblock %}
-
-{% block extra_css%}<link href="{% static 'css/client/users_menu.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block title %}<title>Dashboard users</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/client/users_menu.css'%}" rel="stylesheet" type="text/css">{% endblock %}
 
 {% block content %}
-<!-- CONTENU PRINCIPAL -->
-   {% if messages %}
-        <div class="c">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} ">
-                <p>{{ message }}</p>
-            </div>
-            {% endfor %}
+
+
+<div class="dash-shell">
+  <div class="dash-container">
+
+    <header class="dash-header" aria-label="Entête du tableau de bord">
+      <h1 class="dash-title">Espace membres</h1>
+       <div class="dash-messages" role="status" aria-live="polite">
+          <div class="dash-alert dash-alert-success">
+              {% if request.session.user_prenom %}
+              Bonjour <strong style="color:#1e40af;">{{ request.session.user_prenom }}</strong>, Bienvenu sur l'<strong style="text-decoration:underline;">ESPACE MEMBRES</strong> Missideh-Bourou
+              {% endif %}
+          </div>
+      </div>
+        <h4 style="text-align:left;">Ici, vous pouvez:</h4>
+          <ul class="dash-sub">
+            <li>Consulter la liste des membres, accéder à leurs profils.</li>
+            <li>Rechercher un membre par identifiant, prénom ou quartier.</li>
+            <li>Ouvrir les documents PDF publiés.</li>
+            <li>Suivre les cotisations annuelles et occasionnelles.</li>
+            <li>Visualiser les dons et les dépenses.</li>
+            <li>Voir le bilan global des entrées et sorties.</li>
+            <li>Astuce: utilisez les cartes du tableau de bord pour accéder rapidement à chaque module.</li>
+        </ul>
+    </header>
+
+    <section class="modules-grid" aria-label="Modules du tableau de bord">
+
+      <a class="module-card" href="{% url 'Bapp:missideh_bourou_members'%}" aria-label="Voir les membres">
+        <i class="fas fa-users" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Membres</h2>
+          <p>Liste, profil et recherche par quartier.</p>
         </div>
-        {% endif %}
-<div class="grid-container">
+      </a>
 
-    <a class="card" href="{% url 'Bapp:missideh_bourou_members'%}">
-        <i class="fas fa-users"></i>
-        <h2>Membres</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
-    </a>
+      <a class="module-card" href="{% url 'Bapp:has_participed_annuel' %}" aria-label="Tableau de synthèse">
+        <i class="fas fa-table" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>STATISTQUES PAR AN</h2>
+          <p>Indicateurs et vues analytiques pour les années passés.</p>
+        </div>
+      </a>
+      <a class="module-card" aria-label="Tableau de synthèse">
+        <i class="fas fa-table" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Tableau</h2>
+          <p>Indicateurs et vues analytiques (à venir).</p>
+        </div>
+      </a>
 
-    <a class="card">
-        <i class="fas fa-table"></i>
-        <h2>Tableau</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
-    </a>
+      <a class="module-card" href="{% url 'Bapp:documents_pdf' %}" aria-label="Voir les documents PDF">
+        <i class="fas fa-file-alt" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Documents</h2>
+          <p>Consultez et téléchargez les PDF publiés.</p>
+        </div>
+      </a>
 
-    <a class="card">
-        <i class="fas fa-file-alt"></i>
-        <h2>Documents</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
-    </a>
+      <a class="module-card" href="{% url 'Bapp:cotisation_annuelles_view'%}" aria-label="Rapport cotisations annuelles">
+        <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Cotisations annuelles</h2>
+          <p>Montants, années et historiques par membre.Montants, années et historiques par membreMontants, années et historiques par membre</p>
+        </div>
+      </a>
 
-    <a class="card">
-        <i class="fas fa-clipboard-list"></i>
-        <h2>Rapports</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
-    </a>
-    <a class="card">
-        <i class="fas fa-clipboard-list"></i>
-        <h2>Rapports</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
-    </a>
-    <a class="card">
-        <i class="fas fa-clipboard-list"></i>
-        <h2>Rapports</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in eros elementum tristique...</p>
-    </a>
+      <a class="module-card" href="{% url 'Bapp:cotisation_occasionnelle_view'%}" aria-label="Rapport cotisations occasionnelles">
+        <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Cotisations occasionnelles</h2>
+          <p>Contributions ponctuelles et motifs.</p>
+        </div>
+      </a>
+
+      <a class="module-card" href="{% url 'Bapp:dons_view'%}" aria-label="Rapport dons">
+        <i class="fas fa-donate" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Dons</h2>
+          <p>Donateurs, montants et historique.</p>
+        </div>
+      </a>
+
+      <a class="module-card" href="{% url 'Bapp:depenses_view'%}" aria-label="Rapport dépenses">
+        <i class="fas fa-receipt" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Dépenses</h2>
+          <p>Historique des sorties et détails.</p>
+        </div>
+      </a>
+
+      <a class="module-card" href="{% url 'Bapp:bilan_totaux_view'%}" aria-label="Bilan global">
+        <i class="fas fa-balance-scale" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Bilan global</h2>
+          <p>Vue consolidée des entrées et sorties.</p>
+        </div>
+      </a>
+
+    </section>
+  </div>
 </div>
-
 {% endblock %}

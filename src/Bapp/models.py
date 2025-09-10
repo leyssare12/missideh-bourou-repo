@@ -539,6 +539,7 @@ class MissidehBourouMembersView(pgview.View):
         db_table = 'missideh_bourou_members_view'
 
 class CotisationOccasionnelleView(pgview.View):
+    id = models.IntegerField(primary_key=True)
     prenom = models.CharField(max_length=100)
     quartier = models.CharField(max_length=100)
     montant = models.DecimalField(max_digits=10, decimal_places=2)
@@ -546,95 +547,195 @@ class CotisationOccasionnelleView(pgview.View):
     date_cotisation = models.DateTimeField()
 
     sql = """
-    select b.prenoms,
-    b.quartier,  
-    p.montant_participation, 
-    p.motif_participation, 
-    to_char(p.updated_at, 'DD/MM/YYYY')
-    from "Bapp_btestcustomuser" b 
-    inner join "Bapp_participationoccasionnelle" p on b.id = p.participant_id_id
-    order by p.updated_at desc;
+    SELECT
+        b.id as id,
+        b.prenoms as prenom,
+        b.quartier as quartier,  
+        p.montant_participation as montant,  
+        p.motif_participation as motif_cotisation,   
+        to_char(p.updated_at, 'DD/MM/YYYY') as date_cotisation
+    FROM "Bapp_btestcustomuser" as b 
+    INNER JOIN "Bapp_participationoccasionnelle" as p on b.id = p.participant_id_id
+    ORDER BY p.updated_at DESC;
     """
     class Meta:
         managed = False
         db_table = 'cotisation_occasionnelle_view'
 
 class CotisationAnnuelleView(pgview.View):
+    id = models.IntegerField(primary_key=True)
     prenom = models.CharField(max_length=100)
     quartier = models.CharField(max_length=100)
     montant = models.DecimalField(max_digits=10, decimal_places=2)
     date_cotisation = models.DateTimeField()
 
     sql = """
-    select b.prenoms, 
-    b.quartier,  
-    p.montant_participation,  
-    to_char(p.updated_at, 'DD/MM/YYYY')
-    from "Bapp_btestcustomuser" b 
-    inner join "Bapp_participationannual" p on b.id = p.participant_id_id
-    order by p.updated_at desc;
+    SELECT 
+        b.id as id,
+        b.prenoms as prenom, 
+        b.quartier as quartier,  
+        p.montant_participation as montant,  
+        to_char(p.updated_at, 'DD/MM/YYYY') as date_cotisation
+    FROM "Bapp_btestcustomuser" as b 
+    INNER JOIN "Bapp_participationannual" as p on b.id = p.participant_id_id
+    ORDER BY p.updated_at desc;
     """
     class Meta:
         managed = False
         db_table = 'cotisation_annuelle_view'
 
 class DonsView(pgview.View):
+    id = models.IntegerField(primary_key=True)
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
-    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_don = models.DecimalField(max_digits=10, decimal_places=2)
     motif_don = models.TextField()
     date_don = models.DateTimeField()
 
     sql = """
-    select prenom, 
-    nom, 
-    montant_don, 
-    motif_don, 
-    to_char(updated_at, 'DD/MM/YYY') as date_don
-    from "Bapp_dons" 
-    order by updated_at desc;
+    SELECT 
+        id,
+        prenom, 
+        nom, 
+        montant_don, 
+        motif_don, 
+        to_char(updated_at, 'DD/MM/YYY') as date_don
+    FROM "Bapp_dons" 
+    ORDER BY updated_at desc;
     """
     class Meta:
         managed = False
         db_table = 'dons_view'
 class DepensesView(pgview.View):
-    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    id = models.IntegerField(primary_key=True)
+    montant_depense = models.DecimalField(max_digits=10, decimal_places=2)
     motif_depense = models.TextField()
     date_depense = models.DateTimeField()
 
     sql = """
-        select montant_depense, 
-        motif_depense, 
-        to_char(date_depense, 'DD/MM/YYYY') as date_depense
-        from "Bapp_adddepenses"
-        order by date_depense desc;
+        SELECT
+            id, 
+            montant_depense, 
+            motif_depense, 
+            to_char(date_depense, 'DD/MM/YYYY') as date_depense
+        FROM "Bapp_adddepenses"
+        ORDER BY date_depense desc;
     """
     class Meta:
         managed = False
         db_table = 'depenses_view'
 class TotauxView(pgview.View):
+    id = models.IntegerField(primary_key=True)
     montant_cotisationannuel = models.DecimalField(max_digits=10, decimal_places=2)
     montant_cotisationoccasionnelle = models.DecimalField(max_digits=10, decimal_places=2)
     montant_dons = models.DecimalField(max_digits=10, decimal_places=2)
     montant_depenses = models.DecimalField(max_digits=10, decimal_places=2)
+    type_annuel = models.CharField(max_length=64, null=True, blank=True)
+    type_occasionnelle = models.CharField(max_length=64, null=True, blank=True)
+    type_dons = models.CharField(max_length=64, null=True, blank=True)
+    type_depenses = models.CharField(max_length=64, null=True, blank=True)
+    aujourdhui = models.DateTimeField()
+
 
     sql = """
-    select 'TOTAL COTISATION ANNUEL' as type_total, coalesce(sum(montant_participation), 0) as total,
-    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
-    from "Bapp_participationannual"
-    union all
-    select 'TOTAL COTISATION OCCASIONNELLE' as type_total, coalesce(sum(montant_participation), 0) as total,
-    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
-    from "Bapp_participationoccasionnelle"
-    union all
-    select 'TOTAL DONS ' as type_total, coalesce(sum(montant_don), 0) as total,
-    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
-    from "Bapp_dons"
-    union all
-    select 'TOTAL DEPENSE' as type_total, coalesce(sum(montant_depense), 0) as total,
-    to_char(current_date, 'DD/MM/YYYY') as aujourdhui
-    from "Bapp_adddepenses";
+     SELECT
+        row_number() OVER ()::int AS id,
+        t.montant_cotisationannuel,
+        t.montant_cotisationoccasionnelle,
+        t.montant_dons,
+        t.montant_depenses,
+        t.type_annuel,
+        t.type_occasionnelle,
+        t.type_dons,
+        t.type_depenses,
+        t.aujourdhui
+    FROM (
+        SELECT
+            'TOTAL COTISATION ANNUEL'::text AS type_annuel,
+            NULL::text AS type_occasionnelle,
+            NULL::text AS type_dons,
+            NULL::text AS type_depenses,
+            COALESCE(SUM(montant_participation), 0)::numeric(10,2) AS montant_cotisationannuel,
+            NULL::numeric(10,2) AS montant_cotisationoccasionnelle,
+            NULL::numeric(10,2) AS montant_dons,
+            NULL::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_participationannual"
+        UNION ALL
+        SELECT
+            NULL::text AS type_annuel,
+            'TOTAL COTISATION OCCASIONNELLE'::text AS type_occasionnelle,
+            NULL::text AS type_dons,
+            NULL::text AS type_depenses,
+            NULL::numeric(10,2) AS montant_cotisationannuel,
+            COALESCE(SUM(montant_participation), 0)::numeric(10,2) AS montant_cotisationoccasionnelle,
+            NULL::numeric(10,2) AS montant_dons,
+            NULL::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_participationoccasionnelle"
+        UNION ALL
+        SELECT
+            NULL::text AS type_annuel,
+            NULL::text AS type_occasionnelle,
+            'TOTAL DONS'::text AS type_dons,
+            NULL::text AS type_depenses,
+            NULL::numeric(10,2) AS montant_cotisationannuel,
+            NULL::numeric(10,2) AS montant_cotisationoccasionnelle,
+            COALESCE(SUM(montant_don), 0)::numeric(10,2) AS montant_dons,
+            NULL::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_dons"
+        UNION ALL
+        SELECT
+            NULL::text AS type_annuel,
+            NULL::text AS type_occasionnelle,
+            NULL::text AS type_dons,
+            'TOTAL DEPENSE'::text AS type_depenses,
+            NULL::numeric(10,2) AS montant_cotisationannuel,
+            NULL::numeric(10,2) AS montant_cotisationoccasionnelle,
+            NULL::numeric(10,2) AS montant_dons,
+            COALESCE(SUM(montant_depense), 0)::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_adddepenses"
+    ) AS t
+
     """
     class Meta:
        managed = False
        db_table = 'totaux_view'
+
+class StatusMemberAnnualParticipation(pgview.View):
+    id = models.IntegerField(primary_key=True)  # id du membre
+    prenoms = models.TextField()
+    quartier = models.TextField()
+    statut_par_annee = models.JSONField()  # JSONB côté Postgres
+
+    # IMPORTANT: django_pgviews attend 'sql', pas 'CREATE_VIEW_SQL'
+    sql = """
+    WITH ap AS (
+      SELECT participant_id_id, year
+      FROM "Bapp_participationannual"
+      WHERE year BETWEEN EXTRACT(YEAR FROM CURRENT_DATE)::int - 4
+                      AND EXTRACT(YEAR FROM CURRENT_DATE)::int
+      GROUP BY participant_id_id, year
+    )
+    SELECT 
+      m.id,
+      m.prenoms,
+      m.quartier,
+      COALESCE(
+        jsonb_object_agg(ap.year::text, 'vert' ORDER BY ap.year)
+          FILTER (WHERE ap.year IS NOT NULL),
+        '{}'::jsonb
+      ) AS statut_par_annee
+    FROM "Bapp_btestcustomuser" m
+    LEFT JOIN ap
+      ON ap.participant_id_id = m.id
+    GROUP BY m.id, m.prenoms, m.quartier
+    """
+
+    class Meta:
+        managed = False
+        db_table = 'status_member_annual_participation'
+        verbose_name = "Participation annuelle (vue)"
+        verbose_name_plural = "Participations annuelles (vue)"

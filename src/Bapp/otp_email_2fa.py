@@ -164,6 +164,7 @@ def members_authentification_email(request):
                     request,
                     mark_safe(f"Bonjour <strong>{user.prenoms}</strong>, bienvenue sur le Dashboard ✅")
                 )
+                request.session['user_prenom'] = user.prenoms
                 return redirect("Bapp:users_menu")
         except TwoFactorAuth.DoesNotExist:
             message = mark_safe(" ❌ Code invalide, veuillez réessayer.")

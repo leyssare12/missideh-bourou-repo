@@ -83,6 +83,7 @@ def members_authentification_qrcode(request):
             if verify_otp(user.otp_secret, code):
                 # Rendre la suppression tolérante à l'absence de clé
                 request.session.pop("user_otp_enabled", None)
+                request.session['user_prenom'] = user.prenoms
                 return redirect("Bapp:users_menu")
             else:
                 context["error"] = "Code invalide"

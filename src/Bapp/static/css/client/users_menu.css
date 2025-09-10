@@ -1,92 +1,299 @@
+    /* Variables optionnelles */
+:root {
+  --icon-size-sm: 20px;
+  --icon-size-md: 28px;
+  --icon-size-lg: 36px;
+  --icon-bg: #f1f5f9;       /* fond neutre (reste blanc autour) */
+  --icon-ring: #e5e7eb;     /* anneau discret */
+  --icon-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+  --icon-inset: inset 0 0 0 1px var(--icon-ring);
+}
 
-/* ===== GRID CONTAINER ===== */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 2rem;
+/* Icônes dans vos cards/dashboard (structure <a class="card"> <i> ... ) */
+.card > i,
+.module-card > i {
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border-radius: 12px;                 /* forme “pill carré” moderne */
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #ffffff 0%, var(--icon-bg) 100%);
+  box-shadow: var(--icon-inset), var(--icon-shadow);
+  /* NE PAS définir color ici: on garde la couleur de l'icône telle quelle (FA) */
+  font-size: 1.15rem;                  /* taille du pictogramme à l’intérieur */
+  transform: translateZ(0);            /* rendu net */
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+/* Effet subtil au survol de la carte */
+.card:hover > i,
+.module-card:hover > i {
+  transform: translateY(-1px);
+  box-shadow: var(--icon-inset), 0 10px 22px rgba(15, 23, 42, 0.10);
+  background: linear-gradient(180deg, #ffffff 0%, #eef2f7 100%);
+}
+
+/* Variante compacte (petites icônes dans les lignes de cartes de cotisations) */
+.coti-row .label i,
+.coti-amount i,
+.coti-page-btn i {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  border-radius: 8px;
+  display: inline-grid;
+  place-items: center;
+  margin-right: 6px;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+  font-size: 0.8rem; /* pictogramme interne */
+  vertical-align: -2px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.coti-page-btn:hover i {
+  transform: translateY(-1px);
+}
+
+/* Icône titre (ex: .coti-title i) un peu plus présente */
+.coti-title i {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  background: linear-gradient(180deg, #ffffff 0%, var(--icon-bg) 100%);
+  box-shadow: var(--icon-inset), var(--icon-shadow);
+  font-size: 1rem;
+  margin-right: 8px;
+  vertical-align: -3px;
+}
+
+/* Icône de champ de recherche (loupe) */
+.coti-search .fa-search {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
+  font-size: 0.8rem;
+}
+
+/* Ajustements responsives: tailles adaptées sur écrans moyens et petits */
+@media (max-width: 990px) {
+  .card > i,
+  .module-card > i {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+}
+@media (max-width: 600px) {
+  .card > i,
+  .module-card > i {
+    width: 28px;
+    height: 28px;
+    font-size: 0.95rem;
+    border-radius: 9px;
+  }
+  .coti-title i {
+    width: 22px; height: 22px; font-size: 0.9rem;
+  }
+}
+
+/* Respecte le “prefers-reduced-motion” */
+@media (prefers-reduced-motion: reduce) {
+  .card > i,
+  .module-card > i,
+  .coti-row .label i,
+  .coti-amount i,
+  .coti-page-btn i { transition: none; }
+}
+
+  /* Base propre et sans débordements */
+  .dash-shell, .dash-shell * { box-sizing: border-box; }
+  .dash-shell { background: #fff; color: #0f172a; }
+  .dash-shell a { text-decoration: none; color: inherit; }
+
+  /* Conteneur principal */
+  .dash-container {
     max-width: 1200px;
-    margin: 20px auto;
-    flex: 1;
-}
+    margin: 0 auto;
+    padding: clamp(12px, 2.5vw, 24px);
+    width: 100%;
+  }
 
-.card {
-    text-decoration: none;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-    padding: 2.5rem;
-    text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.alert-success{
-    text-align:center;
-}
-.card:hover {
+  /* Bandeau + Messages */
+  .dash-header { display: grid; gap: 6px; margin-bottom: 10px; }
+  .dash-title { margin: 0; font-weight: 800; font-size: clamp(20px, 2.2vw, 26px); }
+  .dash-sub { margin: 0; color: #64748b; font-size: clamp(14px, 1.6vw, 16px); }
+
+  .dash-messages { margin: 12px 0; display: grid; gap: 10px; }
+  .dash-alert { border: 1px solid #e5e7eb; background: #fff; border-radius: 12px; padding: 10px 12px; }
+  .dash-alert-success { border-left: 4px solid #6398ff; }
+  .dash-alert-warning { border-left: 4px solid #f59e0b; }
+  .dash-alert-danger, .dash-alert-error { border-left: 4px solid #ef4444; }
+
+  /* Grille des modules — mobile-first */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: 1fr;          /* mobile */
+    gap: clamp(10px, 2vw, 16px);
+    margin-top: 8px;
+    width: 100%;
+    overflow-x: clip; /* coupe tout overflow horizontal */
+  }
+
+  /* 600 → 990 px: 2 colonnes sans débordement */
+  @media (min-width: 600px) and (max-width: 990px) {
+    .modules-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .modules-card {padding: clamp(14px, 2vw, 18px);}
+  }
+
+  /* 991 → 1199 px: 3 colonnes */
+  @media (min-width: 991px) and (max-width: 1199px) {
+    .modules-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .modules-card {padding: clamp(18px, 2vw, 18px);}
+  }
+
+  /* ≥ 1200 px: 4 colonnes */
+  @media (min-width: 1200px) {
+    .modules-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  /* Carte module — nouveau layout à gauche l’icône, à droite le contenu */
+  .module-card {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;       /* fond blanc conservé */
+    border-radius: 14px;
+    padding: clamp(50px, 2vw, 18px);
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 12px;
+    align-items: center;
+    min-height: 110px;
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  }
+  .module-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0,0,0,.08);
+    border-color: #dbeafe;
     transform: translateY(-5px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-.card i {
-    font-size: 3rem;
-    color: #1976d2;
-    margin-bottom: 1rem;
+  .module-card:focus, .module-card:focus-visible {
+    outline: none;
+    border-color: #bcd3f2;
+    box-shadow: 0 0 0 4px rgba(25,118,210,.12), 0 6px 20px rgba(0,0,0,.08);
+  }
+
+  /* Icônes — on ne change pas leur couleur (hérite de vos classes existantes).
+     On ajoute juste une pastille neutre pour le contraste. */
+  .module-card i {
+    width: 48px; height: 48px;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    background: #f1f5f9;       /* pastille neutre gris clair, fond blanc conservé */
+    font-size: 1.25rem;
+    color:blue;
+    /* NE PAS définir color ici pour garder vos couleurs d’icônes existantes */
+  }
+
+  /* Texte de carte */
+  .card-text { display: grid; gap: 4px; min-width: 0; }
+  .card-text h2 {
+    margin: 0;
+    font-size: clamp(15px, 1.8vw, 17px);
+    font-weight: 800;
+    color: #0f172a;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-text p {
+    margin: 0;
+    font-size: clamp(13px, 1.6vw, 14px);
+    color: #475569;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* -webkit-line-clamp: 2; limite la description pour éviter la casse */
+    overflow: hidden;
+    overflow-wrap: anywhere; /* évite que les mots longs débordent */
+  }
+
+  /* Ajustements fins sur très petits écrans */
+  @media (max-width: 599px) {
+    .module-card { grid-template-columns: 42px 1fr; min-height: 100px; padding: clamp(12px, 2vw, 18px);}
+    .module-card i { width: 42px; height: 42px; font-size: 1.1rem; }
+  }
+
+  /* Préférences d’animation */
+  @media (prefers-reduced-motion: reduce) {
+    .module-card { transition: none; }
+    .module-card:hover { transform: none; }
+  }
+
+  /*Integration de liste à puces*/
+  /* Liste d'aide dans le header du dashboard */
+.dash-header ul.dash-sub {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none; /* on gère l’indicateur avec ::before */
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr; /* une colonne par défaut */
+  color: var(--dash-text-muted, #4b5563);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
-.card h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0.8rem;
-    color: #1976d2;
+.dash-header ul.dash-sub li {
+  position: relative;
+  padding-left: 1.25rem; /* espace pour le puce custom */
+  text-align:left;
 }
 
-.card p {
-    font-size: 1rem;
-    color: #444;
+/* Puce personnalisée cohérente avec la charte */
+.dash-header ul.dash-sub li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--dash-accent, #2563eb);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--dash-accent, #2563eb) 20%, transparent);
+}
+
+/* Meilleure lisibilité sur écrans moyens et plus:
+   mise en colonnes auto-fit sans casser l’équilibre */
+@media (min-width: 768px) {
+  .dash-header ul.dash-sub {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 10px 18px;
+  }
+}
+
+/* Mode sombre (si l’appli le supporte via préférence utilisateur) */
+@media (prefers-color-scheme: dark) {
+  .dash-header ul.dash-sub {
+    color: #9ca3af;
+  }
+  .dash-header ul.dash-sub li::before {
+    background: var(--dash-accent-dark, #3b82f6);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--dash-accent-dark, #3b82f6) 20%, transparent);
+  }
+}
+
+/* Accessibilité: espace entre lignes légèrement supérieur quand l’utilisateur augmente la taille du texte */
+@media (min-resolution: 1dppx) {
+  .dash-header ul.dash-sub {
     line-height: 1.6;
-}
-
-/* ===== RESPONSIVE ===== */
-
-/* Tablettes et mobiles */
-@media (max-width: 992px) {
-    header {
-        flex-wrap: nowrap;
-    }
-
-    .header-right {
-        display: none; /* Cache menu desktop */
-    }
-
-    .hamburger {
-        display: flex; /* Affiche icône hamburger */
-    }
-
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        padding: 1rem;
-    }
-}
-
-
-/* Mobiles */
-@media (max-width: 600px) {
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-        text-align: left;
-    }
-    .header-right {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-    }
-    .grid-container {
-        grid-template-columns: 1fr;
-        padding: 1rem;
-    }
-    .card {
-        padding: 1.5rem;
-    }
+  }
 }

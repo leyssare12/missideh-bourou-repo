@@ -1,0 +1,198 @@
+{% extends "site/client/base_client.html" %}
+{% load static %}
+
+{% block title %}<title>Bilan des totaux</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/client/caisse/bilan_totaux_view.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+<section class="coti-container" aria-labelledby="totaux-title">
+  <div class="coti-header">
+    <h1 id="totaux-title" class="coti-title">
+      <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+      Bilan des totaux
+    </h1>
+    <div class="coti-tools">
+      <div class="coti-search">
+        <input type="search" id="cotiFilter" placeholder="Rechercher par type (ex: TOTAL DONS)…"
+               aria-label="Filtrer le bilan des totaux">
+        <i class="fa-solid fa-search" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  {% if page_obj and page_obj.object_list %}
+    <!-- Cartes (mobiles / petits écrans) -->
+    <div class="coti-grid" id="cotiGrid">
+      {% for item in page_obj %}
+        <article class="coti-card" data-type="{{ item.type_total|lower }}">
+          <div class="coti-row">
+            <span class="label"><i class="fa-solid fa-tag" aria-hidden="true"></i> Type</span>
+              {% if item.type_annuel%}
+                <strong>{{ item.type_annuel }}</strong>
+              {% endif %}
+              {% if item.type_occasionnelle %}
+                <strong>{{ item.type_occasionnelle }}</strong>
+              {% endif %}
+              {% if item.type_dons %}
+                <strong>{{ item.type_dons }}</strong>
+              {% endif %}
+              {% if item.type_depenses %}
+                <strong>{{ item.type_depenses }}</strong>
+              {% endif %}
+          </div>
+
+          {% if item.montant_cotisationannuel %}
+          <div class="coti-row">
+            <span class="label">Annuel</span>
+            <span class="coti-badge badge-annuel"><i class="fa-solid fa-coins"></i> {{ item.montant_cotisationannuel }}</span>
+          </div>
+          {% endif %}
+
+          {% if item.montant_cotisationoccasionnelle %}
+          <div class="coti-row">
+            <span class="label">Occasionnel</span>
+            <span class="coti-badge badge-occasionnel"><i class="fa-solid fa-hand-holding-dollar"></i> {{ item.montant_cotisationoccasionnelle }}</span>
+          </div>
+          {% endif %}
+
+          {% if item.montant_dons %}
+          <div class="coti-row">
+            <span class="label">Dons</span>
+            <span class="coti-badge badge-dons"><i class="fa-solid fa-gift"></i> {{ item.montant_dons }}</span>
+          </div>
+          {% endif %}
+
+          {% if item.montant_depenses %}
+          <div class="coti-row">
+            <span class="label">Dépenses</span>
+            <span class="coti-badge badge-depenses"><i class="fa-solid fa-money-bill-trend-up"></i> {{ item.montant_depenses }}</span>
+          </div>
+          {% endif %}
+
+          <div class="coti-row">
+            <span class="label"><i class="fa-solid fa-calendar-day" aria-hidden="true"></i> Date</span>
+            <time class="coti-date">{{ item.aujourdhui }}</time>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <!-- Tableau (desktop + tablette paysage) -->
+    <div class="coti-table-wrapper" id="cotiTableWrapper" aria-hidden="true">
+      <table class="coti-table" id="cotiTable">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Annuel</th>
+            <th>Occasionnel</th>
+            <th>Dons</th>
+            <th>Dépenses</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in page_obj %}
+          <tr data-type="{{ item.type_total|lower }}">
+              {% if item.type_annuel%}
+                <td>{{ item.type_annuel }}</td>
+              {% endif %}
+              {% if item.type_occasionnelle %}
+                <td>{{ item.type_occasionnelle }}</td>
+              {% endif %}
+              {% if item.type_dons %}
+                <td>{{ item.type_dons }}</td>
+              {% endif %}
+              {% if item.type_depenses %}
+                <td>{{ item.type_depenses }}</td>
+              {% endif %}
+            <td class="tbl-annuel">
+              {% if item.montant_cotisationannuel %}{{ item.montant_cotisationannuel }}{% else %}-{% endif %}
+            </td>
+            <td class="tbl-occasionnel">
+              {% if item.montant_cotisationoccasionnelle %}{{ item.montant_cotisationoccasionnelle }}{% else %}-{% endif %}
+            </td>
+            <td class="tbl-dons">
+              {% if item.montant_dons %}{{ item.montant_dons }}{% else %}-{% endif %}
+            </td>
+            <td class="tbl-depenses">
+              {% if item.montant_depenses %}{{ item.montant_depenses }}{% else %}-{% endif %}
+            </td>
+            <td class="tbl-date">{{ item.aujourdhui }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="coti-pagination" role="navigation" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+          <a class="coti-page-btn" href="?page=1" aria-label="Première page">
+            <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
+          </a>
+          <a class="coti-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente">
+            <i class="fa-solid fa-angle-left" aria-hidden="true"></i> Précédent
+          </a>
+        {% endif %}
+
+        <span class="coti-page-info" aria-live="polite">
+          Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a class="coti-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante">
+            Suivant <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+          </a>
+          <a class="coti-page-btn" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page">
+            <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="coti-empty" role="status">
+      <p><i class="fa-regular fa-folder-open" aria-hidden="true"></i></p>
+      <p>Aucun total à afficher.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const input = document.getElementById('cotiFilter');
+    const grid = document.getElementById('cotiGrid');
+    const table = document.getElementById('cotiTable');
+
+    if (!input) return;
+
+    const filterFn = (q) => {
+      const query = q.trim().toLowerCase();
+
+      // Filtre cartes
+      if (grid) {
+        grid.querySelectorAll('.coti-card').forEach(card => {
+          const type = (card.getAttribute('data-type') || '');
+          const visible = !query || type.includes(query);
+          card.style.display = visible ? '' : 'none';
+        });
+      }
+
+      // Filtre tableau
+      if (table) {
+        table.querySelectorAll('tbody tr').forEach(row => {
+          const type = (row.getAttribute('data-type') || '');
+          const visible = !query || type.includes(query);
+          row.style.display = visible ? '' : 'none';
+        });
+      }
+    };
+
+    input.addEventListener('input', function () {
+      filterFn(this.value);
+    });
+  })();
+</script>
+{% endblock %}

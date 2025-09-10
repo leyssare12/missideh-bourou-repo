@@ -380,6 +380,7 @@ def login_with_2fa_by_telegram(request):
                 if telegram_otp.verify_otp_telegram(otp_code):
                     login(request, user)
                     messages.success(request, "Connexion réussie avec 2FA!")
+                    request.session['user_prenom'] = user.prenoms
                     return redirect('Bapp:users_menu')
                 else:
                     messages.error(request, "Code OTP invalide")

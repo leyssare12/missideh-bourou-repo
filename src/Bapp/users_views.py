@@ -1,4 +1,5 @@
 import base64
+import json
 import time
 
 from django.contrib.auth import get_user_model, login
@@ -12,7 +13,9 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from .models import MissidehBourouMembersView, TwoFactorAuth
+from .models import MissidehBourouMembersView, TwoFactorAuth, CotisationAnnuelleView, CotisationOccasionnelleView, \
+    DonsView, TotauxView, DepensesView, StatusMemberAnnualParticipation
+from .permissions import login_required_by_urlname
 
 PER_PAGE = 10  # constante utilisée partout pour garder la cohérence d'affichage par page
 
@@ -20,21 +23,6 @@ PER_PAGE = 10  # constante utilisée partout pour garder la cohérence d'afficha
 Members = get_user_model()
 
 #Authetification de Membres Missideh Bourou
-def members_login(request):
-    template = "site/client/authentication_choices.html"
-    context = {}
-    if request.method == "POST":
-        identifiant = request.POST.get("identifiant")
-        user = Members.objects.filter(identifiant=identifiant).first()
-        if user:
-            context['user_exists'] = True
-            message = mark_safe(f"Salam,  <strong> {user.prenoms}</strong>")
-            messages.success(request, message)
-            return redirect('Bapp:select_2fa_method')
-        else:
-            messages.error(request, "Identifiant incorrect")
-    context['message_info'] = 'Veuillez entrer votre identifiant'
-    return render(request, template_name=template, context=context)
 def member_login_view(request):
     template = "site/client/Login/member_login.html"
     if request.method == "POST":
@@ -97,6 +85,7 @@ def home_page(request):
 def users_menu(request):
     template = "site/client/users_menu.html"
     context = {}
+    context['message_welcome'] = f'Salam, <strong>{request.user}, vous êtes dans le DASHBOARD Missideh-Bourou.</strong>'
     return render(request, template_name=template, context=context)
 
 #Rechercher d'un membre par son identifiant
@@ -172,4 +161,109 @@ def missideh_bourou_members(request):
     page_obj = paginator.get_page(page_number)  # gère les pages invalides
     context['page_obj'] = page_obj
     context['is_paginated'] = page_obj.has_other_pages()
+    return render(request, template_name=template, context=context)
+
+
+#Les views de gestion de caisse
+#@login_required_by_urlname
+def cotisation_annuelles_view(request):
+    template = "site/client/caisse/cotisation_annuelles_view.html"
+    context = {}
+    try:
+        data = CotisationAnnuelleView.objects.all()
+
+        paginator = Paginator(data, PER_PAGE)
+        page_number = request.GET.get('page') or 1
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return render(request, template_name=template, context=context)
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {e}")
+        return render(request, template_name=template, context=context)
+
+def cotisation_occasionnelle_view(request):
+    template = "site/client/caisse/cotisation_occasionnelles_view.html"
+    context = {}
+
+    try:
+        data = CotisationOccasionnelleView.objects.all()
+
+        paginator = Paginator(data, PER_PAGE)
+        page_number = request.GET.get('page') or 1
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return render(request, template_name=template, context=context)
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {e}")
+        return render(request, template_name=template, context=context)
+def dons_view(request):
+    template = "site/client/caisse/dons_view.html"
+    context = {}
+
+    try:
+        data = DonsView.objects.all()
+
+        paginator = Paginator(data, PER_PAGE)
+        page_number = request.GET.get('page') or 1
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return render(request, template_name=template, context=context)
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {e}")
+        return render(request, template_name=template, context=context)
+
+def depenses_view(request):
+    template = "site/client/caisse/depenses_view.html"
+    context = {}
+
+    try:
+        data = DepensesView.objects.all()
+
+        paginator = Paginator(data, PER_PAGE)
+        page_number = request.GET.get('page') or 1
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return render(request, template_name=template, context=context)
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {e}")
+        return render(request, template_name=template, context=context)
+
+def bilan_totaux_view(request):
+    template = "site/client/caisse/bilan_totaux_view.html"
+    context = {}
+
+    try:
+        data = TotauxView.objects.all()
+
+        paginator = Paginator(data, PER_PAGE)
+        page_number = request.GET.get('page') or 1
+        page_obj = paginator.get_page(page_number)
+        context['page_obj'] = page_obj
+        context['is_paginated'] = page_obj.has_other_pages()
+        return render(request, template_name=template, context=context)
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {e}")
+        return render(request, template_name=template, context=context)
+
+def has_participed_annuel(request):
+    template = "site/client/caisse/has_participed_annuel.html"
+    context = {}
+
+    qs = StatusMemberAnnualParticipation.objects.all().order_by('id')
+    members = list(qs.values('id', 'prenoms', 'quartier', 'statut_par_annee'))
+    context['members'] = members
+    # Construire la liste des années présentes
+    all_years = set()
+    for m in members:
+        spa = m.get('statut_par_annee') or {}
+        if isinstance(spa, dict):
+            all_years.update(spa.keys())
+    years = sorted(all_years, key=int)  # les clés sont des strings
+
+    context['years'] = years
+
     return render(request, template_name=template, context=context)
