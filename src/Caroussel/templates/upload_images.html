@@ -1,0 +1,157 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}<title>Upload images</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/upload_image.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+
+{% block content %}
+<section class="uploader-shell">
+  <div class="uploader-card">
+    <header class="uploader-head">
+      <h2 class="uploader-title">
+        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+        Uploader une ou plusieurs images à la fois
+      </h2>
+      <p class="uploader-sub">Glissez-déposez vos images ou sélectionnez-les depuis votre appareil.</p>
+    </header>
+    <form method="post" enctype="multipart/form-data" class="uploader-form" id="multiUploadForm">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger" style="color:red;">
+      {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Champs non-fichiers (ex: titres) -->
+  <div class="form-grid">
+    <div class="form-row">
+      <label for="{{ form.titres.id_for_label|default:form.titres.html_name }}">Titres</label>
+      {{ form.titres }}
+      {% if form.titres.help_text %}<small class="help">{{ form.titres.help_text }}</small>{% endif %}
+      {% for err in form.titres.errors %}<div class="err">{{ err }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <!-- Zone d’upload: uniquement le champ fichier -->
+  <div class="dropzone" id="dropzone" role="group" aria-label="Zone de dépôt d’images">
+    <div class="dz-icon"><i class="fa-regular fa-images" aria-hidden="true"></i></div>
+    <div class="dz-text">
+      <strong>Glissez vos images ici</strong>
+      <span>ou</span>
+      <button type="button" class="dz-choose" id="chooseBtn" aria-label="Choisir des fichiers">Parcourir</button>
+    </div>
+
+    <!-- Rendez le champ fichier UNE SEULE FOIS ici -->
+    <div class="file-inputs">
+      {{ form.fichiers }}
+      {% for err in form.fichiers.errors %}<div class="err">{{ err }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <!-- État + Aperçus -->
+  <div id="uploadStatus" class="upload-status" role="status" aria-live="polite"></div>
+  <div class="preview-grid" id="previewGrid" aria-live="polite" aria-busy="false"></div>
+
+  <!-- Actions -->
+  <div class="uploader-actions">
+    <button type="submit" class="btn-primary">
+      <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+      Envoyer
+    </button>
+  </div>
+</form>
+  </div>
+</section>
+<script>
+(function(){
+  const dz = document.getElementById('dropzone');
+  const chooseBtn = document.getElementById('chooseBtn');
+  const statusEl = document.getElementById('uploadStatus');
+  const preview = document.getElementById('previewGrid');
+
+  // Récupère le premier input[type=file] rendu dans .file-inputs
+  const fileInput = dz.querySelector('.file-inputs input[type="file"]');
+
+  if (!dz || !fileInput || !chooseBtn || !statusEl || !preview) return;
+
+  // Ouvrir le sélecteur via le bouton (ne gêne pas le focus des autres champs)
+  chooseBtn.addEventListener('click', () => fileInput.click());
+
+  // Helpers
+  const isImage = (f) => /^image\//.test(f.type);
+  const fmtSize = (n) => {
+    if (n < 1024) return n + ' o';
+    if (n < 1024*1024) return (n/1024).toFixed(1) + ' Ko';
+    return (n/1024/1024).toFixed(1) + ' Mo';
+  };
+  function setStatus(files){
+    if (!files.length){
+      statusEl.classList.remove('show');
+      statusEl.textContent = '';
+      return;
+    }
+    const names = Array.from(files).slice(0,3).map(f => f.name).join(', ');
+    const more = files.length > 3 ? ` +${files.length-3} autres` : '';
+    const total = Array.from(files).reduce((a,f)=>a+f.size,0);
+    statusEl.textContent = `${files.length} fichier(s) sélectionné(s): ${names}${more} — ${fmtSize(total)} au total`;
+    statusEl.classList.add('show');
+  }
+  function renderPreviews(files){
+    preview.setAttribute('aria-busy','true');
+    preview.innerHTML = '';
+    Array.from(files).forEach(file => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      if (isImage(file)){
+        const img = document.createElement('img');
+        img.alt = file.name;
+        item.appendChild(img);
+        const r = new FileReader();
+        r.onload = e => img.src = e.target.result;
+        r.readAsDataURL(file);
+      } else {
+        item.innerHTML = '<div style="color:#64748b;font-size:12px;padding:8px;text-align:center;">Fichier</div>';
+      }
+      const name = document.createElement('div');
+      name.className = 'preview-name';
+      name.textContent = file.name;
+      item.appendChild(name);
+      preview.appendChild(item);
+    });
+    preview.setAttribute('aria-busy','false');
+  }
+  function onFilesSelected(files){
+    setStatus(files);
+    renderPreviews(files);
+  }
+
+  // Changement via sélecteur
+  fileInput.addEventListener('change', (e) => onFilesSelected(e.target.files || []));
+
+  // Drag & Drop (sans overlay, donc pas de conflit de focus)
+  ['dragenter','dragover'].forEach(evt =>
+    dz.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.add('dragover'); })
+  );
+  ['dragleave','drop'].forEach(evt =>
+    dz.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dz.classList.remove('dragover'); })
+  );
+  dz.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (!files || !files.length) return;
+
+    // Assigne proprement aux files de l’input (compat moderne)
+    const dt = new DataTransfer();
+    Array.from(files).forEach(f => dt.items.add(f));
+    fileInput.files = dt.files;
+
+    onFilesSelected(fileInput.files);
+  });
+})();
+
+//Recuperation d'errers coté frontend
+
+</script>
+{% endblock %}

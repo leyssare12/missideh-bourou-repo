@@ -6,8 +6,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Missideh Bourou</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/client/home_page.css'%}">
+
 </head>
 <body>
       <header class="navbar">
@@ -30,22 +33,71 @@
       </button>
     </div>
   </header>
-
-
-
-
-  <section class="hero">
+   <section class="hero">
     <div class="hero-container">
+      <!-- Texte -->
       <div class="hero-text">
         <h1>Missideh Bourou ko fii Fow</h1>
-        <p>Une plateforme pour connecter, partager et grandir ensemble.s simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-        <a href="{% url 'Bapp:member_login_view'%}" class="btn-primary">Rejoindre en tant que membre</a>
+        <p>
+        Association Missideh-Bourou
+
+Bienvenue sur la page officielle de Missideh-Bourou, une association engagée dans la promotion du développement communautaire, de la solidarité et de la préservation des valeurs culturelles. Depuis sa création, l’association s’efforce d’être un moteur de changement positif en mettant l’humain au cœur de ses actions.
+
+Qui sommes-nous ?
+
+L’association Missideh-Bourou est née de la volonté commune de femmes et d’hommes passionnés par l’entraide, la transmission et l’amélioration des conditions de vie dans leurs communautés. Son nom, riche de sens et d’histoire, symbolise à la fois les racines culturelles et la volonté d’ouverture sur le monde. Nous croyons fermement que le progrès ne se construit pas seulement à travers les infrastructures matérielles, mais aussi grâce à l’éducation, à la cohésion sociale et à la mise en valeur des talents locaux.
+
+Notre mission principale est d’apporter une contribution significative au développement social, économique et culturel, en privilégiant des projets inclusifs et durables. Nous travaillons main dans la main avec nos membres, nos partenaires et l’ensemble des bénéficiaires pour créer un impact concret et mesurable.
+Nos actions
+
+Au fil des années, Missideh-Bourou a mis en place différents projets et activités, parmi lesquels :
+
+des campagnes de sensibilisation dans les écoles et les villages,
+
+des ateliers de formation en artisanat, agriculture et entrepreneuriat,
+
+des programmes de soutien scolaire pour les enfants défavorisés,
+
+des actions de collecte et de redistribution de biens essentiels,
+
+des événements culturels permettant de rassembler la communauté autour de nos valeurs communes.
+
+Chaque action est pensée pour répondre à des besoins concrets, identifiés directement sur le terrain, en concertation avec les habitants et les partenaires.
+
+Pourquoi nous soutenir ?
+
+Rejoindre l’aventure de Missideh-Bourou, c’est contribuer à une cause noble et porteuse d’avenir. C’est faire le choix d’investir dans l’éducation, la solidarité et la culture, qui sont les piliers d’une société plus équitable. Votre soutien peut prendre différentes formes : adhésion, bénévolat, mécénat, dons financiers ou matériels. Quelle que soit la manière, chaque geste compte et participe à renforcer l’impact de nos projets.
+
+Notre vision
+
+Nous aspirons à bâtir une société dans laquelle chaque individu, sans distinction de genre, d’âge ou d’origine, peut s’épanouir et contribuer activement au développement collectif. Une société où la solidarité n’est pas un mot, mais une réalité vécue au quotidien.
+        </p>
       </div>
+      <!-- Carrousel -->
       <div class="hero-image">
-        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d" alt="Collaboration">
+        <div id="loader" class="loader"></div>
+        <div class="swiper" aria-label="Carrousel d'images">
+          <div class="swiper-wrapper" id="carousel"></div>
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button-next" aria-label="Suivant"></div>
+          <div class="swiper-button-prev" aria-label="Précédent"></div>
+        </div>
+      </div>
+      <!-- CTA déplacé à la fin -->
+      <div class="hero-cta">
+        <a href="{% url 'Bapp:member_login_view'%}" class="btn-primary">
+          Rejoindre en tant que membre
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
       </div>
     </div>
   </section>
+
+
+<!-- Swiper.js -->
+<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+
+
 
   <footer class="footer">
     <div class="footer-content">
@@ -93,6 +145,96 @@
         body.style.overflow = '';
       }
     });
+  </script>
+  <script>
+       async function chargerImages() {
+    const baseUrl = window.location.origin;
+    const response = await fetch(`${baseUrl}/api/images/`);
+    const data = await response.json();
+    const carousel = document.getElementById("carousel");
+    const loader = document.getElementById("loader");
+    const swiperContainer = document.querySelector(".swiper");
+
+    // On vide d'abord le carousel
+    carousel.innerHTML = "";
+
+    // Si pas d’images → afficher un message
+    if (!data.length) {
+      loader.style.display = "none";
+      swiperContainer.style.display = "flex";
+      carousel.innerHTML = `<div class="swiper-slide"><div class="caption">Aucune image disponible</div></div>`;
+      return;
+    }
+
+    // Ajout des images
+    data.forEach(img => {
+      const slide = document.createElement("div");
+      slide.classList.add("swiper-slide");
+
+      slide.innerHTML = `
+        <img
+          src="${img.fichier}"
+          srcset="
+            ${img.fichier_thumbnail} 300w,
+            ${img.fichier_mobile} 800w,
+            ${img.fichier} 1200w
+          "
+          sizes="(max-width: 600px) 100vw,
+                 (max-width: 1024px) 90vw,
+                 1200px"
+          alt="${img.titre}">
+        <div class="caption">${img.titre || "Sans titre"}</div>
+      `;
+
+      carousel.appendChild(slide);
+    });
+
+    // Masquer le loader et afficher le carrousel
+    loader.style.display = "none";
+    swiperContainer.style.display = "block";
+
+    // Initialiser Swiper avec paramètres robustes mobile/tablette
+    const swiper = new Swiper(".swiper", {
+      loop: true,
+      speed: 600,
+      centeredSlides: true,
+      spaceBetween: 10,
+
+      autoplay: {
+        delay: 4000,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: false
+      },
+
+      pagination: { el: ".swiper-pagination", clickable: true },
+      navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+
+      // Améliore la fiabilité sur mobile/tablette
+      observer: true,
+      observeParents: true,
+      watchSlidesProgress: true,
+      updateOnWindowResize: true,
+      preloadImages: true,
+
+      // Interaction tactile fluide
+      allowTouchMove: true,
+      touchStartPreventDefault: false,
+      passiveListeners: true,
+
+      breakpoints: {
+        0:   { slidesPerView: 1 },
+        640: { slidesPerView: 1 },
+        1024:{ slidesPerView: 1 } // une slide visible pour optimiser la hauteur
+      }
+    });
+
+    // Force le démarrage autoplay après init (certains mobiles le suspendent)
+    try { swiper.autoplay.start(); } catch(e) {}
+  }
+    console.log('Document changé.');
+  document.addEventListener("DOMContentLoaded", chargerImages);
+
+
   </script>
 
 

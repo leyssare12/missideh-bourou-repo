@@ -33,10 +33,9 @@ handler500 = ErrorHandlerView.handler500
 urlpatterns = [
     path('', home_page, name='home'),
     path('admin/', admin.site.urls),
+    path('', include('Caroussel.urls', namespace='Caroussel')),
     path('Bourou/', include('Bapp.urls', namespace='Bapp')),
     # Ajout explicite de l'URL pour servir les médias
-    re_path(r'^media/(?P<path>.*)$', serve, {
-        'document_root': settings.MEDIA_ROOT,
-    }),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT,}),
 
 ]

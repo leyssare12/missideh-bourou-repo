@@ -79,5 +79,28 @@
       </tbody>
     </table>
   </div>
+
+  {% if is_paginated %}
+    <nav class="pa-pagination" role="navigation" aria-label="Pagination" style="margin-top:16px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;">
+      {% if page_obj.has_previous %}
+        <a class="pa-page-btn" href="?page=1" aria-label="Première page" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">«</a>
+        <a class="pa-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">Précédent</a>
+      {% endif %}
+
+      <span class="pa-page-info" aria-live="polite" style="padding:.5rem .75rem; border-radius:8px; background:#f1f5f9; border:1px solid #e5e7eb;">
+        Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a class="pa-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">Suivant</a>
+        <a class="pa-page-btn" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">»</a>
+      {% endif %}
+    </nav>
+  {% else %}
+    <div class="pa-empty" role="status" style="margin-top:16px; text-align:center; color:#64748b;">
+      Aucun membre trouvé.
+    </div>
+  {% endif %}
+
 </div>
 {% endblock %}

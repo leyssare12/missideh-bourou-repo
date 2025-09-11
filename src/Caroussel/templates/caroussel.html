@@ -1,0 +1,176 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Carrousel</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #111827;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    /* Conteneur du carrousel */
+    .swiper {
+      width: 100%;
+      max-width: 1200px;
+      height: 70vh; /* hauteur standard */
+      margin: 2rem auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      background: #000;
+    }
+
+    /* Slide */
+    .swiper-slide {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Image */
+    .swiper-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* remplit de façon homogène */
+    }
+
+    /* Légende */
+    .caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 1rem;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    /* Bouton upload */
+    .upload-btn {
+      display: inline-block;
+      margin: 2rem auto;
+      padding: 0.75rem 1.5rem;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .upload-btn:hover {
+      background: #1e40af;
+    }
+
+    /* Mode mobile story */
+    @media (max-width: 640px) {
+      .swiper {
+        height: 100vh; /* plein écran mobile */
+        border-radius: 0;
+      }
+      .caption {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    Galerie d’images
+  </header>
+
+  <!-- Carrousel -->
+  <div class="swiper">
+    <div class="swiper-wrapper" id="carousel"></div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+  </div>
+
+  <!-- Bouton uploader -->
+  <div style="text-align: center;">
+    <a href="{% url 'Caroussel:upload_image' %}" class="upload-btn">
+      Uploader une autre image
+    </a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+  <script>
+    async function chargerImages() {
+      const baseUrl = window.location.origin;
+      const response = await fetch(`${baseUrl}/api/images/`);
+      const data = await response.json();
+      const carousel = document.getElementById("carousel");
+
+      data.forEach(img => {
+        const slide = document.createElement("div");
+        slide.classList.add("swiper-slide");
+
+        slide.innerHTML = `
+          <img
+            src="${img.fichier}"
+            srcset="
+              ${img.fichier_thumbnail} 300w,
+              ${img.fichier_mobile} 800w,
+              ${img.fichier} 1200w
+            "
+            sizes="(max-width: 600px) 100vw,
+                   (max-width: 1024px) 80vw,
+                   1200px"
+            alt="${img.titre}">
+          <div class="caption">${img.titre || "Sans titre"}</div>
+        `;
+
+        carousel.appendChild(slide);
+      });
+
+      new Swiper(".swiper", {
+        loop: true,
+        autoplay: { delay: 4000 },
+        pagination: { el: ".swiper-pagination", clickable: true },
+        navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+        spaceBetween: 10,
+        breakpoints: {
+          0: {   // smartphone portrait
+            slidesPerView: 1,
+          },
+          640: { // tablette portrait
+            slidesPerView: 1,
+          },
+          1024: { // PC ou tablette landscape
+            slidesPerView: 2,
+          }
+        }
+      });
+    }
+
+    chargerImages();
+  </script>
+</body>
+</html>

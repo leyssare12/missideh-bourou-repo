@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'Bapp',
+    'Caroussel.apps.ImageConfig',
 
 ]
 

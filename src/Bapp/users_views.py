@@ -249,7 +249,7 @@ def bilan_totaux_view(request):
         messages.error(request, f"Une erreur est survenue: {e}")
         return render(request, template_name=template, context=context)
 
-def has_participed_annuel(request):
+def has_participed_annuel_save(request):
     template = "site/client/caisse/has_participed_annuel.html"
     context = {}
 
@@ -265,5 +265,36 @@ def has_participed_annuel(request):
     years = sorted(all_years, key=int)  # les clés sont des strings
 
     context['years'] = years
+
+    return render(request, template_name=template, context=context)
+
+
+def has_participed_annuel(request):
+    template = "site/client/caisse/has_participed_annuel.html"
+    context = {}
+
+    qs = StatusMemberAnnualParticipation.objects.all().order_by('id')
+
+    # Construire la liste des années présentes (sur tout l'ensemble pour garder des colonnes stables)
+    all_years = set()
+    for m in qs.values('statut_par_annee'):
+        spa = (m.get('statut_par_annee') or {})
+        if isinstance(spa, dict):
+            all_years.update(spa.keys())
+    years = sorted(all_years, key=int)  # les clés sont des strings
+    context['years'] = years
+
+    # Pagination des membres (slice affiché)
+    paginator = Paginator(
+        qs.values('id', 'prenoms', 'quartier', 'statut_par_annee'),
+        PER_PAGE
+    )
+    page_number = request.GET.get('page') or 1
+    page_obj = paginator.get_page(page_number)
+
+    # Données pour le template
+    context['members'] = list(page_obj.object_list)
+    context['page_obj'] = page_obj
+    context['is_paginated'] = page_obj.has_other_pages()
 
     return render(request, template_name=template, context=context)
