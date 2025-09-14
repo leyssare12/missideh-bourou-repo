@@ -23,23 +23,30 @@ PER_PAGE = 10  # constante utilisée partout pour garder la cohérence d'afficha
 #Gestion de l'affichage côté utilisateurs'
 Members = get_user_model()
 
-#Authetification de Membres Missideh Bourou
+#Point d'entré pour l'authetification de Membres Missideh Bourou
 def member_login_view(request):
     template = "site/client/Login/member_login.html"
     if request.method == "POST":
-        identifiant = request.POST.get("identifiant")
+        identifiant = (request.POST.get("identifiant") or "").strip()
+        if not identifiant:
+            messages.error(request, "Veuillez renseigner votre identifiant.")
+            return render(request, template_name=template)
         try:
-            user = Members.objects.get(identifiant=identifiant)
+            user = Members.objects.get(identifiant__iexact=identifiant)
+            # ✅ Renouveler la session pour limiter la fixation de session
+            request.session.cycle_key()
             # ✅ Stocker temporairement l’utilisateur en session
             request.session["pending_user_id"] = user.id
             message = mark_safe(f"Salam, <strong> {user.prenoms}</strong>")
             messages.success(request, message)
-            login(request, user)
             return redirect("Bapp:load_2fa_method")
+        except Members.MultipleObjectsReturned:
+            messages.error(request, "Plusieurs comptes correspondent à cet identifiant. Contactez le support.")
+            return render(request, template_name=template)
         except Members.DoesNotExist:
             messages.error(request, "Identifiant incorrect")
+            return render(request, template_name=template)
     return render(request, template_name=template)
-
 
 def load_2fa_method(request):
     template = "site/client/Login/login_choices.html"
