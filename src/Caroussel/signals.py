@@ -7,7 +7,7 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 import os
 
-@receiver(post_save, sender=Image)
+#@receiver(post_save, sender=Image)
 def generate_resized_versions(sender, instance, created, **kwargs):
     """ Génération automatique des versions mobile et thumbnail """
     if created and instance.fichier:

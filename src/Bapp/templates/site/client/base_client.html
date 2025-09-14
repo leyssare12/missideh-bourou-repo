@@ -15,15 +15,33 @@
     <header class="navbar">
     <div class="nav-content">
       <a class="logo" href="{% url 'Bapp:home_page'%}" style="text-decoration:none;">
-        <img src="{% static 'images/logo.png'%}"
+        <img src="{% static 'images/logo_b289906d-56b1-44f8-8472-a5fb7bc4947f.png'%}"
              alt="Logo"
              class="logo-img">
-        <span>Missideh Bourou</span>
+         <div>
+            <span class="name">Missideh Bourou</span>
+            <span class="domaine">.online</span>
+        </div>
       </a>
       <nav class="nav-links" id="nav-links">
-        <a href="#">Membres</a>
-        <a href="{% url 'Bapp:telegram_otp_login'%}">Telegram</a>
-        <a href="#">Pays</a>
+        <a href="{% url 'Bapp:missideh_bourou_members'%}">Membres</a>
+        <a href="{% url 'Bapp:telegram_otp_login'%}">Whatsapp</a>
+          <label for="country">Pays:</label>
+
+          <select class="country" name="country" id="country">
+
+              <option value="Guinee">Guinée</option>
+
+              <option value="senegal">Sénégal</option>
+
+              <option value="ci"> Côte d'Ivoire</option>
+
+              <option value="eu">Europe</option>
+
+              <option value="usa">USA</option>
+
+          </select>
+
         <a href="{% url 'Bapp:member_login_view'%}" class="auth-btn">S'authentifier</a>
       </nav>
       <button class="hamburger" id="hamburger" aria-label="Menu">

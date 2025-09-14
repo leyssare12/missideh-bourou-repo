@@ -61,8 +61,8 @@
                     <input type="hidden" name="identifiant" value="{{ identifiant }}">
 
                     <div>
-                        <label for="otp-input">Code de vérification (6 chiffres):</label>
-                        <input type="text" id="otp-input" name="otp_code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456">
+                        <label class="otp_telegram" for="otp-input">Code de vérification (6 chiffres):</label>
+                        <input  class="otp_telegram" type="text" id="otp-input" name="otp_code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456">
                     </div>
 
                     <button type="submit"><i class="fas fa-check-circle"></i>Vérifier le code</button>

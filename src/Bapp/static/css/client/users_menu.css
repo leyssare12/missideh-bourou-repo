@@ -168,7 +168,7 @@
   /* Carte module — nouveau layout à gauche l’icône, à droite le contenu */
   .module-card {
     border: 1px solid #e5e7eb;
-    background: #ffffff;       /* fond blanc conservé */
+    background: #eee;       /* fond blanc conservé */
     border-radius: 14px;
     padding: clamp(50px, 2vw, 18px);
     display: grid;
@@ -283,7 +283,7 @@
 /* Mode sombre (si l’appli le supporte via préférence utilisateur) */
 @media (prefers-color-scheme: dark) {
   .dash-header ul.dash-sub {
-    color: #9ca3af;
+    color: #6e7073;
   }
   .dash-header ul.dash-sub li::before {
     background: var(--dash-accent-dark, #3b82f6);

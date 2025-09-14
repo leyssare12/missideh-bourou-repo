@@ -9,6 +9,7 @@ import io
 
 import qrcode
 from django.contrib import messages
+from django.contrib.auth import login
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -84,6 +85,7 @@ def members_authentification_qrcode(request):
                 # Rendre la suppression tolérante à l'absence de clé
                 request.session.pop("user_otp_enabled", None)
                 request.session['user_prenom'] = user.prenoms
+                login(request, user)
                 return redirect("Bapp:users_menu")
             else:
                 context["error"] = "Code invalide"
@@ -96,6 +98,7 @@ def members_authentification_qrcode(request):
             # Rendre la suppression tolérante à l'absence de clé
             request.session.pop("2fa_setup_user_id", None)
             messages.success(request, f'Bonjour {user.prenoms}, authentification réussie.')
+            login(request, user)
             return redirect("Bapp:users_menu")
         else:
             context["error"] = "Code invalide"

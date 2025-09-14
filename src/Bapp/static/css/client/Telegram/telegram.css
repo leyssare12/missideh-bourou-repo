@@ -126,7 +126,7 @@
             display: none;
         }
 
-        label {
+        .otp_telegram {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;

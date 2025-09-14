@@ -20,10 +20,10 @@ from .models import BTestCustomUser, TelegramOTP2FA
 
 #Retourne le token et l'url de base'
 def _get_telegram_api_base() -> str:
-    token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
+    token = getattr(settings, "TELEGRAM_BOT_TOKEN_1", None)
     if not token:
         print('Le token n exsite pas. ')
-        raise ValueError("TELEGRAM_BOT_TOKEN n'est pas défini dans settings.")
+        raise ValueError("TELEGRAM_BOT_TOKEN_1 n'est pas défini dans settings.")
     print('Token envoyé:  ', token)
     return f"https://api.telegram.org/bot{token}"
 
@@ -190,7 +190,7 @@ def telegram_webhook(request):
 
 
     # Vérifier le secret token
-    expected = getattr(settings, "TELEGRAM_WEBHOOK_SECRET", None)
+    expected = getattr(settings, "TELEGRAM_WEBHOOK_SECRET_1", None)
     if expected:
         got = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
         if got != expected:
@@ -381,6 +381,7 @@ def login_with_2fa_by_telegram(request):
                     login(request, user)
                     messages.success(request, "Connexion réussie avec 2FA!")
                     request.session['user_prenom'] = user.prenoms
+                    login(request, user)
                     return redirect('Bapp:users_menu')
                 else:
                     messages.error(request, "Code OTP invalide")
@@ -395,7 +396,7 @@ def login_with_2fa_by_telegram(request):
                 if action == 'link_telegram':
                     # Générer un nonce pour la liaison
                     nonce = generate_enrollment_nonce(user)
-                    bot_username = getattr(settings, "TELEGRAM_BOT_USERNAME", "")
+                    bot_username = getattr(settings, "TELEGRAM_BOT_USERNAME_1", "")
                     context['identifiant'] = identifiant
                     context['nonce'] = nonce
                     context['show_link_qr'] = True

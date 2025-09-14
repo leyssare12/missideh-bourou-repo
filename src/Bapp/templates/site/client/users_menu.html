@@ -41,40 +41,32 @@
           <p>Liste, profil et recherche par quartier.</p>
         </div>
       </a>
-
-      <a class="module-card" href="{% url 'Bapp:has_participed_annuel' %}" aria-label="Tableau de synthèse">
-        <i class="fas fa-table" aria-hidden="true"></i>
+      <a class="module-card" aria-label="Tableau de synthèse" href="{% url 'Caroussel:album_view'%}">
+        <i class="fas fa-images" aria-hidden="true"></i>
         <div class="card-text">
-          <h2>STATISTQUES PAR AN</h2>
-          <p>Indicateurs et vues analytiques pour les années passés.</p>
-        </div>
-      </a>
-      <a class="module-card" aria-label="Tableau de synthèse">
-        <i class="fas fa-table" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Tableau</h2>
-          <p>Indicateurs et vues analytiques (à venir).</p>
+          <h2>Galerie d'images</h2>
+          <p>Images de, et pour Missideh-Bourou.</p>
         </div>
       </a>
 
-      <a class="module-card" href="{% url 'Bapp:documents_pdf' %}" aria-label="Voir les documents PDF">
-        <i class="fas fa-file-alt" aria-hidden="true"></i>
+      <a class="module-card" href="{% url 'Bapp:announce_view' %}" aria-label="Voir les documents PDF">
+        <i class="fas fa-bullhorn" aria-hidden="true"></i>
         <div class="card-text">
-          <h2>Documents</h2>
-          <p>Consultez et téléchargez les PDF publiés.</p>
+          <h2>Annonces</h2>
+          <p>Annonces et publications pour la communauté.</p>
         </div>
       </a>
 
       <a class="module-card" href="{% url 'Bapp:cotisation_annuelles_view'%}" aria-label="Rapport cotisations annuelles">
-        <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+        <i class="fas fa-money-check-alt" aria-hidden="true"></i>
         <div class="card-text">
           <h2>Cotisations annuelles</h2>
-          <p>Montants, années et historiques par membre.Montants, années et historiques par membreMontants, années et historiques par membre</p>
+          <p>Montants, années et historiques par membre</p>
         </div>
       </a>
 
       <a class="module-card" href="{% url 'Bapp:cotisation_occasionnelle_view'%}" aria-label="Rapport cotisations occasionnelles">
-        <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+        <i class="fas fa-money-check-alt" aria-hidden="true"></i>
         <div class="card-text">
           <h2>Cotisations occasionnelles</h2>
           <p>Contributions ponctuelles et motifs.</p>
@@ -90,7 +82,7 @@
       </a>
 
       <a class="module-card" href="{% url 'Bapp:depenses_view'%}" aria-label="Rapport dépenses">
-        <i class="fas fa-receipt" aria-hidden="true"></i>
+        <i class="fas fa-edit" aria-hidden="true"></i>
         <div class="card-text">
           <h2>Dépenses</h2>
           <p>Historique des sorties et détails.</p>
@@ -102,6 +94,14 @@
         <div class="card-text">
           <h2>Bilan global</h2>
           <p>Vue consolidée des entrées et sorties.</p>
+        </div>
+      </a>
+
+      <a class="module-card" href="{% url 'Bapp:has_participed_annuel' %}" aria-label="Tableau de synthèse">
+        <i class="fas fa-chart-area" aria-hidden="true"></i>
+        <div class="card-text">
+          <h2>Statistiques</h2>
+          <p>Indicateurs et vues analytiques pour les années passés.</p>
         </div>
       </a>
 

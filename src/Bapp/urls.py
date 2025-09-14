@@ -16,7 +16,7 @@ from .list_items import (list_articles, list_subscribed_users, list_participatio
 from .users_views import (home_page, users_menu, missideh_bourou_members, search_member,
                           select_2fa_method, load_2fa_method, member_login_view, cotisation_annuelles_view,
                           cotisation_occasionnelle_view, dons_view, bilan_totaux_view, depenses_view,
-                          has_participed_annuel)
+                          has_participed_annuel, announce_view)
 from .views import index, inscription, add_sume, subcribe, data_recup, admin_subcribe, enregistrer_participation, \
     users_participations, search_user, participation_page, submit_participation, participation_view, \
     recherche_utilisateurs, get_data, gestion_totaux, manager_login_page, logout_view, editorial_view, \
@@ -123,8 +123,9 @@ urlpatterns = [
     path('request-new-opt-telegram/', request_new_otp_telegram, name='request_new_otp_telegram'),
     path('telegram-webhook/', telegram_webhook, name='telegram_webhook'),
 
+    #Lien proteǵés par login via middleware
     path('menu/', users_menu, name='users_menu'),
-    path('membres', missideh_bourou_members, name='missideh_bourou_members'),
+    path('membres/', missideh_bourou_members, name='missideh_bourou_members'),
     path('member-search/', search_member, name='member_search'),
 
     path('cotisation-annuel-view/', cotisation_annuelles_view, name='cotisation_annuelles_view'),
@@ -132,5 +133,6 @@ urlpatterns = [
     path('dons-view/', dons_view, name='dons_view'),
     path('depenses-view/', depenses_view, name='depenses_view'),
     path('bilan-totaux-view/', bilan_totaux_view, name='bilan_totaux_view'),
-    path('has-annuel-participed', has_participed_annuel, name="has_participed_annuel"),
+    path('has-annuel-participed/', has_participed_annuel, name="has_participed_annuel"),
+    path('annonces/', announce_view, name='announce_view')
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.PDFS_URL, document_root=settings.PDFS_ROOT)

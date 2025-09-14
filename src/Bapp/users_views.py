@@ -3,9 +3,10 @@ import json
 import time
 
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth.decorators import login_required
 from django.contrib.messages.api import success
 from django.contrib import messages
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db import connection
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
@@ -14,7 +15,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from .models import MissidehBourouMembersView, TwoFactorAuth, CotisationAnnuelleView, CotisationOccasionnelleView, \
-    DonsView, TotauxView, DepensesView, StatusMemberAnnualParticipation
+    DonsView, TotauxView, DepensesView, StatusMemberAnnualParticipation, AnnoncesMembersView
 from .permissions import login_required_by_urlname
 
 PER_PAGE = 10  # constante utilisée partout pour garder la cohérence d'affichage par page
@@ -33,6 +34,7 @@ def member_login_view(request):
             request.session["pending_user_id"] = user.id
             message = mark_safe(f"Salam, <strong> {user.prenoms}</strong>")
             messages.success(request, message)
+            login(request, user)
             return redirect("Bapp:load_2fa_method")
         except Members.DoesNotExist:
             messages.error(request, "Identifiant incorrect")
@@ -77,11 +79,14 @@ def select_2fa_method(request, method):
 
 
 #Home page
+
 def home_page(request):
     template = "site/client/home_page.html"
     context = {}
     context['message_info'] = 'Bienvenue sur la page d\'accueil.'
     return render(request, template_name=template, context=context)
+
+
 def users_menu(request):
     template = "site/client/users_menu.html"
     context = {}
@@ -145,6 +150,7 @@ def search_member(request):
         "match_type": match_type,
     })
 # Recuperation des membres de Missideh Bourou
+
 def missideh_bourou_members(request):
     template = "site/client/missideh_bourou_members.html"
     context = {}
@@ -165,7 +171,7 @@ def missideh_bourou_members(request):
 
 
 #Les views de gestion de caisse
-#@login_required_by_urlname
+
 def cotisation_annuelles_view(request):
     template = "site/client/caisse/cotisation_annuelles_view.html"
     context = {}
@@ -198,6 +204,7 @@ def cotisation_occasionnelle_view(request):
     except Exception as e:
         messages.error(request, f"Une erreur est survenue: {e}")
         return render(request, template_name=template, context=context)
+
 def dons_view(request):
     template = "site/client/caisse/dons_view.html"
     context = {}
@@ -215,6 +222,7 @@ def dons_view(request):
         messages.error(request, f"Une erreur est survenue: {e}")
         return render(request, template_name=template, context=context)
 
+
 def depenses_view(request):
     template = "site/client/caisse/depenses_view.html"
     context = {}
@@ -231,6 +239,7 @@ def depenses_view(request):
     except Exception as e:
         messages.error(request, f"Une erreur est survenue: {e}")
         return render(request, template_name=template, context=context)
+
 
 def bilan_totaux_view(request):
     template = "site/client/caisse/bilan_totaux_view.html"
@@ -296,5 +305,66 @@ def has_participed_annuel(request):
     context['members'] = list(page_obj.object_list)
     context['page_obj'] = page_obj
     context['is_paginated'] = page_obj.has_other_pages()
+
+    return render(request, template_name=template, context=context)
+
+def announce_view(request):
+    template = "site/client/caisse/announce_view.html"
+    context = {}
+    """
+    Liste paginée des articles et passage au template announce_view.html.
+    Requiert un modèle Article avec les champs:
+    - hauteur (auteur)
+    - title
+    - content
+    - image (ImageField ou relation dotée d'une URL)
+    - link (URLField/CharField)
+    - published_at (DateTimeField)
+    """
+    # Récupération et tri (les plus récents en premier)
+    queryset = AnnoncesMembersView.objects.all().order_by("-published_at")
+
+    # Taille de page configurable via ?per_page=xx (avec garde-fous)
+    try:
+        per_page = int(request.GET.get("per_page", PER_PAGE))
+        per_page = max(1, min(per_page, 100))
+    except (TypeError, ValueError):
+        per_page = 12
+
+    paginator = Paginator(queryset, per_page)
+    page = request.GET.get("page")
+
+    try:
+        page_obj = paginator.get_page(page)  # robuste: gère les valeurs invalides
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.get_page(1)
+
+    # Préserver les autres paramètres de requête (sans "page")
+    params = request.GET.copy()
+    params.pop("page", None)
+    querystring = params.urlencode()
+    if querystring:
+        querystring = "&" + querystring
+
+    # Plage de pages avec ellipses (Django 3.2+). Fallback si indisponible.
+    try:
+        page_range = paginator.get_elided_page_range(
+            number=page_obj.number,
+            on_each_side=1,
+            on_ends=1,
+        )
+    except AttributeError:
+        page_range = paginator.page_range
+
+    context = {
+        "articles": page_obj,  # itérable dans le template
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "is_paginated": page_obj.has_other_pages(),
+        "page_range": page_range,
+        "querystring": querystring,  # à suffixer après ?page=...
+    }
+
+    return render(request, template, context)
 
     return render(request, template_name=template, context=context)

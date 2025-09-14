@@ -739,3 +739,27 @@ class StatusMemberAnnualParticipation(pgview.View):
         db_table = 'status_member_annual_participation'
         verbose_name = "Participation annuelle (vue)"
         verbose_name_plural = "Participations annuelles (vue)"
+class AnnoncesMembersView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    author = models.CharField(max_length=60, blank=False, null=False)
+    title = models.CharField(max_length=255, blank=False, null=False)
+    content = models.TextField(blank=False, null=False)
+    image = models.ImageField(upload_to='images/missidhe_bourou_img', blank=True, null=True)
+    extra_links = models.URLField(blank=True, null=True)
+    published_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    sql = """
+    SELECT 
+        id, 
+        author, 
+        title, 
+        content, 
+        image, 
+        extra_links, 
+        to_char(updated_at, 'DD/MM/YYYY') as published_at
+    FROM "Bapp_editorialcommunity"
+    ORDER BY updated_at DESC;
+    """
+    class Meta:
+        managed = False
+        db_table = 'annonces_members_view'

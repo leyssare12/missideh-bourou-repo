@@ -4,108 +4,408 @@
 {% load static %}
 {% block title %}<title>Home users</title>{% endblock %}
 
-{% block extra_css%}<link href="{% static 'css/client/missidhe_bourou_members.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block extra_css%}<link href="{% static 'css/client/missidhe_bourou_members.ss'%}" rel="stylesheet" type="text/css">{% endblock %}
+
 
 
 {% block content %}
+
+<!-- Styles responsives et accessibles -->
+<style>
+   :root {
+    --bg: #ffffff;
+    --fg: #111827;
+    --muted: #6b7280;
+
+    /* Nuances sur base blanche (pastels) */
+    --panel: #ffffff;
+    --panel-tint: #f9fafb;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --accent-weak: #eff6ff;
+
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(0,0,0,.05);
+    --shadow-strong: 0 18px 56px rgba(0,0,0,.08);
+  }
+
+  .table-container {
+    background: linear-gradient(180deg, var(--panel-tint), #fff 40%);
+    color: var(--fg);
+    padding: clamp(12px, 2.5vw, 24px);
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: clamp(12px, 2.5vw, 18px);
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #fff, var(--panel-tint));
+  }
+
+  .title {
+    margin: 0;
+    font-size: clamp(1.1rem, 0.9rem + 1.2vw, 1.6rem);
+    line-height: 1.25;
+    display: inline-flex;
+    gap: .6rem;
+    align-items: center;
+  }
+  .title i { color: var(--accent); }
+
+  /* Barre de recherche */
+  .searchTerm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    max-width: min(420px, 100%);
+    box-shadow: 0 1px 0 rgba(0,0,0,.02);
+  }
+  .searchTerm input#filter {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--fg);
+    font-size: 0.95rem;
+  }
+  .searchTerm input#filter::placeholder { color: var(--muted); }
+  .searchTerm:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent), transparent 82%);
+  }
+
+  /* Table wrapper */
+  .table-wrapper {
+    width: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.02), transparent 24px) top;
+  }
+
+  .table-wrapper table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 640px;
+    background: #fff;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, #fff, var(--panel-tint));
+    color: var(--muted);
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: .2px;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 14px;
+  }
+  thead th .th-label {
+    display: inline-flex;
+    gap: .5rem;
+    align-items: center;
+  }
+  thead th i { color: var(--accent); }
+
+  tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .ligne_paire { background: #fff; }
+  .ligne_impaire { background: var(--panel-tint); }
+  tbody tr:hover {
+    background: color-mix(in oklab, #ffffff, var(--accent-weak) 18%);
+  }
+
+  .tag {
+    display: inline-block;
+    background: var(--accent-weak);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: .2rem .6rem;
+    font-size: .85rem;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .phone-link-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .phone-link {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .phone-link:hover,
+  .phone-link:focus-visible {
+    text-decoration: underline;
+    outline: none;
+  }
+
+  /* Icônes d’attribut dans les cellules (desktop) */
+  .cell-attr {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .cell-attr i {
+    color: var(--accent);
+    width: 1.1em;
+    text-align: center;
+  }
+
+  /* Pagination */
+  .pagination {
+    margin: 14px auto 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 12px;
+  }
+  .pagination a,
+  .pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--fg);
+    background: #fff;
+    font-size: 0.95rem;
+  }
+  .pagination a:hover,
+  .pagination a:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent), transparent 82%);
+    outline: none;
+  }
+  .pagination .current {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .pagination .disabled {
+    color: var(--muted);
+    background: #f3f4f6;
+    pointer-events: none;
+  }
+
+  /* Mobile: table -> cartes */
+  @media (max-width: 760px) {
+    .panel-header { grid-template-columns: 1fr; }
+
+    .table-wrapper { overflow: visible; background: transparent; }
+    .table-wrapper table { min-width: 0; border-spacing: 0; }
+
+    table thead {
+      position: absolute;
+      width: 1px; height: 1px;
+      margin: -1px; padding: 0; border: 0;
+      overflow: hidden; clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    table tbody, table tr, table td {
+      display: block;
+      width: 100%;
+    }
+
+    table tbody tr {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 10px 12px;
+      margin: 10px 0;
+    }
+
+    table tbody td {
+      border: none;
+      display: grid;
+      grid-template-columns: 46% 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 4px;
+    }
+
+    table tbody td::before {
+      content: attr(data-label);
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: none;
+    }
+
+    /* Icônes visibles aussi sur mobile, côté valeur */
+    .cell-attr { justify-self: start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .sr-only {
+    position: absolute !important;
+    left: -10000px !important;
+    top: auto !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+  }
+
+</style>
+
+
+
 <div id="app-config"
      data-search-url="{% url 'Bapp:member_search' %}"
      data-list-url="{% url 'Bapp:missideh_bourou_members' %}"
      hidden>
 </div>
 <div class="table-container">
-    <div class="panel">
-      <div class="panel-header">
-        <h1 class="title">Liste de membres Missideh Bourou</h1>
-        <label class="search searchTerm">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#9ca3af" aria-hidden="true">
-            <path d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z" stroke="#9ca3af" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <input id="filter" type="search" placeholder="Rechercher…">
-
-        </label>
-        <div id="searchResults" class="search-results"></div>
-      </div>
-
-      <div class="table-wrapper">
-        <table aria-describedby="hint">
-          <thead>
-            <tr>
-              <th scope="col">Prénom:</th>
-              <th scope="col">Quartier:</th>
-              <th scope="col">Pays:</th>
-              <th scope="col">Téléphone:</th>
-              <th scope="col">Email:</th>
-            </tr>
-          </thead>
-          <tbody id="table-body">
-            {% if page_obj and page_obj.object_list %}
-              {% for m in page_obj.object_list %}
-                <tr class="{% if forloop.counter0|divisibleby:2 %}ligne_paire{% else %}ligne_impaire{% endif %}">
-                  <td data-label="Prénoms">{{ m.prenoms }}</td>
-                  <td data-label="Quartier">{{ m.quartier }}</td>
-                  <td data-label="Pays"><span class="tag">{{ m.pays }}</span></td>
-                    <td data-label="Telephone">
-                      {% if m.telephone %}
-                        <span class="phone-link-wrapper">
-                          <i class="fas fa-phone-alt" style="color:#3b82f6;"></i>
-                          <a href="tel:{{ m.telephone }}" class="phone-link">{{ m.telephone }}</a>
-                        </span>
-                      {% else %}-{% endif %}
-                    </td>
-                  <td data-label="Email">
-                    {% if m.email %}
-                      <a href="mailto:{{ m.email }}" style="color:#93c5fd;text-decoration:none;">{{ m.email }}</a>
-                    {% else %}-{% endif %}
-                  </td>
-                </tr>
-              {% endfor %}
-            {% else %}
-              <tr><td colspan="5" style="text-align:center;color:#a3a3a3;padding:18px;">Aucun membre trouvé.</td></tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-
-      {% if is_paginated %}
-        <nav class="pagination" role="navigation" aria-label="Pagination">
-          {% if page_obj.has_previous %}
-            <a href="?page=1" aria-label="Première page">«</a>
-            <a href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente">‹</a>
-          {% else %}
-            <span class="disabled" aria-disabled="true">«</span>
-            <span class="disabled" aria-disabled="true">‹</span>
-          {% endif %}
-
-          {% with start=page_obj.number|add:"-2" end=page_obj.number|add:"2" %}
-            {% for num in page_obj.paginator.page_range %}
-              {% if num >= start and num <= end %}
-                {% if num == page_obj.number %}
-                  <span class="current" aria-current="page">{{ num }}</span>
-                {% else %}
-                  <a href="?page={{ num }}">{{ num }}</a>
-                {% endif %}
-              {% endif %}
-            {% endfor %}
-          {% endwith %}
-
-          {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante">›</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page">»</a>
-          {% else %}
-            <span class="disabled" aria-disabled="true">›</span>
-            <span class="disabled" aria-disabled="true">»</span>
-          {% endif %}
-        </nav>
-        <p style="text-align:center;color:#a3a3a3;font-size:.9rem;">
-          Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
-        </p>
-      {% endif %}
-      <p id="hint" class="sr-only" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
-        Tableau des membres responsive; sur mobile, chaque ligne devient une carte avec labels.
-      </p>
+  <div class="panel">
+    <div class="panel-header">
+      <h1 class="title">
+        <i class="fas fa-users" aria-hidden="true"></i>
+        Liste de membres Missideh Bourou
+      </h1>
+      <label class="search searchTerm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#9ca3af" aria-hidden="true">
+          <path d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z" stroke="#9ca3af" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input id="filter" type="search" placeholder="Rechercher…">
+      </label>
+      <div id="searchResults" class="search-results"></div>
     </div>
+
+    <div class="table-wrapper">
+      <table aria-describedby="hint">
+        <thead>
+          <tr>
+            <th scope="col"><span class="th-label"><i class="fas fa-id-badge" aria-hidden="true"></i> Prénom</span>:</th>
+            <th scope="col"><span class="th-label"><i class="fas fa-location-dot" aria-hidden="true"></i> Quartier</span>:</th>
+            <th scope="col"><span class="th-label"><i class="fas fa-flag" aria-hidden="true"></i> Pays</span>:</th>
+            <th scope="col"><span class="th-label"><i class="fas fa-phone" aria-hidden="true"></i> Téléphone</span>:</th>
+            <th scope="col"><span class="th-label"><i class="fas fa-envelope" aria-hidden="true"></i> Email</span>:</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          {% if page_obj and page_obj.object_list %}
+            {% for m in page_obj.object_list %}
+              <tr class="{% if forloop.counter0|divisibleby:2 %}ligne_paire{% else %}ligne_impaire{% endif %}">
+                <td data-label="Prénoms">
+                  <span class="cell-attr"><i class="fas fa-id-badge" aria-hidden="true"></i>{{ m.prenoms }}</span>
+                </td>
+                <td data-label="Quartier">
+                  <span class="cell-attr"><i class="fas fa-location-dot" aria-hidden="true"></i>{{ m.quartier }}</span>
+                </td>
+                <td data-label="Pays">
+                  <span class="cell-attr"><i class="fas fa-flag" aria-hidden="true"></i><span class="tag">{{ m.pays }}</span></span>
+                </td>
+                <td data-label="Telephone">
+                  {% if m.telephone %}
+                    <span class="phone-link-wrapper">
+                      <i class="fas fa-phone" style="color:#2563eb;" aria-hidden="true"></i>
+                      <a href="tel:{{ m.telephone }}" class="phone-link">{{ m.telephone }}</a>
+                    </span>
+                  {% else %}-{% endif %}
+                </td>
+                <td data-label="Email">
+                  {% if m.email %}
+                    <span class="cell-attr">
+                      <i class="fas fa-envelope" aria-hidden="true"></i>
+                      <a href="mailto:{{ m.email }}" style="color:#2563eb;text-decoration:none;">{{ m.email }}</a>
+                    </span>
+                  {% else %}-{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" style="text-align:center;color:#6b7280;padding:18px;">Aucun membre trouvé.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="pagination" role="navigation" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page=1" aria-label="Première page">«</a>
+          <a href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente">‹</a>
+        {% else %}
+          <span class="disabled" aria-disabled="true">«</span>
+          <span class="disabled" aria-disabled="true">‹</span>
+        {% endif %}
+
+        {% with start=page_obj.number|add:"-2" end=page_obj.number|add:"2" %}
+          {% for num in page_obj.paginator.page_range %}
+            {% if num >= start and num <= end %}
+              {% if num == page_obj.number %}
+                <span class="current" aria-current="page">{{ num }}</span>
+              {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endwith %}
+
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante">›</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page">»</a>
+        {% else %}
+          <span class="disabled" aria-disabled="true">›</span>
+          <span class="disabled" aria-disabled="true">»</span>
+        {% endif %}
+      </nav>
+      <p style="text-align:center;color:#6b7280;font-size:.9rem;">
+        Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+      </p>
+    {% endif %}
+
+    <p id="hint" class="sr-only">
+      Tableau des membres responsive; sur mobile, chaque ligne devient une carte avec labels.
+    </p>
   </div>
+</div>
+
+
 
   <script>
     // Filtre client léger (optionnel)
@@ -121,6 +421,52 @@
       });
     });
   </script>
+
+
+
+<!-- Script d’amélioration progressive: filtre instantané côté client + focus pagination -->
+<script>
+  (function() {
+    const input = document.getElementById('filter');
+    const tableBody = document.getElementById('table-body');
+
+    if (input && tableBody) {
+      let raf = null;
+      const normalize = (s) => (s || '').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      const filterRows = (query) => {
+        const q = normalize(query.trim());
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+          const text = normalize(row.innerText);
+          const visible = !q || text.includes(q);
+          row.style.display = visible ? '' : 'none';
+        });
+      };
+
+      input.addEventListener('input', function() {
+        const value = this.value;
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => filterRows(value));
+      });
+    }
+
+    // Améliore la navigation clavier sur la pagination
+    const pagination = document.querySelector('.pagination');
+    if (pagination) {
+      pagination.addEventListener('keydown', (e) => {
+        if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+        const focusables = [...pagination.querySelectorAll('a,button,[tabindex]:not([tabindex="-1"])')];
+        const idx = focusables.indexOf(document.activeElement);
+        if (idx === -1) return;
+        e.preventDefault();
+        const nextIdx = e.key === 'ArrowRight' ? Math.min(idx + 1, focusables.length - 1) : Math.max(idx - 1, 0);
+        focusables[nextIdx].focus();
+      });
+    }
+  })();
+</script>
+
 
 {% endblock %}
 {% block scripts %}<script src="{% static 'js/client/member_search.js'%}"></script> {% endblock %}

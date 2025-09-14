@@ -18,9 +18,9 @@
 .uploader-form{ display:grid; gap:16px; }
 
 /* Grille générique des champs texte */
-.form-grid{ display:grid; gap:12px; grid-template-columns: 1fr 1fr; }
+.form-grid{ display:flex;  }
 @media (max-width: 680px){ .form-grid{ grid-template-columns: 1fr; } }
-.form-row{ display:grid; gap:6px; }
+.form-row{ display:grid; gap:6px; width:100%; }
 .form-row label{ font-weight:600; color:#0f172a; }
 .form-row input[type="text"],
 .form-row input[type="number"],
@@ -62,7 +62,7 @@
 .dz-text{ display:grid; gap:4px; color:#334155; }
 .dz-text strong{ color:#0f172a; }
 .dz-choose{
-  display:inline-flex; align-items:center; gap:8px;
+  display:inline-flex; align-items:center; gap:8px; justify-content:center;
   background: linear-gradient(180deg, #1e40af, #1e3a8a);
   color:#fff; border:none; border-radius:10px; padding:.6rem .9rem;
   font-weight:700; cursor:pointer;

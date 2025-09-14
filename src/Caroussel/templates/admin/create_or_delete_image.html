@@ -1,0 +1,34 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}<title>Gérer les images</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/admin/create_or_delete_image.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+{% block content %}
+<main class="actions-shell">
+  <section class="actions-card" aria-labelledby="images-actions-title">
+    <header class="actions-head">
+      <h1 id="images-actions-title" class="actions-title">Gestion des images</h1>
+      <p class="actions-sub">Choisissez une action ci-dessous.</p>
+    </header>
+
+    <nav class="actions-grid" aria-label="Actions images">
+      <!-- Adaptez les noms de routes selon votre configuration -->
+      <a href="{% url 'Caroussel:upload_image' %}" class="action-link" aria-label="Uploader des images">
+        <span class="icon" aria-hidden="true">⬆️</span>
+        Uploader des images
+      </a>
+
+      <a href="{% url 'Caroussel:images_album'%}" class="action-link" aria-label="Supprimer des images déjà uploadées">
+        <span class="icon" aria-hidden="true">🗑️</span>
+        Supprimer des images
+      </a>
+
+      <a href="{% url 'Caroussel:caroussel' %}" class="action-link" aria-label="Visualiser les images">
+        <span class="icon" aria-hidden="true">🖼️</span>
+        Visualiser les images
+      </a>
+    </nav>
+  </section>
+</main>
+{% endblock %}
