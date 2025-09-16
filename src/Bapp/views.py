@@ -1229,7 +1229,7 @@ def participation_view(request):
 #Peut ajouter des dépenses
 @has_secretor_role([ "ADMIN", "SECOND_SECRETOR" "MODERATOR" ])
 @csrf_exempt
-def depenses_view(request):
+def add_depenses_view(request):
     template = "site/depenses/depenses.html"
     context = {"message": "Bienvenue sur la page d'ajout de depenses"}
 

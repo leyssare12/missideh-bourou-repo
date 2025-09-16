@@ -47,10 +47,10 @@ payload = json.dumps({
                 "templateName": "test_whatsapp_template_en",
                 "templateData": {
                     "body": {
-                        "placeholders": ["missideh-bourou"]
+                        "placeholders": ["test"]
                     }
                 },
-                "language": "fr"
+                "language": "en"
             }
         }
     ]

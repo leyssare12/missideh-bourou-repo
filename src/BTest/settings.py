@@ -9,14 +9,14 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import base64
 import os
 from ast import literal_eval
+from os import getenv
 from pathlib import Path
 
 from django.conf.global_settings import SECRET_KEY, DEBUG
 from dotenv import load_dotenv
-
-from Bapp.middlewars import MediaDebugMiddleware
 
 #importation du module decouple pour pouvoir integrer le fichier .aappgenv
 from decouple import Config, RepositoryEnv
@@ -32,29 +32,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #config = Config(RepositoryEnv(BASE_DIR / '.mail_login_env'))
 load_dotenv(BASE_DIR / '.mail_login_env')
 load_dotenv(BASE_DIR / '.login_env')
+load_dotenv(BASE_DIR / '.telegram_env')
 
+#Variable d'environnement'
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # Configuration du DEBUG
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Configuration des ALLOWED_HOSTS
-#if DEBUG:
-#    ALLOWED_HOSTS = ['*']
-#    print(DEBUG, SECRET_KEY)
-#else:
-#    # Valeur par défaut sécurisée
-#    default_hosts = 'http://localhost, http://127.0.0.1, http://bourou_test.local'
-#    ALLOWED_HOSTS = [
-#        host.strip()
-#        for host in os.getenv('ALLOWED_HOSTS', default_hosts).split(',')
-#        if host.strip()
-#    ]
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.109', 'bourou_test.local']
+# Configuration de l'application pour l'utilisation de Telegram 2FA'
+TELEGRAM_BOT_USERNAME_1 = getenv('TELEGRAM_BOT_USERNAME_1')
+TELEGRAM_BOT_TOKEN_1 = getenv('TELEGRAM_BOT_TOKEN_1')
+TELEGRAM_API_URL_1 = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN_1}'
+TELEGRAM_WEBHOOK_SECRET_1 = getenv('TELEGRAM_WEBHOOK_SECRET_1')
+#bot 2
+TELEGRAM_BOT_USERNAME_2 = getenv('TELEGRAM_BOT_USERNAME_2')
+TELEGRAM_API_TOKEN_2 = getenv("TELEGRAM_API_TOKEN_2")
+TELEGRAM_CHAT_ID_2 = getenv('TELEGRAM_CHAT_ID_2')
+TELEGRAM_API_URL_2 = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN_2}'
 
-print(ALLOWED_HOSTS)
-#CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
+
+HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = [host.strip() for host in HOSTS if host.strip()]
+
 #Database login
 DB_NAME = os.getenv('DB_NAME')
 PG_ADMIN_USER = os.getenv('PG_ADMIN_USER')
@@ -62,24 +63,14 @@ PG_PASSWORD_PASSWORD = os.getenv('PG_ADMIN_PASSWORD')
 PG_HOST = os.getenv('PG_HOST', 'db')
 PG_PORT = os.getenv('PG_PORT', '5432')
 
-print(DB_NAME, PG_ADMIN_USER, PG_PASSWORD_PASSWORD, PG_HOST, PG_PORT, SECRET_KEY, DEBUG, ALLOWED_HOSTS, sep='\n')
 #Email login
-
 #Systéme de gestion de mails
-#EMAIL_HOST = os.getenv('EMAIL_HOST')
-#EMAIL_PORT = os.getenv('EMAIL_PORT', default=25)
-#EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', default='')
-#EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', default='')
-#EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', default=True).lower() == 'true'
-#EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', default=False).lower() == 'true'
-
-
-EMAIL_HOST='smtp.ionos.de'
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_USE_SS=False
-EMAIL_HOST_USER='m-cherif@leyssare.net'
-EMAIL_HOST_PASSWORD='eXF18Rpngtdw'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT', default=25)
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', default=True)
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', default=False)
 
 # Application definition
 
@@ -92,11 +83,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_pgviews',
     'rest_framework',
-    'Bapp',
+    'corsheaders',
+    'Bapp.apps.BappConfig',
+    'Caroussel.apps.ImageConfig',
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -105,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'Bapp.middlewars.MediaDebugMiddleware',
+    'Bapp.middlewars.AuthRequiredMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
 ]
@@ -129,6 +124,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'BTest.wsgi.application'
+#Pour utiliser l'application asynchrone'
+ASGI_APPLICATION = 'BTest.asgi.application'
 
 
 # Database
@@ -228,3 +225,4 @@ print(PDFS_ROOT, PDFS_URL, sep='\n')
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

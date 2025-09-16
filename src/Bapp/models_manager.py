@@ -102,7 +102,7 @@ class ModelCRUDManager:
 
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
-            return redirect('Bapp:index')
+            return redirect('Bapp:dashboard2')
 
     def handle_edit(self, request, item_id, view_instance=None):
         """Gestion de la modification d'un élément"""
@@ -136,7 +136,7 @@ class ModelCRUDManager:
 
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
-            return redirect('Bapp:index')
+            return redirect('Bapp:dashboard2')
 
     def handle_delete(self, request, item_id):
         """Gestion de la suppression d'un élément"""
@@ -162,7 +162,7 @@ class ModelCRUDManager:
 
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
-            return redirect('home')
+            return redirect('Bapp:dashboard2')
 
 class ParticipationAnnuelManager(View):
     crud_manager = ModelCRUDManager(

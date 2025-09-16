@@ -1,0 +1,202 @@
+{% extends "site/client/base_client.html" %}
+
+{% load static %}
+{% block title %}<title>Connexion - Espace Membre</title>{% endblock %}
+
+{% block extra_css %}<link href="{% static 'css/client/Telegram/telegram.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <h2><i class="fas fa-lock"></i> Connexion</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Formulaire de base -->
+        {% if error %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>{{ error }}
+            </div>
+        {% endif %}
+
+        <!-- Option: Proposer la liaison Telegram -->
+        {% if show_options %}
+            <div class="option-card">
+                <h3><i class="fab fa-telegram"></i> Vérification en 2 étapes avec Telegram</h3>
+                <p>Protégez votre compte en utilisant Telegram comme second facteur d'authentification.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="identifiant" value="{{ identifiant }}">
+                    <input type="hidden" name="action" value="link_telegram">
+
+                    <button type="submit">
+                        <i class="fas fa-link"></i>Activer la vérification par Telegram
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+
+        <!-- Option: Demander le code OTP -->
+        {% if show_otp %}
+            <div class="option-card">
+                <h3><i class="fas fa-shield-alt"></i> Vérification en 2 étapes</h3>
+                <p>Entrer le code qui vous a été envoyé sur Télegram.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="identifiant" value="{{ identifiant }}">
+
+                    <div>
+                        <label class="otp_telegram" for="otp-input">Code de vérification (6 chiffres):</label>
+                        <input  class="otp_telegram" type="text" id="otp-input" name="otp_code" pattern="[0-9]{6}" maxlength="6" required placeholder="123456">
+                    </div>
+
+                    <button type="submit"><i class="fas fa-check-circle"></i>Vérifier le code</button>
+                    <button type="button" onclick="requestNewCode('{{ user_id }}')">
+                        <i class="fas fa-redo-alt"></i>Renvoyer un code
+                    </button>
+                </form>
+
+                {% if error %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>{{ error }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Option: Afficher le QR code de liaison -->
+        {% if show_link_qr %}
+            <div class="option-card">
+                <h3><i class="fas fa-qrcode"></i> Liaison de votre compte Telegram</h3>
+                <p>Scannez ce QR code avec Telegram:</p>
+
+                <div class="qr-code">
+                    <!-- QR code généré via une librairie JavaScript -->
+                    <div id="qrcode"></div>
+                    <p>Ou <a href="https://t.me/{{ bot_username }}?start={{ nonce }}" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>cliquez ici
+                    </a> pour ouvrir Telegram</p>
+                </div>
+
+                <p>Après avoir lié votre compte, actualisez cette page pour continuer.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="identifiant" value="{{ identifiant }}">
+                    <button type="submit"><i class="fas fa-sync-alt"></i>J'ai lié mon compte</button>
+                </form>
+
+                <div id="link-status" class="alert alert-info hidden">
+                    <i class="fas fa-sync fa-spin"></i>Vérification de la liaison en cours...
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+    // Définir les URLs dynamiques
+    const URLS = {
+        check_telegram_link: "{% url 'Bapp:check_telegram_link' %}",
+        request_new_otp: "{% url 'Bapp:request_new_otp_telegram' %}"
+        };
+    </script>
+
+    <!-- Librairie pour générer les QR codes -->
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script>
+    // Générer le QR code
+    {% if show_link_qr %}
+    document.addEventListener('DOMContentLoaded', function() {
+        var qrcode = new QRCode(document.getElementById("qrcode"), {
+            text: "https://t.me/{{ bot_username }}?start={{ nonce }}",
+            width: 200,
+            height: 200
+        });
+
+        // Vérifier périodiquement si l'utilisateur a lié son compte
+        startLinkCheck('{{ user_id }}');
+    });
+    {% endif %}
+
+    function startLinkCheck(userId) {
+        var statusElement = document.getElementById('link-status');
+        statusElement.classList.remove('hidden');
+
+        var checkInterval = setInterval(function() {
+            fetch(URLS.check_telegram_link, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ user_id: userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.is_linked) {
+                    statusElement.textContent = '✅ Compte lié avec succès!';
+                    statusElement.className = 'alert alert-success';
+                    clearInterval(checkInterval);
+
+                    // Rediriger ou soumettre le formulaire automatiquement
+                    setTimeout(function() {
+                        document.querySelector('form').submit();
+                    }, 2000);
+                }
+            });
+        }, 3000); // Vérifier toutes les 3 secondes
+    }
+
+    function requestNewCode(userId) {
+        fetch(URLS.request_new_otp, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ user_id: userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Nouveau code envoyé!');
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        });
+    }
+
+    function getCookie(name) {
+        // Fonction utilitaire pour récupérer le cookie CSRF
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    </script>
+
+{% endblock %}
+

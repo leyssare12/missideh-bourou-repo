@@ -1,0 +1,147 @@
+{% extends "site/client/base_client.html" %}
+{% load static %}
+
+{% block title %}<title>Cotisations annuelles</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/client/caisse/cotisation_annuel.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+<section class="coti-container" aria-labelledby="coti-title">
+  <div class="coti-header">
+    <h1 id="coti-title" class="coti-title">
+      <i class="fa-solid fa-hand-holding-dollar" aria-hidden="true"></i>
+      Cotisations annuelles
+    </h1>
+
+    <div class="coti-tools">
+      <div class="coti-search">
+        <input type="search" id="cotiFilter" placeholder="Rechercher par prénom ou quartier…"
+               aria-label="Filtrer les cotisations">
+        <i class="fa-solid fa-search" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  {% if page_obj and page_obj.object_list %}
+    <!-- Affichage cartes (mobile / petits écrans) -->
+    <div class="coti-grid" id="cotiGrid">
+      {% for item in page_obj %}
+        <article class="coti-card" data-name="{{ item.prenom|lower }}" data-quartier="{{ item.quartier|lower }}">
+          <div class="coti-row">
+            <span class="label"><i class="fa-solid fa-user" aria-hidden="true"></i> Prénom</span>
+            <strong>{{ item.prenom }}</strong>
+          </div>
+          <div class="coti-row">
+            <span class="label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Quartier</span>
+            <span>{{ item.quartier }}</span>
+          </div>
+          <div class="coti-row">
+            <span class="label"><i class="fa-solid fa-coins" aria-hidden="true"></i> Montant</span>
+            <span class="coti-amount"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i> {{ item.montant }}</span>
+          </div>
+          <div class="coti-row">
+            <span class="label"><i class="fa-solid fa-calendar-day" aria-hidden="true"></i> Date</span>
+            <time class="coti-date">{{ item.date_cotisation }}</time>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <!-- Affichage tableau (desktop + tablette paysage) -->
+    <div class="coti-table-wrapper" id="cotiTableWrapper" aria-hidden="true">
+      <table class="coti-table" id="cotiTable">
+        <thead>
+          <tr>
+            <th>Prénom</th>
+            <th>Quartier</th>
+            <th>Montant</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in page_obj %}
+          <tr data-name="{{ item.prenom|lower }}" data-quartier="{{ item.quartier|lower }}">
+            <td>{{ item.prenom }}</td>
+            <td>{{ item.quartier }}</td>
+            <td class="tbl-amount">{{ item.montant }}</td>
+            <td class="tbl-date">{{ item.date_cotisation }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if is_paginated %}
+      <nav class="coti-pagination" role="navigation" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+          <a class="coti-page-btn" href="?page=1" aria-label="Première page">
+            <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
+          </a>
+          <a class="coti-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente">
+            <i class="fa-solid fa-angle-left" aria-hidden="true"></i> Précédent
+          </a>
+        {% endif %}
+
+        <span class="coti-page-info" aria-live="polite">
+          Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+          <a class="coti-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante">
+            Suivant <i class="fa-solid fa-angle-right" aria-hidden="true"></i>
+          </a>
+          <a class="coti-page-btn" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page">
+            <i class="fa-solid fa-angles-right" aria-hidden="true"></i>
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="coti-empty" role="status">
+      <p><i class="fa-regular fa-folder-open" aria-hidden="true"></i></p>
+      <p>Aucune cotisation trouvée.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function() {
+    const input = document.getElementById('cotiFilter');
+    const grid = document.getElementById('cotiGrid');
+    const table = document.getElementById('cotiTable');
+
+    if (!input) return;
+
+    const filterFn = (q) => {
+      const query = q.trim().toLowerCase();
+
+      // Filtre les cartes
+      if (grid) {
+        grid.querySelectorAll('.coti-card').forEach(card => {
+          const name = card.getAttribute('data-name') || '';
+          const quartier = card.getAttribute('data-quartier') || '';
+          const visible = !query || name.includes(query) || quartier.includes(query);
+          card.style.display = visible ? '' : 'none';
+        });
+      }
+
+      // Filtre les lignes du tableau
+      if (table) {
+        table.querySelectorAll('tbody tr').forEach(row => {
+          const name = row.getAttribute('data-name') || '';
+          const quartier = row.getAttribute('data-quartier') || '';
+          const visible = !query || name.includes(query) || quartier.includes(query);
+          row.style.display = visible ? '' : 'none';
+        });
+      }
+    };
+
+    input.addEventListener('input', function () {
+      filterFn(this.value);
+    });
+  })();
+</script>
+
+{% endblock %}

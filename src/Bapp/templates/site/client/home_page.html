@@ -6,23 +6,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Missideh Bourou</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/client/home_page.css'%}">
+
 </head>
 <body>
       <header class="navbar">
     <div class="nav-content">
       <a class="logo" href="{% url 'Bapp:home_page'%}" style="text-decoration:none;">
-        <img src="{% static 'images/logo.png'%}"
+        <img src="{% static 'images/logo_b289906d-56b1-44f8-8472-a5fb7bc4947f.png'%}"
              alt="Logo"
              class="logo-img">
-        <span>Missideh Bourou</span>
+         <div>
+            <span class="name">Missideh Bourou</span>
+            <span class="domaine">.online</span>
+        </div>
       </a>
       <nav class="nav-links" id="nav-links">
-        <a href="#">Membres</a>
-        <a href="#">Contacts</a>
-        <a href="#">Pays</a>
-        <a href="#" class="auth-btn">S'authentifier</a>
+        <a href="{% url 'Bapp:missideh_bourou_members'%}">Membres</a>
+        <a href="{% url 'Bapp:telegram_otp_login'%}">Whatsapp</a>
+          <label for="country">Pays:</label>
+            <select class="country" name="country" id="country">
+                <option value="Guinee">Guinée</option>
+                <option value="senegal">Sénégal</option>
+                <option value="ci"> Côte d'Ivoire</option>
+                <option value="eu">Europe</option>
+                <option value="usa">USA</option>
+            </select>
+
+        <a href="{% url 'Bapp:member_login_view'%}" class="auth-btn">S'authentifier</a>
       </nav>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <i class="fas fa-bars"></i>
@@ -30,22 +44,66 @@
       </button>
     </div>
   </header>
-
-
-
-
-  <section class="hero">
+   <section class="hero">
     <div class="hero-container">
+      <!-- Texte -->
       <div class="hero-text">
         <h1>Missideh Bourou ko fii Fow</h1>
-        <p>Une plateforme pour connecter, partager et grandir ensemble.s simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-        <a href="{% url 'Bapp:members_authentification'%}" class="btn-primary">Rejoindre en tant que membre</a>
+          <section class="section1">
+
+          <h2>Qui sommes-nous ?</h2>
+          <p>
+            L’association <strong>Missideh-Bourou</strong> est née de la volonté de femmes et d’hommes engagés pour
+            l’entraide, l’éducation et l’amélioration des conditions de vie.
+            Elle place l’humain au cœur de ses actions pour un développement inclusif et durable.
+          </p>
+
+          <h2>Nos actions</h2>
+          <ul>
+            <li>Campagnes de sensibilisation dans les écoles et villages</li>
+            <li>Formations en artisanat, agriculture et entrepreneuriat</li>
+            <li>Programmes de soutien scolaire pour les enfants défavorisés</li>
+            <li>Collecte et redistribution de biens essentiels</li>
+            <li>Événements culturels pour rassembler la communauté</li>
+          </ul>
+          <h2>Pourquoi nous soutenir ?</h2>
+          <p>
+            En rejoignant Missideh-Bourou, vous contribuez à bâtir une société plus équitable et solidaire.
+            Chaque geste compte, qu’il s’agisse de :
+          </p>
+          <h2>Notre vision</h2>
+          <p>
+            Nous aspirons à une société où chaque individu, sans distinction, peut s’épanouir et contribuer activement
+            au développement collectif. Une société où la solidarité est une réalité vécue au quotidien.
+          </p>
+        </section>
+
       </div>
+      <!-- Carrousel -->
       <div class="hero-image">
-        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d" alt="Collaboration">
+        <div id="loader" class="loader"></div>
+        <div class="swiper" aria-label="Carrousel d'images">
+          <div class="swiper-wrapper" id="carousel"></div>
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button-next" aria-label="Suivant"></div>
+          <div class="swiper-button-prev" aria-label="Précédent"></div>
+        </div>
+      </div>
+      <!-- CTA déplacé à la fin -->
+      <div class="hero-cta">
+        <a href="{% url 'Bapp:member_login_view'%}" class="btn-primary">
+          Rejoindre en tant que membre
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
       </div>
     </div>
   </section>
+
+
+<!-- Swiper.js -->
+<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+
+
 
   <footer class="footer">
     <div class="footer-content">
@@ -93,6 +151,123 @@
         body.style.overflow = '';
       }
     });
+  </script>
+  <script>
+       async function chargerImages() {
+    const baseUrl = window.location.origin;
+    const response = await fetch(`${baseUrl}/api/images/`);
+    const data = await response.json();
+    const carousel = document.getElementById("carousel");
+    const loader = document.getElementById("loader");
+    const swiperContainer = document.querySelector(".swiper");
+
+    // On vide d'abord le carousel
+    carousel.innerHTML = "";
+
+    // Si pas d’images → afficher un message
+    if (!data.length) {
+      loader.style.display = "none";
+      swiperContainer.style.display = "flex";
+      carousel.innerHTML = `<div class="swiper-slide"><div class="caption">Aucune image disponible</div></div>`;
+      return;
+    }
+
+    // Ajout des images
+    data.forEach(img => {
+      const slide = document.createElement("div");
+      slide.classList.add("swiper-slide");
+
+      slide.innerHTML = `
+        <img
+          src="${img.fichier}"
+          srcset="
+            ${img.fichier_thumbnail} 300w,
+            ${img.fichier_mobile} 800w,
+            ${img.fichier} 1200w
+          "
+          sizes="(max-width: 600px) 100vw,
+                 (max-width: 1024px) 90vw,
+                 1200px"
+          alt="${img.titre}">
+        <div class="caption">${img.titre || "Sans titre"}</div>
+      `;
+
+      carousel.appendChild(slide);
+    });
+
+    // Masquer le loader et afficher le carrousel
+    loader.style.display = "none";
+    swiperContainer.style.display = "block";
+
+    // Initialiser Swiper avec paramètres robustes mobile/tablette
+    const maxBullets = 10;
+
+const swiper = new Swiper(".swiper", {
+  loop: true,
+  speed: 600,
+  centeredSlides: true,
+  spaceBetween: 10,
+
+  autoplay: {
+    delay: 4000,
+    disableOnInteraction: false,
+    pauseOnMouseEnter: false
+  },
+
+  pagination: {
+    el: ".swiper-pagination",
+    clickable: true,
+    renderBullet: function (index, className) {
+      // on récupère l'index actif de Swiper
+      let activeIndex = this.realIndex;
+      let start = Math.floor(activeIndex / maxBullets) * maxBullets;
+      let end = start + maxBullets;
+
+      if (index >= start && index < end) {
+        return '<span class="' + className + '">' + (index + 1) + "</span>";
+      }
+      return "";
+    }
+  },
+
+  navigation: {
+    nextEl: ".swiper-button-next",
+    prevEl: ".swiper-button-prev"
+  },
+
+  observer: true,
+  observeParents: true,
+  watchSlidesProgress: true,
+  updateOnWindowResize: true,
+  preloadImages: true,
+
+  allowTouchMove: true,
+  touchStartPreventDefault: false,
+  passiveListeners: true,
+
+  breakpoints: {
+    0:   { slidesPerView: 1 },
+    640: { slidesPerView: 1 },
+    1024:{ slidesPerView: 1 }
+  }
+});
+
+// Mise à jour des bullets à chaque changement de slide
+swiper.on("slideChange", () => {
+  swiper.pagination.render();
+  swiper.pagination.update();
+});
+
+// Force le démarrage autoplay après init
+try { swiper.autoplay.start(); } catch(e) {}
+
+    // Force le démarrage autoplay après init (certains mobiles le suspendent)
+    try { swiper.autoplay.start(); } catch(e) {}
+  }
+    console.log('Document changé.');
+  document.addEventListener("DOMContentLoaded", chargerImages);
+
+
   </script>
 
 

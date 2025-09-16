@@ -1,0 +1,156 @@
+{% extends "site/client/base_client.html" %}
+
+{% load static %}
+{% block title %}<title>Connexion - Espace Membre</title>{% endblock %}
+
+{% block extra_css %}<link href="{% static 'css/client/Login/members_login.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h3>Se connecter à l'espace membre</h3>
+            </div>
+
+            <div class="login-body">
+                <!-- Affichage des messages d'erreur (exemple) -->
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                {% if message.tags == 'success' %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>{{ message }}
+                </div>
+                {% elif message.tags == 'error' %}
+                <div class="alert alert-error">
+                    <i class="fas fa-exclamation-circle"></i>{{ message }}
+                </div>
+                {% elif message.tags == 'warning' %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>{{ message }}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>{{ message }}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>Veuillez saisir votre identifiant pour vous connecter
+                </div>
+
+                <form method="post" id="loginForm" action="{% url 'Bapp:member_login_view' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="identifiant">Identifiant :</label>
+                        <input type="text" id="identifiant" name="identifiant" class="form-input" placeholder="Votre identifiant" required autofocus>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">Se connecter</button>
+                </form>
+                <div class="status-message" id="statusMessage"></div>
+                <div class="class-login-footer">
+                    <p>Besoin d'aide ? <a href="#">Contactez-nous</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        //Déclaration de l'URL
+        const URL = {login_view: "{% url 'Bapp:member_login_view' %}",};
+
+    </script>
+
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            const identifiantField = document.getElementById('identifiant');
+
+            // Variable pour suivre l'état de soumission
+            let isSubmitting = false;
+
+            // Vérifier si l'utilisateur revient en arrière après une soumission
+            const wasSubmitted = sessionStorage.getItem('formSubmitted');
+            if (wasSubmitted) {
+                statusMessage.textContent = "Vous êtes revenu à la page de connexion. Vous pouvez vous reconnecter.";
+                statusMessage.style.color = "#4a6cf7";
+                sessionStorage.removeItem('formSubmitted');
+            }
+
+            // Focus sur le champ identifiant
+            if (identifiantField) {
+                identifiantField.focus();
+            }
+
+            // Gestion de la soumission du formulaire
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    // Empêcher les soumissions multiples
+                    if (isSubmitting) {
+                        return;
+                    }
+
+                    isSubmitting = true;
+
+                    if (loginBtn) {
+                        loginBtn.classList.add('btn-loading');
+                        loginBtn.disabled = true;
+                    }
+
+                    statusMessage.textContent = "Tentative de connexion en cours...";
+                    statusMessage.style.color = "#4a6cf7";
+
+                    // Simulation d'une requête de connexion
+                    setTimeout(function() {
+                        // Marquer que le formulaire a été soumis
+                        sessionStorage.setItem('formSubmitted', 'true');
+
+                        // Réactiver le bouton pour les futurs retours
+                        if (loginBtn) {
+                            loginBtn.classList.remove('btn-loading');
+                            loginBtn.disabled = false;
+                        }
+
+                        // Réinitialiser l'état de soumission
+                        isSubmitting = false;
+
+                        // Méthode 1: Soumettre le formulaire normalement
+                        loginForm.submit();
+
+                    }, 1500);
+                });
+            }
+
+            // Nettoyer le sessionStorage quand l'utilisateur quitte la page
+            window.addEventListener('beforeunload', function() {
+                // Ne supprimer que si l'utilisateur navigue ailleurs (pas lors de la soumission)
+                if (!isSubmitting) {
+                    sessionStorage.removeItem('formSubmitted');
+                }
+            });
+
+            // Ajustement pour les petits écrans
+            function adjustLayout() {
+                if (window.innerHeight < 600) {
+                    document.body.style.alignItems = 'flex-start';
+                } else {
+                    document.body.style.alignItems = 'center';
+                }
+            }
+
+            // Ajuster au chargement et au redimensionnement
+            adjustLayout();
+            window.addEventListener('resize', adjustLayout);
+        });
+    </script>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

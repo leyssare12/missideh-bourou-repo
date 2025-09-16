@@ -157,9 +157,11 @@ def edit_article(request, pk):
         return redirect('Bapp:article_list')  # Accès refusé si non-auteur/non-superuser
 
     if request.method == 'POST':
-        form = EditorialCommunityForm(request.POST, instance=article)
+        form = EditorialCommunityForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Formulaire modifié avec succès.')
+            print('formulaire poster avec succes')
             return redirect('Bapp:article_list')
     else:
         form = EditorialCommunityForm(instance=article)

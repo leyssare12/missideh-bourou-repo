@@ -1,0 +1,101 @@
+{% extends "site/client/base_client.html" %}
+{% load static %}
+
+{% block title %}<title>Gérer les images</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/bourou/album_images.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+
+<main class="gallery-shell">
+  <h1 class="gallery-title">Galerie d’images Missideh-Bourou</h1>
+
+  <!-- Grille des miniatures -->
+  <div class="gallery-grid" id="galleryGrid" aria-live="polite" aria-busy="true"></div>
+
+  <!-- Lightbox plein écran -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Quitter le plein écran">✕</button>
+    <div class="lightbox-img-wrap">
+      <img id="lightboxImg" class="lightbox-img" alt="">
+    </div>
+  </div>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+  const baseUrl = window.location.origin;
+  const grid = document.getElementById("galleryGrid");
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lightboxClose = document.getElementById("lightboxClose");
+
+  function openLightbox(src, alt = "Image") {
+    lightboxImg.src = src;
+    lightboxImg.alt = alt;
+    lightbox.classList.add("active");
+    lightbox.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => lightboxClose.focus(), 0);
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove("active");
+    lightbox.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    setTimeout(() => {
+      lightboxImg.src = "";
+      lightboxImg.alt = "";
+    }, 150);
+  }
+
+  lightboxClose.addEventListener("click", closeLightbox);
+  lightbox.addEventListener("click", (e) => { if (e.target === lightbox) closeLightbox(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && lightbox.classList.contains("active")) closeLightbox();
+  });
+
+  try {
+    const res = await fetch(`${baseUrl}/api/images/`);
+    if (!res.ok) throw new Error("Erreur API: " + res.status);
+    const images = await res.json();
+
+    const frag = document.createDocumentFragment();
+    images.forEach((img, index) => {
+      const title = img.titre || `Image ${index + 1}`;
+      const card = document.createElement("div");
+      card.className = "thumb-card";
+
+      const imageEl = document.createElement("img");
+      imageEl.className = "thumb-img";
+      imageEl.loading = "lazy";
+      imageEl.src = img.fichier;
+      imageEl.alt = title;
+
+      const btn = document.createElement("button");
+      btn.className = "thumb-button";
+      btn.type = "button";
+      btn.setAttribute("aria-label", `Agrandir: ${title}`);
+      btn.addEventListener("click", () => openLightbox(img.fichier, title));
+      btn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openLightbox(img.fichier, title);
+        }
+      });
+
+      card.appendChild(imageEl);
+      card.appendChild(btn);
+      frag.appendChild(card);
+    });
+
+    grid.appendChild(frag);
+  } catch (err) {
+    console.error("🔥 Erreur lors du chargement des images:", err);
+    grid.innerHTML = '<p style="text-align:center;color:#ef4444;">Impossible de charger les images.</p>';
+  } finally {
+    grid.setAttribute("aria-busy", "false");
+  }
+});
+</script>
+{% endblock %}

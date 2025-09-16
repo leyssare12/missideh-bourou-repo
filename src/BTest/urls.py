@@ -20,6 +20,7 @@ from django.views.static import serve
 
 from BTest import settings
 from Bapp.error_views import ErrorHandlerView
+from Bapp.users_views import home_page
 from Bapp.views import index
 
 # Définition des handlers
@@ -30,12 +31,11 @@ handler500 = ErrorHandlerView.handler500
 
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', home_page, name='home'),
     path('admin/', admin.site.urls),
+    path('', include('Caroussel.urls', namespace='Caroussel')),
     path('Bourou/', include('Bapp.urls', namespace='Bapp')),
     # Ajout explicite de l'URL pour servir les médias
-    re_path(r'^media/(?P<path>.*)$', serve, {
-        'document_root': settings.MEDIA_ROOT,
-    }),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT,}),
 
 ]

@@ -1,0 +1,189 @@
+
+{% extends "site/client/base_client.html" %}
+
+{% load static %}
+{% block title %}<title>Connexion - Espace Membre</title>{% endblock %}
+
+{% block extra_css %}<link href="{% static 'css/client/Qrcode/qrcode.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+{% block content %}
+<section class="otp-setup">
+        <!-- Version configuration OTP -->
+
+    {% if not request.session.user_otp_enabled %}
+        <div class="card">
+            <header class="card__header">
+                <h2 class="card__title"><i class="fas fa-shield-alt"></i> Activez la double authentification</h2>
+                <p class="card__subtitle">
+                    Scannez le QR code ci‑dessous avec Google Authenticator, puis entrez le code généré.
+                </p>
+            </header>
+
+            <div class="qr-wrap">
+                {% if qr_code_url %}
+                <img
+                    class="qr-img"
+                    src="{{ qr_code_url }}"
+                    alt="QR Code OTP à scanner"
+                    width="320" height="320"
+                    loading="eager"
+                />
+                {% else %}
+                <div class="qr-placeholder" aria-live="polite">QR en cours de génération…</div>
+                {% endif %}
+                {% if qr_code_url %}
+                <a class="qr-open" href="{{ qr_code_url }}" target="_blank" rel="noopener">
+                    <i class="fas fa-external-link-alt"></i>Ouvrir le QR dans un nouvel onglet
+                </a>
+                {% endif %}
+            </div>
+               {% if error %}
+                    <p class="feedback feedback--error" role="alert" aria-live="assertive"><i class="fas fa-exclamation-circle"></i>{{ error }}</p>
+                {% endif %}
+
+            <form method="post" class="otp-form" id="otp-form2">
+                {% csrf_token %}
+                      <!-- Affichage des messages d'erreur (exemple) -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>{{ message }}
+                    </div>
+                    {% elif message.tags == 'error' %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>{{ message }}
+                    </div>
+                    {% elif message.tags == 'warning' %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>{{ message }}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>{{ message }}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <label for="otp" class="field__label">
+                    <i class="fas fa-key"></i>Entrez le code à 6 chiffres
+                </label>
+                <input
+                    id="otp"
+                    name="code"
+                    class="field__input otp-input"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    placeholder="••••••"
+                    required
+                />
+                <button type="submit" class="btn btn--primary">
+                    <i class="fas fa-check-circle"></i>Vérifier
+                </button>
+                <p class="helper">
+                    <i class="fas fa-lightbulb"></i>Astuce: si votre appareil propose l’auto‑remplissage du code, acceptez‑le pour gagner du temps.
+                </p>
+            </form>
+        </div>
+    {% endif %}
+        <!-- Version vérification OTP -->
+     {% if request.session.user_otp_enabled %}
+        <div class="card" style="margin-top: 30px;">
+            <header class="card__header">
+                <h2 class="card__title"><i class="fas fa-check-shield"></i> Vérification du code</h2>
+                <p class="card__subtitle">Entrez le code généré par Google Authenticator.</p>
+            </header>
+
+            {% if error %}
+                <p class="feedback feedback--error" role="alert" aria-live="assertive"><i class="fas fa-exclamation-circle"></i>{{ error }}</p>
+            {% endif %}
+            <form method="post" class="otp-form" id="otp-form">
+                {% csrf_token %}
+               <!-- Affichage des messages d'erreur (exemple) -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>{{ message }}
+                    </div>
+                    {% elif message.tags == 'error' %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>{{ message }}
+                    </div>
+                    {% elif message.tags == 'warning' %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>{{ message }}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>{{ message }}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <label for="otp-verify" class="field__label">
+                    <i class="fas fa-key"></i>Code à 6 chiffres
+                </label>
+
+                <input
+                    id="otp-verify"
+                    name="code"
+                    class="field__input otp-input"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxlength="6"
+                    placeholder="••••••"
+                    required
+                />
+                <button type="submit" class="btn btn--primary">
+                    <i class="fas fa-check-circle"></i>Vérifier
+                </button>
+            </form>
+        </div>
+      {% endif %}
+    </section>
+
+    <script>
+     const otpFields = document.querySelectorAll('.otp-input');
+
+     otpFields.forEach(field => {
+        field.addEventListener('input', function() {
+            // Garde uniquement les chiffres
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            // Limite la longueur selon l’attribut maxlength
+            if (this.maxLength && this.value.length > this.maxLength) {
+                this.value = this.value.slice(0, this.maxLength);
+            }
+
+            // Trouver le formulaire associé à ce champ
+            const form = this.closest('form');
+            if (!form) return; // sécurité si jamais pas dans un form
+
+            // Vérifie si tous les inputs .otp-input dans CE formulaire sont remplis
+            let allFilled = true;
+            form.querySelectorAll('.otp-input').forEach(f => {
+                if (f.value.length !== f.maxLength) {
+                    allFilled = false;
+                }
+            });
+
+            // Si tout est rempli, soumettre automatiquement CE formulaire
+            if (allFilled) {
+                form.submit();
+            }
+        });
+    });
+
+    </script>
+  {% endblock %}

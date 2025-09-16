@@ -1,0 +1,106 @@
+{% extends "site/client/base_client.html" %}
+{% load static %}
+<!--Cette ligne permet l'appel à la méthode json_extra pour foramter les années dans le requete psotgresql-->
+{% load json_extra %}
+
+{% block title %}<title>Status de participations annuel</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/client/caisse/has_annual_particpated.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+
+{% block content %}
+<div class="pa-container">
+  <header class="pa-header">
+    <h1 class="pa-title">Participation annuelle des membres</h1>
+    <div class="pa-legend">
+      <span class="pa-badge pa-badge--ok" title="A participé">✓ Participé</span>
+      <span class="pa-badge pa-badge--no" title="Pas de participation">✗ Non Participé</span>
+    </div>
+  </header>
+
+  <!-- Vue cartes (mobile-first) -->
+  <div class="pa-cards">
+    {% for m in members %}
+      <article class="pa-card" aria-label="Fiche membre">
+        <div class="pa-card-head">
+          <div class="pa-avatar" aria-hidden="true">{{ m.prenoms|first|default:"?" }}</div>
+          <div>
+            <div class="pa-card-name">{{ m.prenoms }}</div>
+            <div class="pa-card-sub">{{ m.quartier }}</div>
+          </div>
+        </div>
+        <div class="pa-chip-grid">
+          {% for y in years %}
+            {% if m.statut_par_annee|get_item:y %}
+              <span class="pa-chip pa-chip--ok" title="Année {{ y }}: a participé">
+                <strong>{{ y }}</strong> ✓
+              </span>
+            {% else %}
+              <span class="pa-chip pa-chip--no" title="Année {{ y }}: pas de participation">
+                <strong>{{ y }}</strong> ✗
+              </span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <!-- Vue tableau (affichée à partir de tablette/desktop) -->
+  <div class="pa-table-wrap" role="region" aria-label="Tableau des participations" tabindex="0">
+    <table class="pa-table">
+      <thead>
+        <tr>
+          <th scope="col">Prénoms</th>
+          <th scope="col">Quartier</th>
+          {% for y in years %}
+            <th scope="col" class="ta-center">{{ y }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in members %}
+          <tr>
+            <td>{{ m.prenoms }}</td>
+            <td class="muted">{{ m.quartier }}</td>
+            {% for y in years %}
+              {% if m.statut_par_annee|get_item:y %}
+                <td class="ta-center">
+                  <span class="pa-badge pa-badge--ok" title="A participé">✓</span>
+                </td>
+              {% else %}
+                <td class="ta-center">
+                  <span class="pa-badge pa-badge--no" title="Pas de participation">✗</span>
+                </td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_paginated %}
+    <nav class="pa-pagination" role="navigation" aria-label="Pagination" style="margin-top:16px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;">
+      {% if page_obj.has_previous %}
+        <a class="pa-page-btn" href="?page=1" aria-label="Première page" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">«</a>
+        <a class="pa-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">Précédent</a>
+      {% endif %}
+
+      <span class="pa-page-info" aria-live="polite" style="padding:.5rem .75rem; border-radius:8px; background:#f1f5f9; border:1px solid #e5e7eb;">
+        Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+      </span>
+
+      {% if page_obj.has_next %}
+        <a class="pa-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">Suivant</a>
+        <a class="pa-page-btn" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">»</a>
+      {% endif %}
+    </nav>
+  {% else %}
+    <div class="pa-empty" role="status" style="margin-top:16px; text-align:center; color:#64748b;">
+      Aucun membre trouvé.
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

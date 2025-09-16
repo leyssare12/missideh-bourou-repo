@@ -1,0 +1,39 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}<title>Upload images</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/upload_image_success.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image uploadée</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+  <main class="shell">
+    <section class="card" role="status" aria-live="polite">
+      <div class="icon-wrap" aria-hidden="true">✅</div>
+      <h2>Image uploadée avec succès</h2>
+      <p class="sub">Vos fichiers sont enregistrés. Que souhaitez-vous faire ensuite ?</p>
+
+      <div class="actions">
+        <a class="btn btn-ghost" href="{% url 'Caroussel:upload_image' %}" aria-label="Uploader une autre image">
+          Uploader une autre image
+        </a>
+        <a class="btn btn-primary" href="{% url 'Caroussel:caroussel' %}" aria-label="Voir les images uploadées">
+          Voir les images
+        </a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "site/client/base_client.html" %}
+{% load static %}
+
+{% block title %}<title>Annonces</title>{% endblock %}
+
+{% block extra_css %}<link href="{% static 'css/client/caisse/announce.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+
+{% block content %}
+<div class="wrap">
+    <header class="site" role="banner">
+        <div>
+            <h1>Articles</h1>
+            <p class="subtitle">Actualités et contenus, adaptés à tous les écrans.</p>
+        </div>
+    </header>
+
+    {% if articles %}
+        <section class="articles-grid" aria-label="Liste des articles">
+            {% for article in articles %}
+                <article class="card" itemscope itemtype="https://schema.org/Article">
+                    {% if article.image %}
+                        <div class="media">
+                            <img src="{{ article.image.url }}"
+                                 alt="{{ article.title }}"
+                                 loading="lazy"
+                                 decoding="async"
+                                 itemprop="image" />
+                        </div>
+                    {% endif %}
+
+                    <div class="content">
+                        <h2 itemprop="headline">
+                            {{ article.title }}
+                        </h2>
+
+                        <div class="meta">
+                            {% if article.author %}
+                                <span class="badge" title="Auteur">Par {{ article.author }}</span>
+                            {% endif %}
+                            {% if article.published_at %}
+                                <time datetime="{{ article.published_at|date:'c' }}" itemprop="datePublished">
+                                    Publié le {{ article.published_at }}
+                                </time>
+                            {% endif %}
+                        </div>
+
+                        <p class="excerpt" itemprop="description">
+                            {{ article.content|striptags|truncatewords:40 }}
+                        </p>
+
+                        <div class="actions">
+                            {% if article.extra_links %}
+                                <a class="button"
+                                   href="{{ article.extra_links }}"
+                                   target="_blank"
+                                   rel="noopener nofollow external"
+                                   aria-label="Lire l’article « {{ article.title }} » (ouvre un nouvel onglet)">
+                                   Lire l’article
+                                </a>
+                            {% else %}
+                                <span class="ghost" aria-disabled="true">Lien indisponible</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+                <!-- Pagination améliorée -->
+             {% if is_paginated and page_obj and paginator %}
+             <nav class="pagination" aria-label="Pagination" style="margin: 1.2rem 0; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
+                 {# Lien "Précédent" #}
+                 {% if page_obj.has_previous %}
+                     <a class="ghost" href="?page={{ page_obj.previous_page_number }}{{ querystring }}" rel="prev" aria-label="Page précédente">Précédent</a>
+                 {% else %}
+                     <span class="ghost" aria-disabled="true">Précédent</span>
+                 {% endif %}
+
+                 {# Pages avec ellipses #}
+                 {% for p in page_range %}
+                     {% if p == page_obj.number %}
+                         <span class="button" aria-current="page"> {{ p }} </span>
+                     {% elif p == '…' or p == '...' %}
+                         <span class="ghost" aria-hidden="true" style="pointer-events:none;">…</span>
+                     {% else %}
+                         <a class="ghost" href="?page={{ p }}{{ querystring }}" aria-label="Aller à la page {{ p }}">{{ p }}</a>
+                     {% endif %}
+                 {% endfor %}
+
+                 {# Lien "Suivant" #}
+                 {% if page_obj.has_next %}
+                     <a class="ghost" href="?page={{ page_obj.next_page_number }}{{ querystring }}" rel="next" aria-label="Page suivante">Suivant</a>
+                 {% else %}
+                     <span class="ghost" aria-disabled="true">Suivant</span>
+                 {% endif %}
+
+                 <span class="ghost" aria-label="Position" style="pointer-events:none;">
+                     Page {{ page_obj.number }} / {{ paginator.num_pages }}
+                 </span>
+             </nav>
+             {% endif %}
+        </section>
+    {% else %}
+        <p>Aucun article disponible pour le moment.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

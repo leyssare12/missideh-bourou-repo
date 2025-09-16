@@ -1,0 +1,248 @@
+
+/* Styles de base et réinitialisation */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Conteneur principal */
+.login-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.container-class {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#container_id {
+    width: 100%;
+    max-width: 450px;
+}
+
+/* Carte de formulaire */
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 0;
+}
+
+/* Alertes */
+.alert {
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+
+.alert-error {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
+
+/* Formulaire */
+.step-form {
+    padding: 0 20px;
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem !important;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.code-input {
+    letter-spacing: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 12px;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Bouton */
+.btn-custom {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-custom:hover {
+    background-color: #3a56d4;
+    transform: translateY(-2px);
+}
+
+.btn-custom:active {
+    transform: translateY(0);
+}
+
+/* Texte centre */
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Media Queries pour le responsive design */
+
+/* Tablettes */
+@media (max-width: 768px) {
+    .card {
+        border-radius: 10px;
+    }
+
+    .p-md-4 {
+        padding: 1.5rem !important;
+    }
+
+    .code-input {
+        font-size: 20px;
+        letter-spacing: 8px;
+        padding: 10px;
+    }
+}
+
+/* Mobiles */
+@media (max-width: 576px) {
+    body {
+    }
+
+    .login-container {
+        padding: 10px;
+    }
+
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .p-3 {
+        padding: 1rem !important;
+    }
+
+    .code-input {
+        font-size: 18px;
+        letter-spacing: 6px;
+        padding: 8px;
+    }
+
+    .form-label {
+        font-size: 14px;
+    }
+
+    .btn-custom {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .form-text {
+        font-size: 0.8rem;
+    }
+
+    .text-muted {
+        font-size: 0.8rem;
+    }
+}
+
+/* Très petits écrans */
+@media (max-width: 360px) {
+    .code-input {
+        font-size: 16px;
+        letter-spacing: 4px;
+        padding: 6px;
+    }
+}

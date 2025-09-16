@@ -166,7 +166,21 @@ def auto_logout(view_func):
 
 
 
+def login_required_by_urlname(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return view_func(request, *args, **kwargs)
 
+        messages.warning(request, 'Vous devez vous authentifier pour accéder à cette page.')
+        # Récupérer le nom de la vue en cours
+        url_name = request.resolver_match.url_name
 
+        # Selon le pattern du nom, rediriger
+        if url_name and url_name.startswith("cotisation_annuelles_view"):
+            return redirect("Bapp:member_login_view")
+        return redirect("Bapp:home_page")  # fallback
+
+    return _wrapped_view
 
 

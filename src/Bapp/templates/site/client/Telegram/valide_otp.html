@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h2>Bravo votre compte à été activé avec succés.</h2>
+
+    {% if success %}
+        <p>{{success}}</p>
+    {% endif %}
+    {% if error %}
+        <p>{{error}}</p>
+    {% endif %}
+</body>
+</html>

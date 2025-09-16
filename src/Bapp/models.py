@@ -1,8 +1,9 @@
 import os
 import uuid
-from datetime import timedelta
+from datetime import timedelta, date
 from urllib import request
 
+import pyotp
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
@@ -25,6 +26,15 @@ def get_profile_image_path(instance, filename):
     # Retourner le chemin complet
     return os.path.join('images/profile_pictures', new_filename)
 
+
+def current_year():
+    # Fournit l'année courante sous forme d'entier pour les champs "year"
+    return date.today().year
+
+
+def default_email_verification_expiration():
+    # Fournit un datetime dynamique à la création de l'objet
+    return timezone.now() + timedelta(days=1)
 
 # Create your models here.
 """User Manager"""
@@ -111,6 +121,9 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
     profile_picture = models.ImageField(upload_to=get_profile_image_path, blank=True, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_by_user')
 
+    otp_secret = models.CharField(max_length=32, blank=True, null=True)
+    otp_enabled = models.BooleanField(default=False)
+
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
@@ -122,7 +135,7 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
 
     email_verified = models.BooleanField(default=False)
     email_verification_token = models.UUIDField(null=True, blank=True, unique=True)
-    email_verification_expiration = models.DateTimeField(default=timezone.now() + timedelta(days=1), blank=True, null=True)
+    email_verification_expiration = models.DateTimeField(default=default_email_verification_expiration, blank=True, null=True)
     password_changed = models.BooleanField(default=False)
 
     #Est-ce-que l'utilisateur fait partie de ceux qui finance le maintien du site
@@ -300,11 +313,23 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
 
 User = get_user_model() # on recupere un pointeur ver BtestCustomUser
 
+class TwoFactorSettingsTelegram(models.Model):
+    """
+    Profil 2FA par utilisateur:
+    - Stocke l'identité Telegram (chat_id) pour l'envoi de codes par bot.
+    - Peut contenir le canal préféré et la date de liaison.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="twofa_settings")
+    telegram_chat_id = models.BigIntegerField(null=True, blank=True, unique=True)
+    telegram_linked_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"2FA settings for {getattr(self.user, 'identifiant', self.user.pk)}"
 
 class TwoFactorAuth(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='two_factor_auth')
     token_code = models.CharField(max_length=8)
-    channel = models.CharField(max_length=20, choices=(('email', 'email'), ('whatsapp', 'whatsapp')))
+    channel = models.CharField(max_length=20, choices=(('email', 'email'), ('whatsapp', 'whatsapp'), ('telegram', 'telegram')), default='email')
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     is_used = models.BooleanField(default=False)
@@ -324,16 +349,44 @@ class TwoFactorAuth(models.Model):
     @property
     def token_expired(self):
         """Vérifie si le code a expiré et le marque comme utilisé."""
-        if timezone.now() > self.expires_at:
-            if not self.is_used:  # ✅ marquer seulement si pas déjà marqué
-                self.is_used = True
-                self.save(update_fields=["is_used"])
         return timezone.now() > self.expires_at
     @property
     def token_valid(self):
         return not self.is_used and not self.token_expired
+    def mark_as_used(self):
+        """Marque explicitement le token comme utilisé."""
+        if not self.is_used:
+            self.is_used = True
+            self.save(update_fields=["is_used"])
+
     def __str__(self):
         return f"{self.user.identifiant} - {self.channel}"
+
+class TelegramOTP2FA(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    secret_key = models.CharField(max_length=32, default=pyotp.random_base32)
+    last_used = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def generate_otp(self):
+        """Génère un code OTP temporaire  de 6 chiffres à partir du secret key de l'utilisateur."""
+        totp = pyotp.TOTP(self.secret_key, interval=300)  # 5 minutes de validité
+        return totp.now()
+
+    def verify_otp_telegram(self, otp_code):
+        """Vérifie un code OTP"""
+        totp = pyotp.TOTP(self.secret_key, interval=300)
+        is_valid = totp.verify(otp_code)
+        if is_valid:
+            self.last_used = timezone.now()
+            self.save()
+        return is_valid
+
+    @classmethod
+    def get_or_create_for_user(cls, user):
+        obj, created = cls.objects.get_or_create(user=user)
+        return obj
 
 class PDFManager(models.Model):
     DOCUMENT_TYPES = [
@@ -377,6 +430,7 @@ class PDFManager(models.Model):
         return self.file.name.split('/')[-1]
 
 
+
 class DashboardModule(models.Model):
     name = models.CharField(max_length=100)
     icon = models.CharField(max_length=50)  # Classe Font Awesome
@@ -401,13 +455,14 @@ class ResetPasswordToken(models.Model):
         return not self.used and self.expiration > timezone.now()
 
 
-#Gestions de participations.css annuel
+#Gestions de participations annuel
 
 class ParticipationAnnual(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
                                    related_name='manager_participation_annuel')
     participant_id = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     montant_participation = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
+    year = models.PositiveIntegerField(default=current_year)
     date_participation = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
@@ -419,6 +474,7 @@ class ParticipationOccasionnelle(models.Model):
     participant_id = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     montant_participation = models.DecimalField(max_digits=10, decimal_places=2, null=False, blank=False)
     motif_participation = models.TextField(null=False, blank=False)
+    year = models.PositiveIntegerField(default=current_year)
     date_participation = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -481,3 +537,229 @@ class MissidehBourouMembersView(pgview.View):
     class Meta:
         managed = False
         db_table = 'missideh_bourou_members_view'
+
+class CotisationOccasionnelleView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    prenom = models.CharField(max_length=100)
+    quartier = models.CharField(max_length=100)
+    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    motif_cotisation = models.TextField()
+    date_cotisation = models.DateTimeField()
+
+    sql = """
+    SELECT
+        b.id as id,
+        b.prenoms as prenom,
+        b.quartier as quartier,  
+        p.montant_participation as montant,  
+        p.motif_participation as motif_cotisation,   
+        to_char(p.updated_at, 'DD/MM/YYYY') as date_cotisation
+    FROM "Bapp_btestcustomuser" as b 
+    INNER JOIN "Bapp_participationoccasionnelle" as p on b.id = p.participant_id_id
+    ORDER BY p.updated_at DESC;
+    """
+    class Meta:
+        managed = False
+        db_table = 'cotisation_occasionnelle_view'
+
+class CotisationAnnuelleView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    prenom = models.CharField(max_length=100)
+    quartier = models.CharField(max_length=100)
+    montant = models.DecimalField(max_digits=10, decimal_places=2)
+    date_cotisation = models.DateTimeField()
+
+    sql = """
+    SELECT 
+        b.id as id,
+        b.prenoms as prenom, 
+        b.quartier as quartier,  
+        p.montant_participation as montant,  
+        to_char(p.updated_at, 'DD/MM/YYYY') as date_cotisation
+    FROM "Bapp_btestcustomuser" as b 
+    INNER JOIN "Bapp_participationannual" as p on b.id = p.participant_id_id
+    ORDER BY p.updated_at desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'cotisation_annuelle_view'
+
+class DonsView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    nom = models.CharField(max_length=100)
+    prenom = models.CharField(max_length=100)
+    montant_don = models.DecimalField(max_digits=10, decimal_places=2)
+    motif_don = models.TextField()
+    date_don = models.DateTimeField()
+
+    sql = """
+    SELECT 
+        id,
+        prenom, 
+        nom, 
+        montant_don, 
+        motif_don, 
+        to_char(updated_at, 'DD/MM/YYY') as date_don
+    FROM "Bapp_dons" 
+    ORDER BY updated_at desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'dons_view'
+class DepensesView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    montant_depense = models.DecimalField(max_digits=10, decimal_places=2)
+    motif_depense = models.TextField()
+    date_depense = models.DateTimeField()
+
+    sql = """
+        SELECT
+            id, 
+            montant_depense, 
+            motif_depense, 
+            to_char(date_depense, 'DD/MM/YYYY') as date_depense
+        FROM "Bapp_adddepenses"
+        ORDER BY date_depense desc;
+    """
+    class Meta:
+        managed = False
+        db_table = 'depenses_view'
+class TotauxView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    montant_cotisationannuel = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_cotisationoccasionnelle = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_dons = models.DecimalField(max_digits=10, decimal_places=2)
+    montant_depenses = models.DecimalField(max_digits=10, decimal_places=2)
+    type_annuel = models.CharField(max_length=64, null=True, blank=True)
+    type_occasionnelle = models.CharField(max_length=64, null=True, blank=True)
+    type_dons = models.CharField(max_length=64, null=True, blank=True)
+    type_depenses = models.CharField(max_length=64, null=True, blank=True)
+    aujourdhui = models.DateTimeField()
+
+
+    sql = """
+     SELECT
+        row_number() OVER ()::int AS id,
+        t.montant_cotisationannuel,
+        t.montant_cotisationoccasionnelle,
+        t.montant_dons,
+        t.montant_depenses,
+        t.type_annuel,
+        t.type_occasionnelle,
+        t.type_dons,
+        t.type_depenses,
+        t.aujourdhui
+    FROM (
+        SELECT
+            'TOTAL COTISATION ANNUEL'::text AS type_annuel,
+            NULL::text AS type_occasionnelle,
+            NULL::text AS type_dons,
+            NULL::text AS type_depenses,
+            COALESCE(SUM(montant_participation), 0)::numeric(10,2) AS montant_cotisationannuel,
+            NULL::numeric(10,2) AS montant_cotisationoccasionnelle,
+            NULL::numeric(10,2) AS montant_dons,
+            NULL::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_participationannual"
+        UNION ALL
+        SELECT
+            NULL::text AS type_annuel,
+            'TOTAL COTISATION OCCASIONNELLE'::text AS type_occasionnelle,
+            NULL::text AS type_dons,
+            NULL::text AS type_depenses,
+            NULL::numeric(10,2) AS montant_cotisationannuel,
+            COALESCE(SUM(montant_participation), 0)::numeric(10,2) AS montant_cotisationoccasionnelle,
+            NULL::numeric(10,2) AS montant_dons,
+            NULL::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_participationoccasionnelle"
+        UNION ALL
+        SELECT
+            NULL::text AS type_annuel,
+            NULL::text AS type_occasionnelle,
+            'TOTAL DONS'::text AS type_dons,
+            NULL::text AS type_depenses,
+            NULL::numeric(10,2) AS montant_cotisationannuel,
+            NULL::numeric(10,2) AS montant_cotisationoccasionnelle,
+            COALESCE(SUM(montant_don), 0)::numeric(10,2) AS montant_dons,
+            NULL::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_dons"
+        UNION ALL
+        SELECT
+            NULL::text AS type_annuel,
+            NULL::text AS type_occasionnelle,
+            NULL::text AS type_dons,
+            'TOTAL DEPENSE'::text AS type_depenses,
+            NULL::numeric(10,2) AS montant_cotisationannuel,
+            NULL::numeric(10,2) AS montant_cotisationoccasionnelle,
+            NULL::numeric(10,2) AS montant_dons,
+            COALESCE(SUM(montant_depense), 0)::numeric(10,2) AS montant_depenses,
+            current_timestamp AS aujourdhui
+        FROM "Bapp_adddepenses"
+    ) AS t
+
+    """
+    class Meta:
+       managed = False
+       db_table = 'totaux_view'
+
+class StatusMemberAnnualParticipation(pgview.View):
+    id = models.IntegerField(primary_key=True)  # id du membre
+    prenoms = models.TextField()
+    quartier = models.TextField()
+    statut_par_annee = models.JSONField()  # JSONB côté Postgres
+
+    # IMPORTANT: django_pgviews attend 'sql', pas 'CREATE_VIEW_SQL'
+    sql = """
+    WITH ap AS (
+      SELECT participant_id_id, year
+      FROM "Bapp_participationannual"
+      WHERE year BETWEEN EXTRACT(YEAR FROM CURRENT_DATE)::int - 4
+                      AND EXTRACT(YEAR FROM CURRENT_DATE)::int
+      GROUP BY participant_id_id, year
+    )
+    SELECT 
+      m.id,
+      m.prenoms,
+      m.quartier,
+      COALESCE(
+        jsonb_object_agg(ap.year::text, 'vert' ORDER BY ap.year)
+          FILTER (WHERE ap.year IS NOT NULL),
+        '{}'::jsonb
+      ) AS statut_par_annee
+    FROM "Bapp_btestcustomuser" m
+    LEFT JOIN ap
+      ON ap.participant_id_id = m.id
+    GROUP BY m.id, m.prenoms, m.quartier
+    """
+
+    class Meta:
+        managed = False
+        db_table = 'status_member_annual_participation'
+        verbose_name = "Participation annuelle (vue)"
+        verbose_name_plural = "Participations annuelles (vue)"
+class AnnoncesMembersView(pgview.View):
+    id = models.IntegerField(primary_key=True)
+    author = models.CharField(max_length=60, blank=False, null=False)
+    title = models.CharField(max_length=255, blank=False, null=False)
+    content = models.TextField(blank=False, null=False)
+    image = models.ImageField(upload_to='images/missidhe_bourou_img', blank=True, null=True)
+    extra_links = models.URLField(blank=True, null=True)
+    published_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    sql = """
+    SELECT 
+        id, 
+        author, 
+        title, 
+        content, 
+        image, 
+        extra_links, 
+        to_char(updated_at, 'DD/MM/YYYY') as published_at
+    FROM "Bapp_editorialcommunity"
+    ORDER BY updated_at DESC;
+    """
+    class Meta:
+        managed = False
+        db_table = 'annonces_members_view'

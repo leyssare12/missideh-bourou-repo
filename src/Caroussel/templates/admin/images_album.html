@@ -1,0 +1,168 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}<title>Album d’images</title>{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/admin/images_album.css' %}" rel="stylesheet" type="text/css">
+{% endblock %}
+{% block content %}
+<main class="album-shell">
+  <section class="album-card">
+    <header class="album-head">
+      <h1 class="album-title">Album d’images</h1>
+      <p class="album-sub">Cliquez sur l’icône 🗑️ pour supprimer une image.</p>
+    </header>
+
+    {% if images %}
+      <div class="album-grid" id="albumGrid">
+        {% for img in images %}
+          <figure class="album-item" id="item-{{ img.id }}" data-id="{{ img.id }}" data-title="{{ img.titre|default:'Sans titre' }}" data-src="{{ img.fichier.url }}">
+            <img src="{{ img.fichier.url }}" alt="{{ img.titre|default:'Sans titre' }}" class="album-img" />
+            <figcaption class="caption">
+              {{ img.titre|default:'Sans titre' }}
+            </figcaption>
+            <button class="quick-delete" type="button" aria-label="Supprimer cette image" data-id="{{ img.id }}" data-src="{{ img.fichier.url }}" data-title="{{ img.titre|default:'Sans titre' }}">
+              🗑️
+            </button>
+          </figure>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="album-empty">
+        Aucune image pour le moment.
+      </div>
+    {% endif %}
+  </section>
+</main>
+
+<!-- Modale de confirmation suppression -->
+<div class="modal" id="deleteModal" aria-hidden="true" role="dialog" aria-modal="false" aria-labelledby="modal-title">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card">
+    <header class="modal-head">
+      <h2 id="modal-title">Supprimer cette image</h2>
+    </header>
+    <div class="modal-body">
+      <img id="modal-preview" alt="" />
+      <p id="modal-caption" class="muted"></p>
+      <p>Voulez-vous vraiment supprimer cette image ? Cette action est irréversible.</p>
+    </div>
+    <footer class="modal-actions">
+      <button type="button" class="btn btn-ghost" data-close>Annuler</button>
+      <button type="button" id="confirmDelete" class="btn btn-danger">Supprimer</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Zone message -->
+<div id="flashMessage" class="flash-message" style="display:none;"></div>
+
+<script>
+(function(){
+  const modal = document.getElementById('deleteModal');
+  const preview = document.getElementById('modal-preview');
+  const caption = document.getElementById('modal-caption');
+  const confirmBtn = document.getElementById('confirmDelete');
+  const flash = document.getElementById('flashMessage');
+  let currentId = null;
+
+  function openModal() {
+    console.debug("🔵 Ouverture de la modale pour suppression");
+    modal.setAttribute('aria-hidden','false');
+    modal.setAttribute('aria-modal','true');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    console.debug("🟢 Fermeture de la modale");
+    modal.setAttribute('aria-hidden','true');
+    modal.setAttribute('aria-modal','false');
+    document.body.style.overflow = '';
+  }
+
+  function showMessage(msg, type="success") {
+    console.debug("💬 Message affiché :", msg);
+    flash.textContent = msg;
+    flash.className = `flash-message ${type}`;
+    flash.style.display = "block";
+    setTimeout(() => flash.style.display = "none", 3000);
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target.matches('[data-close]')) {
+      console.debug("⏹ Fermeture via clic backdrop");
+      closeModal();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      console.debug("⏹ Fermeture via touche Escape");
+      closeModal();
+    }
+  });
+
+  // clic sur icône poubelle
+  document.querySelectorAll('.quick-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentId = btn.dataset.id;
+      const src = btn.dataset.src;
+      const title = btn.dataset.title || "Sans titre";
+
+      console.debug("🗑️ Bouton delete cliqué - ID:", currentId, "SRC:", src, "TITLE:", title);
+
+      preview.src = src;
+      preview.alt = title;
+      caption.textContent = title;
+
+      openModal();
+    });
+  });
+
+  // confirmer suppression
+  confirmBtn.addEventListener('click', () => {
+    if (!currentId) {
+      console.error("❌ Aucun ID trouvé pour suppression !");
+      return;
+    }
+
+    const url = `{% url 'Caroussel:delete_image' 0 %}`.replace('/0/','/' + currentId + '/');
+    console.debug("📡 Envoi requête AJAX vers:", url);
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(res => {
+      console.debug("📥 Réponse brute reçue:", res.status, res.statusText);
+      if (!res.ok) throw new Error("Erreur HTTP " + res.status);
+      return res.json();
+    })
+    .then(data => {
+      console.debug("✅ Réponse JSON:", data);
+      if (data.success) {
+        const item = document.getElementById(`item-${currentId}`);
+        if (item) {
+          console.debug("🟢 Suppression du DOM de l’élément:", currentId);
+          item.remove();
+        }
+        showMessage("L’image a bien été supprimée ✅");
+      } else {
+        console.error("❌ La vue Django a renvoyé success=false");
+        showMessage("Impossible de supprimer l’image ❌", "error");
+      }
+    })
+    .catch(err => {
+      console.error("🔥 Erreur AJAX:", err);
+      showMessage("Erreur de communication avec le serveur ❌", "error");
+    })
+    .finally(() => {
+      closeModal();
+      currentId = null;
+    });
+  });
+})();
+</script>
+{% endblock %}
