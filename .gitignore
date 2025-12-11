@@ -11,10 +11,14 @@ src/mb_envfiles/.infobipenv
 src/mb_envfiles/.login_data_env
 src/mb_envfiles/.login_env
 src/mb_envfiles/.mail_login_env
-src/.telegram_env
+src/mb_envfiles/.telegram_env
 src/media
+src/*.png
+src/*.txt
+src/*.yml
 .idea/
 src/.dockerignroe
+src/Dockerfile
 src/mb_envfiles/*
 *.log
 *.yml

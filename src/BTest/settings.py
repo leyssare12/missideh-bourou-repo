@@ -71,6 +71,7 @@ ALLOWED_HOSTS = split_csv_env("ALLOWED_HOSTS") or ["localhost", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = split_csv_env("CSRF_TRUSTED_ORIGINS")
 
 print(f"CRSF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
+print(DEBUG)
 #Database login
 DB_NAME = os.getenv('DB_NAME')
 PG_ADMIN_USER = os.getenv('PG_ADMIN_USER')
@@ -202,24 +203,39 @@ USE_I18N = True
 
 USE_TZ = True
 
+if DEBUG:
+    # --- ENVIRONNEMENT DE DÉVELOPPEMENT (Local) ---
+    # En local (HTTP), on ne veut pas forcer les cookies sécurisés
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
 
-#Trusted origins
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-USE_X_FORWARDED_HOST = True
+    # Optionnel : pour éviter des soucis de redirection locale
+    SECURE_HSTS_SECONDS = 0
+else:
+    # --- ENVIRONNEMENT DE PRODUCTION (HTTPS) ---
+    # Configuration stricte pour la sécurité
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
 
+    # HSTS (HTTP Strict Transport Security)
+    SECURE_HSTS_SECONDS = 31536000  # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
-#Systéme de gestion des sessions django
+# Systéme de gestion des sessions django
 
 SESSION_COOKIE_NAME = 'bapp_sessionid'
 SESSION_COOKIE_AGE = 1000
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False
+# SESSION_COOKIE_SECURE est maintenant géré dynamiquement dans le bloc if/else DEBUG ci-dessus
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-#Pour prolonger le temps si l'utilisateur reste actif sur le site.
+# Pour prolonger le temps si l'utilisateur reste actif sur le site.
 SESSION_SAVE_EVERY_REQUEST = True
+
 
 
 

@@ -73,7 +73,7 @@ services:
       - ${MBAPP}:/MBourou/media
     env_file:
       - mb_envfiles/.env
-      - .telegram_env
+      - mb_envfiles/.telegram_env
       - mb_envfiles/.mail_login_env
       - mb_envfiles/.login_env
     environment:

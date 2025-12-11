@@ -1,152 +1,493 @@
 {% extends "site/admin/base_admin.html" %}
-
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      {% block title %}<title>Add User</title>{% endblock %}
-      {% block extra_css %}<link href="{% static 'css/admin/admin_subcribe.css'%}" rel="stylesheet" type="text/css">{% endblock %}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
+
+{% block title %}<title>Ajouter un membre</title>{% endblock %}
+
+{% block extra_css %}
+<!-- On garde le lien vers le CSS de base -->
+<link href="{% static 'css/admin/admin_subcribe.css'%}" rel="stylesheet" type="text/css">
+<style>
+        .wizard-wrapper {
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+        /* Ajout d'un petit padding pour éviter que l'ombre des inputs ne soit coupée */
+        padding: 5px;
+    }
+
+    /* 2. La piste coulissante */
+    .wizard-track {
+        display: flex;
+        width: 200%; /* 200% pour 2 étapes */
+        align-items: flex-start;
+        transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        margin-left: 0; /* Sécurité */
+    }
+
+    /* 3. Les étapes individuelles */
+    .wizard-step {
+        width: 50%;
+        flex-shrink: 0; /* Empêche le rétrécissement */
+
+        /* CORRECTION CLÉ : Padding interne pour éloigner le contenu des bords de la coupure */
+        padding: 0 15px;
+        box-sizing: border-box; /* Inclut le padding dans le calcul des 50% */
+
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.4s ease 0.2s, visibility 0s linear 0.2s;
+    }
+
+    /* S'assure que les inputs prennent toute la largeur DISPONIBLE dans l'étape, pas plus */
+    .wizard-step .form-group,
+    .wizard-step .form-row {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .wizard-step input,
+    .wizard-step select {
+        width: 100%; /* Force l'input à ne pas dépasser son parent */
+        box-sizing: border-box; /* Important pour que padding + border soient inclus */
+    }
+
+    /* 4. L'étape active */
+    .wizard-step.active-step-content {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.4s ease 0.2s, visibility 0s linear 0s;
+    }
+    /* --- Barre de progression (inchangée) --- */
+    .progress-container {
+        margin-bottom: 40px;
+        position: relative;
+        padding: 0 20px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .progress-bar-bg {
+        background-color: #e0e0e0;
+        height: 4px;
+        width: 100%;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        z-index: 0;
+        border-radius: 10px;
+    }
+
+    .progress-bar-fill {
+        background-color: #00E3BE;
+        height: 100%;
+        width: 0%;
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    .step-indicators {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        z-index: 1;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        background-color: #fff;
+        border: 2px solid #ccc;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #999;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+    }
+
+    .step-circle.active {
+        border-color: #00E3BE;
+        color: #00E3BE;
+        box-shadow: 0 0 0 5px rgba(255, 213, 255, 0.25);
+    }
+
+    .step-circle.completed {
+        background-color: #00E3BE;
+        border-color: #00E3BE;
+        color: #fff;
+    }
+
+    /* --- Boutons --- */
+    .nav-buttons {
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .nav-buttons.end { justify-content: flex-end; }
+    .nav-buttons.between { justify-content: space-between; }
+
+    .btn-nav {
+        padding: 12px 35px;
+        border-radius: 12px;
+        border: none;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-next, .submit-btn {
+        background: linear-gradient(45deg, #00E3BE, #007D68);
+        color: white;
+        box-shadow: 0 4px 15px rgba(171, 171, 171, 0.3);
+    }
+
+    .btn-prev {
+        background-color: #f5f5f5;
+        color: #666;
+    }
+
+    .btn-nav:hover { transform: translateY(-2px); }
+
+    #div_password { display: none; }
+
+
+
+        .submit-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    /* --- NOUVEAU : Gestion des boutons de navigation (Retour / Valider) --- */
+    .nav-buttons.between {
+        display: flex;
+        justify-content: space-between; /* Écarte les boutons ou les centre selon l'espace */
+        align-items: center; /* Aligne verticalement (corrige le décalage de hauteur) */
+        gap: 15px; /* Espace constant entre les boutons */
+        width: 100%;
+        margin-top: 1.5rem; /* Espace avec le formulaire au-dessus */
+    }
+
+    /* Style commun aux boutons dans la nav pour garantir l'égalité */
+    .nav-buttons .btn-nav {
+        flex: 1; /* Force les deux boutons à avoir la même largeur */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px; /* Espace entre icône et texte */
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        margin: 0; /* IMPORTANT : Supprime les marges par défaut (le margin-top du submit-btn) qui causent le décalage */
+        white-space: nowrap; /* Empêche le texte de passer à la ligne */
+    }
+
+    /* Style spécifique pour le bouton "Retour" */
+    .btn-prev {
+        background-color: #a8a3a3;
+        color: white;
+        border: none;
+    }
+    .btn-prev:hover {
+        background-color: #5a6268;
+        transform: translateY(-2px);
+    }
+    /* --- FIN NOUVEAU --- */
+
+
+    input:valid, select:valid {
+        border-color: #ccc;
+    }
+
+    /* Responsive Design */
+// ... existing code ...
+    @media screen and (max-width: 1024px) {
+        /* ... existing code ... */
+        .submit-btn {
+            /* ... existing code ... */
+            margin-top: 20px;
+        }
+
+        /* OVERRIDE pour garder les boutons alignés sur mobile/tablette */
+        .nav-buttons .btn-nav {
+            width: auto; /* Annule le width: 100% global des submit-btn sur mobile */
+            margin-top: 0; /* Annule la marge du haut */
+            font-size: 14px; /* Ajuste la police pour que ça rentre mieux */
+            padding: 12px 8px;
+            text-align:center;
+        }
+
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <section class="signup-section">
     <div class="signup-container">
-        <h1 class="signup-title">Formulaire d'ajout de membres</h1>
-        <p class="para1">Notez que les champs avec étoiles sont obligatoires. </p>
+        <h1 class="signup-title">Ajouter un membre</h1>
+
+        <!-- Barre de progression -->
+        <div class="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="step-indicators">
+                <div class="step-circle active" id="circle-1">1</div>
+                <div class="step-circle" id="circle-2">2</div>
+            </div>
+        </div>
+
          <div class="container_form">
              {% if request.session.user_name %}
-             <p style=" padding:20px 0px;">Bonjour : <strong style="color:#e019ff;" >{{ request.session.user_name|default:"non définie" }}</strong></p>
+             <p style="padding-bottom:15px; font-size: 0.9rem; color:#666;">Admin : <strong style="color:#00E3BE;">{{ request.session.user_name|default:"non défini" }}</strong></p>
              {% endif %}
 
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}" >
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        <form method="POST" enctype="multipart/form-data" action="{% url 'Bapp:admin_subcribe'%}" class="signup-form" >
-            {% csrf_token %}
+            <form method="POST" enctype="multipart/form-data" action="{% url 'Bapp:admin_subcribe'%}" class="signup-form" id="signupForm">
+                {% csrf_token %}
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="lastName">Nom <strong class="asterisque">*</strong></label>
-                    {{ form.name }}
-                    <p class="error-message" style="color:red;">{{ form.name.errors }}</p>
-                </div>
-                <div class="form-group">
-                    <label for="firstName">Prénom <strong class="asterisque">*</strong></label>
-                    {{ form.prenoms }}
-                    <p class="error-message" style="color:red;">{{ form.prenoms.errors }}</p>
-                </div>
+                <!-- Wrapper pour le slider -->
+                <div class="wizard-wrapper">
+                    <!-- Piste contenant les étapes -->
+                    <div class="wizard-track" id="wizardTrack">
 
-            </div>
+                        <!-- ÉTAPE 1 -->
+                        <div class="wizard-step active-step-content" id="step-1">
+                            <h3 style="color:#333; margin-bottom:20px; font-size:1.3rem;">Informations Personnelles</h3>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="quartier-id">Quartier <strong class="asterisque">*</strong></label>
-                    {{ form.quartier }}
-                    <p class="error-message" style="color:red;">{{ form.quartier.errors }}</p>
-                </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">Prénom <strong class="asterisque">*</strong></label>
+                                    {{ form.prenoms }}
+                                    <p class="error-message" style="color:red;">{{ form.prenoms.errors }}</p>
+                                </div>
+                            </div>
 
-                <div class="form-group">
-                    <label for="pays-id">Pays <strong class="asterisque">*</strong></label>
-                    {{ form.pays }}
-                    <p class="error-message" style="color:red;">{{ form.pays.errors }}</p>
-                </div>
-            </div>
+                            <div class="form-group">
+                                <label for="email-id">Email <strong class="asterisque">*</strong></label>
+                                {{ form.email }}
+                                <p class="error-message" style="color:red;">{{ form.email.errors }}</p>
+                            </div>
 
-            <div class="form-group">
-                <label for="email-id">Email <strong class="asterisque">*</strong></label>
-                {{ form.email }}
-                <p class="error-message" style="color:red;">{{ form.email.errors }}</p>
-            </div>
+                            <div class="form-group">
+                                <label for="telephone-id">Téléphone <strong class="asterisque">*</strong></label>
+                                {{ form.telephone }}
+                                <p class="error-message" style="color:red;">{{ form.telephone.errors }}</p>
+                            </div>
 
-            <div class="form-group">
-                <label for="telephone-id">Téléphone <strong class="asterisque">*</strong></label>
-                {{ form.telephone }}
-                <p class="error-message" style="color:red;">{{ form.telephone.errors }}</p>
-            </div>
-            <div class="form-group">
-                <label id="label-role-id" for="role-id">Type d'utilisateur: <strong class="asterisque">*</strong></label>
-                {{form.role }}
-                <p class="error-message" style="color:red;">{{ form.role.errors }}</p>
-            </div>
-             <div class="form-group">
-                <label id="label-image-id" for="role-id">Image de pofile:</label>
-                {{form.profile_picture }}
-                <p class="error-message" style="color:red;">{{ form.profile_picture.errors }}</p>
-            </div>
-            <div class="form-row" id="div_password">
-                <div class="form-group">
-                    <label for="password-id">Mot de passe <strong class="asterisque">*</strong></label>
-                    {{ form.password }}
-                    <p class="error-message" style="color:red;">{{ form.password.errors }}</p>
-                </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="quartier-id">Quartier <strong class="asterisque">*</strong></label>
+                                    {{ form.quartier }}
+                                    <p class="error-message" style="color:red;">{{ form.quartier.errors }}</p>
+                                </div>
 
-                <div class="form-group">
-                    <label for="confirm_pass">Confirmer le mot de passe <strong class="asterisque">*</strong></label>
-                    {{ form.confirm_password }}
-                    <p class="error-message" style="color:red;">{{ form.confirm_password.errors.as_text }}</p>
-                </div>
-            </div>
+                                <div class="form-group">
+                                    <label for="pays-id">Pays <strong class="asterisque">*</strong></label>
+                                    {{ form.pays }}
+                                    <p class="error-message" style="color:red;">{{ form.pays.errors }}</p>
+                                </div>
+                            </div>
 
-            <button type="submit" class="submit-btn">S'inscrire</button>
-        </form>
+                            <div class="nav-buttons end">
+                                <button type="button" class="btn-nav btn-next" onclick="window.goToStep(2)">
+                                    Suivant <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ÉTAPE 2 -->
+                        <div class="wizard-step" id="step-2">
+                            <h3 style="color:#333; margin-bottom:20px; font-size:1.3rem;">Rôle & Sécurité</h3>
+
+                            <div class="form-group">
+                                <label id="label-role-id" for="role-id">Fonction <strong class="asterisque">*</strong></label>
+                                {{ form.role }}
+                                <p class="error-message" style="color:red;">{{ form.role.errors }}</p>
+                            </div>
+                            <div class="form-group">
+                                <label id="label-profession-id" for="profession-id">Profession<strong class="asterisque"></strong></label>
+                                {{ form.profession }}
+                                <p class="error-message" style="color:red;">{{ form.profession.errors }}</p>
+                            </div>
+                            <div class="form-group">
+                                <label id="label-image-id">Photo de profil</label>
+                                {{ form.profile_picture }}
+                                <p class="error-message" style="color:red;">{{ form.profile_picture.errors }}</p>
+                            </div>
+
+                            <div class="form-row" id="div_password">
+                                <div class="form-group">
+                                    <label for="password-id">Mot de passe <strong class="asterisque">*</strong></label>
+                                    {{ form.password }}
+                                    <p class="error-message" style="color:red;">{{ form.password.errors }}</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="confirm_pass">Confirmer <strong class="asterisque">*</strong></label>
+                                    {{ form.confirm_password }}
+                                    <p class="error-message" style="color:red;">{{ form.confirm_password.errors.as_text }}</p>
+                                </div>
+                            </div>
+
+                            <div class="nav-buttons between">
+                                <button type="button" class="btn-nav btn-prev" onclick="window.goToStep(1)">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </button>
+                                <button type="submit" class="btn-nav submit-btn">
+                                    Valider <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div> <!-- fin .wizard-track -->
+                </div> <!-- fin .wizard-wrapper -->
+
+            </form>
         </div>
     </div>
 </section>
-<!--Script important chargé de recueillir les donnés de l'utilisateur actuellement connecté-->
+
+<!-- Script de données sécurisé -->
 <script id="user-info" type="application/json">
  {
     "is_superuser": "{{ request.user.is_superuser|yesno:'true,false' }}",
-    "username": "{{ request.user.prenoms }}",
-    "role": "{{ request.user.role|default:'null' }}"
+    "username": "{{ request.user.prenoms|escapejs }}",
+    "role": "{{ request.user.role|default:'null'|escapejs }}"
   }
 </script>
 
-<!--Script chargé de traiter les données de l'utilisateur recueilli au nivean du script en haut-->
 <script type="text/javascript">
-
     document.addEventListener('DOMContentLoaded', function () {
 
-    const selectId = document.getElementById('role-id');
-    const lblSelect = document.getElementById('label-role-id')
-    console.log(selectId);
-    console.log(lblSelect);
-    const userInfo = JSON.parse(document.getElementById("user-info").textContent);
-    // On s'assure que userInfo.is_superuser return un objet de type boolean
-    const isSuperuser = (userInfo.is_superuser === true || userInfo.is_superuser === "true");
-    console.log('Êtes vous ADMIN ? '+isSuperuser);
-    const rolesToShowPassword = ['SECRETOR', 'SECOND_SECRETOR', 'MODERATOR', 'EDITOR'];
+        // --- 1. Gestion des rôles et mots de passe ---
+        const selectId = document.getElementById('role-id');
+        const lblSelect = document.getElementById('label-role-id');
 
-    if (isSuperuser){
-        console.log(userInfo.is_superuser);
-        console.log("Bienvenue "+userInfo.username+ " Vous êtes "+userInfo.role);
+        // Récupération sécurisée des infos JSON
+        let userInfo = {};
+        try {
+            const rawJson = document.getElementById("user-info").textContent;
+            userInfo = JSON.parse(rawJson);
+        } catch (e) {
+            console.error("Erreur parsing JSON user-info:", e);
+        }
 
-        selectId.addEventListener('change', function() {
-            const userType = this.value;
-            const divPassword = document.getElementById('div_password');
+        // Logique d'affichage du champ mot de passe
+        const isSuperuser = (userInfo.is_superuser === true || userInfo.is_superuser === "true");
+        const rolesToShowPassword = ['SECRETOR', 'SECOND_SECRETOR', 'MODERATOR', 'EDITOR', 'PRESIDENT', 'VICE_PRESIDENT', 'PORTE_PAROLE'];
 
-            console.log(divPassword);
-            console.log(userType);
-            if (rolesToShowPassword.includes(userType)) {
-                divPassword.style.display = 'block';
+        if (selectId) {
+            if (isSuperuser){
+                // Afficher le champ mot de passe si le rôle sélectionné le requiert
+                selectId.addEventListener('change', function() {
+                    const userType = this.value;
+                    const divPassword = document.getElementById('div_password');
+                    if (divPassword) {
+                        if (rolesToShowPassword.includes(userType)) {
+                            divPassword.style.display = 'flex'; // Flex pour garder l'alignement form-row
+                        } else {
+                            divPassword.style.display = 'none';
+                        }
+                    }
+                });
+                // Déclencher l'événement une première fois au chargement
+                selectId.dispatchEvent(new Event('change'));
             } else {
-                divPassword.style.display = 'none';
+                // Cacher le sélecteur pour les non-admins
+                selectId.style.display = 'none';
+                if(lblSelect) lblSelect.style.display = 'none';
             }
-        });
-    } else {
-        selectId.style.display = 'none';
-        lblSelect.style.display = 'none';
-    }
-});
+        }
 
+        // --- 2. Gestion du Wizard (Navigation) ---
+        window.goToStep = function(stepNumber) {
+            const track = document.getElementById('wizardTrack');
+            const progressBar = document.getElementById('progressBar');
+            const circle1 = document.getElementById('circle-1');
+            const circle2 = document.getElementById('circle-2');
+            const step1Content = document.getElementById('step-1');
+            const step2Content = document.getElementById('step-2');
 
+            // Aller vers l'étape 2
+            if (stepNumber === 2) {
+                // Validation des champs HTML5 de l'étape 1
+                const inputs = step1Content.querySelectorAll('input, select, textarea');
+                let valid = true;
 
+                for (const input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        valid = false;
+                        break; // S'arrête à la première erreur pour focaliser
+                    }
+                }
+
+                if (!valid) return; // On bloque si invalide
+
+                // Animation CSS (Slide Gauche)
+                if(track) track.style.transform = 'translateX(-50%)';
+                if(progressBar) progressBar.style.width = '100%';
+
+                if(circle1) {
+                    circle1.classList.add('completed');
+                    circle1.innerHTML = '&#10003;'; // Coche
+                }
+                if(circle2) circle2.classList.add('active');
+
+                if(step1Content) step1Content.classList.remove('active-step-content');
+                if(step2Content) step2Content.classList.add('active-step-content');
+
+                // Scroll doux en haut
+                setTimeout(() => {
+                    document.querySelector('.signup-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+            // Retour vers l'étape 1
+            else if (stepNumber === 1) {
+                // Animation CSS (Slide Droite)
+                if(track) track.style.transform = 'translateX(0%)';
+                if(progressBar) progressBar.style.width = '0%';
+
+                if(circle1) {
+                    circle1.classList.remove('completed');
+                    circle1.innerHTML = '1';
+                    circle1.classList.add('active');
+                }
+                if(circle2) circle2.classList.remove('active');
+
+                if(step2Content) step2Content.classList.remove('active-step-content');
+                if(step1Content) step1Content.classList.add('active-step-content');
+
+                 // Scroll doux en haut
+                setTimeout(() => {
+                    document.querySelector('.signup-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        };
+    });
 </script>
 {% endblock %}

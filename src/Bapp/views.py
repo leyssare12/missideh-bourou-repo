@@ -421,26 +421,26 @@ def admin_subcribe(request):
                     print("Les données du formulaire n'est pas valide")
                     return render(request, templates, context)
                 identifiant = generate_custom_id(donnees_validees['prenoms'], donnees_validees['quartier'])
-                nom = donnees_validees['name'],
                 prenoms = donnees_validees['prenoms'],
                 pays = donnees_validees['pays'],
                 quartier = donnees_validees['quartier'],
                 email = donnees_validees['email'],
                 telephone = donnees_validees['telephone'],
                 role = donnees_validees['role'],
+                profession = donnees_validees['profession'],
                 profile_picture = donnees_validees['profile_picture'],
                 password = donnees_validees['password'],
 
-                print(nom[0], prenoms, pays, quartier, email, telephone, role, password)
+                print(prenoms, pays, quartier, email, telephone, role, password)
                 # Créer l'utilisateur
                 user = BTestCustomUser.objects.create_user(
-                    name=nom[0],
                     prenoms=prenoms[0],
                     pays=pays[0],
                     quartier=quartier[0],
                     email=email[0],
                     telephone=telephone[0],
                     role=role[0],
+                    profession=profession[0],
                     profile_picture=profile_picture[0],
                     identifiant=identifiant,
                     password=password[0],
@@ -455,20 +455,10 @@ def admin_subcribe(request):
                     user.is_active = True
                     user.is_staff = False
                     user.is_superuser = False
-                elif user.role == 'MODERATOR':
-                    user.is_moderator = True
+                elif user.role == "EDITOR" or user.role == "PRESIDENT" or user.role == "VICE_PRESIDENT" or user.role == "PORTE_PAROLE":
                     user.is_active = True
                     user.is_staff = True
-                    user.is_superuser = False
-                elif user.role == "EDITOR":
-                    user.is_active = True
-                    user.is_staff = True
-                elif user.role == 'SECRETOR':
-                    user.is_moderator = True
-                    user.is_active = True
-                    user.is_staff = True
-                    user.is_superuser = False
-                elif user.role == 'SECOND_SECRETOR':
+                elif user.role == 'SECRETOR' or user.role == 'SECOND_SECRETOR' or user.role == 'MODERATOR':
                     user.is_moderator = True
                     user.is_active = True
                     user.is_staff = True

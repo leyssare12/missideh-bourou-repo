@@ -81,13 +81,14 @@ class BtestUserCreationsForms(forms.ModelForm):
                                         }))
     class Meta:
         model = BTestCustomUser
-        fields = ('name',
+        fields = (
                   'prenoms',
                   'pays',
                   'quartier',
                   'email',
                   'telephone',
                   'profile_picture',
+                  'profession',
                   'role',
                   'password',
                   )
@@ -123,21 +124,14 @@ class BtestUserCreationsForms(forms.ModelForm):
                 'name': 'Pays',
             })
         )
-
-
-
-
-
-    name = forms.CharField(
-        max_length=100,
-        required=True,
-        widget=forms.TextInput(attrs={
+        self.fields['profession'] = forms.ChoiceField(choices=self.PROFESSION,
+            required=False,
+            initial="Professeur",
+            widget=forms.Select(attrs={
             'class': 'text-field w-input"',
-            'id': 'lastName',
-            'name': 'lastName',
-            'placeholder': 'Votre nom '
-        })
-     )
+            'id': 'profession-id',
+            'name': 'profession',
+        }))
     prenoms = forms.CharField(
         max_length=100,
         required=True,

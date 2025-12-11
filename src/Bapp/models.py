@@ -13,7 +13,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
 
-from BTest import settings
+
 from secrets import randbelow
 #cette methode permet d'ajouter un identifiant unique au nom de l'image et évite qu'un même non se retrouve deux fois dans la base
 def get_profile_image_path(instance, filename):
@@ -40,7 +40,7 @@ def default_email_verification_expiration():
 """User Manager"""
 class BTestCustomUserManager(BaseUserManager):
     '''Creation de l'utilisateur normale'''
-    def create_user(self, name,
+    def create_user(self,
                     prenoms,
                     quartier,
                     identifiant,
@@ -48,6 +48,7 @@ class BTestCustomUserManager(BaseUserManager):
                     pays,
                     telephone,
                     role,
+                    profession=None,
                     profile_picture=None,
                     password=None,
                     created_by=None
@@ -61,7 +62,6 @@ class BTestCustomUserManager(BaseUserManager):
         if not telephone:
             raise ValueError('Users must have a phone number')
         user = self.model(
-            name=name,
             prenoms=prenoms,
             quartier=quartier,
             identifiant=identifiant,
@@ -69,6 +69,7 @@ class BTestCustomUserManager(BaseUserManager):
             pays=pays,
             telephone=telephone,
             role=role,
+            profession=profession,
             profile_picture=profile_picture,
             password=password,
             created_by=created_by,
@@ -80,7 +81,6 @@ class BTestCustomUserManager(BaseUserManager):
         return user
     '''Creation d'un utilisateur administrateur'''
     def create_superuser(self,
-                         name,
                          prenoms,
                          quartier,
                          identifiant,
@@ -88,10 +88,10 @@ class BTestCustomUserManager(BaseUserManager):
                          email,
                          telephone,
                          role,
+                         profession=None,
                          profile_picture=None,
                          password=None):
         user = self.create_user(
-            name=name,
             prenoms=prenoms,
             quartier=quartier,
             identifiant=identifiant,
@@ -99,6 +99,7 @@ class BTestCustomUserManager(BaseUserManager):
             pays=pays,
             telephone=telephone,
             role=role,
+            profession=profession,
             profile_picture=profile_picture,
             password=password,
             created_by=None,
@@ -110,13 +111,14 @@ class BTestCustomUserManager(BaseUserManager):
         return user
 """User model"""
 class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
-    name = models.CharField(max_length=60, blank=True)
-    prenoms = models.CharField(max_length=60, blank=False)
+    name = models.CharField(max_length=60, blank=True, null=True)
+    prenoms = models.CharField(max_length=120, blank=False)
     quartier = models.CharField(max_length=60, blank=False, null=False, default='Kowli')
     identifiant = models.CharField(max_length=20, unique=True, blank=True, null=False)
     pays = models.CharField(max_length=30, blank=False)
     email = models.EmailField(unique=True, blank=False)
     telephone = models.CharField(max_length=20, blank=True)
+    profession = models.CharField(max_length=100, blank=True)
     password = models.CharField(max_length=128, blank=True, null=True)
     profile_picture = models.ImageField(upload_to=get_profile_image_path, blank=True, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_by_user')
@@ -156,14 +158,20 @@ class BTestCustomUser(AbstractBaseUser, PermissionsMixin):
     SECRETOR = 'SECRETOR' # peut ajouter des cotisations
     SECOND_SECRETOR = 'SECOND_SECRETOR' # peut ajouter les dépenses effectuées
     USER = 'USER' # Les membres de missidhé bourou
+    PRESIDENT = 'PRESIDENT'
+    VICE_PRESIDENT = 'VICE_PRESIDENT'
+    PORTE_PAROLE = 'PORTE_PAROLE'
 
     ROLE_CHOICES = [
         (ADMIN, 'Administrateur'),
+        (PRESIDENT, 'Président'),
+        (VICE_PRESIDENT, 'Vice-président'),
+        (PORTE_PAROLE, 'Porte-parole'),
         (MODERATOR, 'Modérateur'),
         (EDITOR, 'Éditeur'),
-        (USER, 'Utilisateur normal'),
-        (SECRETOR, 'Gestionnaire des cotisations'),
-        (SECOND_SECRETOR, 'Gestionnaire des dépenses'),
+        (USER, 'Membre'),
+        (SECRETOR, 'Sécréteur'),
+        (SECOND_SECRETOR, 'Second sécréteur'),
     ]
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=USER)
@@ -436,7 +444,7 @@ class DashboardModule(models.Model):
     icon = models.CharField(max_length=50)  # Classe Font Awesome
     description = models.TextField()
     url_name = models.CharField(max_length=100)
-    required_role = models.CharField(max_length=20, choices=User.ROLE_CHOICES)
+    required_role = models.CharField(max_length=20, choices=BTestCustomUser.ROLE_CHOICES)
     order = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
@@ -532,7 +540,7 @@ class MissidehBourouMembersView(pgview.View):
             pays,
             telephone,
             email
-            FROM "Bapp_btestcustomuser";
+            FROM "Bapp_btestcustomuser"
     """
     class Meta:
         managed = False
@@ -556,7 +564,8 @@ class CotisationOccasionnelleView(pgview.View):
         to_char(p.updated_at, 'DD/MM/YYYY') as date_cotisation
     FROM "Bapp_btestcustomuser" as b 
     INNER JOIN "Bapp_participationoccasionnelle" as p on b.id = p.participant_id_id
-    ORDER BY p.updated_at DESC;
+    ORDER BY p.updated_at DESC
+
     """
     class Meta:
         managed = False
@@ -570,6 +579,7 @@ class CotisationAnnuelleView(pgview.View):
     date_cotisation = models.DateTimeField()
 
     sql = """
+            
     SELECT 
         b.id as id,
         b.prenoms as prenom, 
@@ -578,7 +588,7 @@ class CotisationAnnuelleView(pgview.View):
         to_char(p.updated_at, 'DD/MM/YYYY') as date_cotisation
     FROM "Bapp_btestcustomuser" as b 
     INNER JOIN "Bapp_participationannual" as p on b.id = p.participant_id_id
-    ORDER BY p.updated_at desc;
+    ORDER BY p.updated_at desc
     """
     class Meta:
         managed = False
@@ -619,7 +629,7 @@ class DepensesView(pgview.View):
             motif_depense, 
             to_char(date_depense, 'DD/MM/YYYY') as date_depense
         FROM "Bapp_adddepenses"
-        ORDER BY date_depense desc;
+        ORDER BY date_depense desc
     """
     class Meta:
         managed = False
@@ -638,7 +648,7 @@ class TotauxView(pgview.View):
 
 
     sql = """
-     SELECT
+    SELECT
         row_number() OVER ()::int AS id,
         t.montant_cotisationannuel,
         t.montant_cotisationoccasionnelle,
@@ -698,7 +708,6 @@ class TotauxView(pgview.View):
             current_timestamp AS aujourdhui
         FROM "Bapp_adddepenses"
     ) AS t
-
     """
     class Meta:
        managed = False

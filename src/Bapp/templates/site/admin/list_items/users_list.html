@@ -35,8 +35,14 @@
     <!-- Barre d'actions -->
     <div class="action-bar">
         <div class="search-box">
-            <input type="text" id="userSearch" placeholder="Rechercher par nom, email...">
-            <i class="fas fa-search"></i>
+            <form method="GET" action="{% url 'Bapp:list_users' %}" class="search-box">
+                <input type="text" name="q" id="userSearch"
+                       value="{{ search_query }}"
+                       placeholder="Rechercher par prénom, email, identifiant...">
+                <button type="submit" style="background: none; border: none; cursor: pointer;">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
         </div>
         <div class="action-buttons">
             <a href="{% url 'Bapp:list_users' %}" class="btn btn-refresh">
@@ -53,7 +59,7 @@
                  {% if user.profile_picture%}
                     <img src="{{ MEDIA_URL }}{{ user.profile_picture.url }}" alt="Photo de profil" class="profile-pic">
                  {% else %}
-                    <img src="{% static 'images/missidhe_bourou_img/cdd.jpeg' %}" alt="Profile" class="profile-pic">
+                    <i class="fa-solid fa-circle-user profile-pic-icon fa-5x" ></i>
                  {% endif %}
                 {% if user.is_superuser %}
                 <span class="badge-superuser" title="Superadmin">
@@ -132,35 +138,35 @@
     </div>
 
     <!-- Pagination -->
-    {% if users_list.paginator.num_pages > 1 %}
-    <div class="custom-pagination">
-        {% if users_list.has_previous %}
-            <a href="?page=1" class="page-link first-page" title="Première page">
-                <i class="fas fa-angle-double-left"></i>
-            </a>
-            <a href="?page={{ users_list.previous_page_number }}" class="page-link" title="Page précédente">
-                <i class="fas fa-angle-left"></i>
-            </a>
-        {% endif %}
-
-        {% for num in users_list.paginator.page_range %}
-            {% if users_list.number == num %}
-                <span class="current-page">{{ num }}</span>
-            {% elif num > users_list.number|add:'-3' and num < users_list.number|add:'3' %}
-                <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+        {% if users_list.paginator.num_pages > 1 %}
+        <div class="custom-pagination">
+            {% if users_list.has_previous %}
+                <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link first-page" title="Première page">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ users_list.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link" title="Page précédente">
+                    <i class="fas fa-angle-left"></i>
+                </a>
             {% endif %}
-        {% endfor %}
 
-        {% if users_list.has_next %}
-            <a href="?page={{ users_list.next_page_number }}" class="page-link" title="Page suivante">
-                <i class="fas fa-angle-right"></i>
-            </a>
-            <a href="?page={{ users_list.paginator.num_pages }}" class="page-link last-page" title="Dernière page">
-                <i class="fas fa-angle-double-right"></i>
-            </a>
+            {% for num in users_list.paginator.page_range %}
+                {% if users_list.number == num %}
+                    <span class="current-page">{{ num }}</span>
+                {% elif num > users_list.number|add:'-3' and num < users_list.number|add:'3' %}
+                    <a href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if users_list.has_next %}
+                <a href="?page={{ users_list.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link" title="Page suivante">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ users_list.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-link last-page" title="Dernière page">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% endif %}
+        </div>
         {% endif %}
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
 
