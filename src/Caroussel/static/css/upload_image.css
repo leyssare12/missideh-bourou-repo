@@ -11,7 +11,7 @@
   box-shadow:0 10px 24px rgba(15,23,42,.06);
   padding: clamp(16px, 3vw, 28px);
 }
-.uploader-head{ display:grid; gap:6px; margin-bottom:12px; }
+.uploader-head{ display:grid; gap:6px; margin-bottom:12px; background-color:#1e40af; padding:12px 16px; border-radius:12px 12px 0px 0px; }
 .uploader-title{ margin:0; font-size:clamp(20px,2.5vw,28px); font-weight:800; color:white; display:inline-flex; gap:10px; align-items:center;}
 .uploader-sub{ margin:0; color:white; }
 

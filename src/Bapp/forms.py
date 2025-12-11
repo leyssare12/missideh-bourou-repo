@@ -64,6 +64,13 @@ class BtestUserCreationsForms(forms.ModelForm):
         ("Canada", "Canada")
 
     ]
+    PROFESSION = [
+        ('Professeur', 'Professeur'),
+        ('Enseignant', 'Enseignant'),
+        ('Etudiant', 'Etudiant'),
+        ('Commerçant', 'Commerçant'),
+        ('Autre', 'Autre'),
+    ]
 
     confirm_password = forms.CharField(required=False,
                                        widget=forms.PasswordInput(attrs={

@@ -63,7 +63,7 @@
         const URL = {login_view: "{% url 'Bapp:member_login_view' %}",};
 
     </script>
-
+    <!-- Desactiver temporairement le js, en tant que le mode 2FA n'est pas reactivé dans la method member_login_view
     <script>
                 document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('loginForm');
@@ -149,7 +149,7 @@
             adjustLayout();
             window.addEventListener('resize', adjustLayout);
         });
-    </script>
+    </script> -->
 {% endblock %}
 
 {% block extra_js %}

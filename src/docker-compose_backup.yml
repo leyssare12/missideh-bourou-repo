@@ -13,7 +13,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=Galle11
     env_file:
-      - ./.login_env
+      - mb_envfiles/.login_env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -30,7 +30,7 @@ services:
     ports:
       - "8001:8000"
     env_file:
-      - ./.mail_login_env
+      - mb_envfiles/.mail_login_env
     depends_on:
       - db
     volumes:

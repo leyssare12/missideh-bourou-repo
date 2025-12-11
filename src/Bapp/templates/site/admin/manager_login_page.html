@@ -42,35 +42,12 @@
             </div>
 
             <div class="options">
-                <div class="remember-me">
-                    <input type="checkbox" id="remember">
-                    <label for="remember">Se souvenir de moi</label>
-                </div>
                 <div class="forgot-password">
                     <a href="{% url 'Bapp:password_reset'%}">Mot de passe oublié ?</a>
                 </div>
             </div>
 
             <button type="submit" class="login-btn">Se connecter</button>
-
-            <div class="social-login">
-                <p>Ou connectez-vous avec</p>
-                <div class="social-icons">
-                    <div class="social-icon facebook">
-                        <i class="fab fa-facebook-f"></i>
-                    </div>
-                    <div class="social-icon google">
-                        <i class="fab fa-google"></i>
-                    </div>
-                    <div class="social-icon twitter">
-                        <i class="fab fa-twitter"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="register-link">
-                <p>Vous n'avez pas de compte ? <a href="#">S'inscrire</a></p>
-            </div>
         </form>
     </div>
 </section>

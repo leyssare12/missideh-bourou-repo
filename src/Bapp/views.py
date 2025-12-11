@@ -299,7 +299,7 @@ def mail_confirmation(request, token):
             context = {
                 'success': "Votre email est déjà vérifié. Vous pouvez vous connecter.",
                 'user_name': usr.prenoms,
-                'login_url': reverse('Bapp:members_authentification'),
+                'login_url': reverse('Bapp:manager_login_page'),
                 'home_url': reverse('Bapp:home_page'),
             }
             return render(request, template_name=template_name, context=context)
@@ -328,7 +328,7 @@ def mail_confirmation(request, token):
     context = {
         'success': "Votre email a été vérifié avec succès.",
         'user_name': usr.prenoms,
-        'login_url': reverse('Bapp:members_authentification'),
+        'login_url': reverse('Bapp:manager_login_page'),
         'home_url': reverse('Bapp:home_page'),
         'support_url': getattr(settings, "EMAIL_HOST_USER", "no-reply@example.com"),
     }
@@ -610,10 +610,9 @@ def manager_login_page(request):
 
 def logout_view(request):
     #template_name = "site/admin/manager_login_page.html"
-    if request.user.is_authenticated:  # Utilisez is_authenticated au lieu de if request.user
-        logout(request)
-        messages.success(request, f"Veillez vous reconnecter ici ")
-        return redirect('Bapp:manager_login_page')
+    logout(request)
+    messages.success(request, f"Veillez vous reconnecter ici ")
+    return redirect('Bapp:manager_login_page')
 
 def data_recup(request):
     templates = "site/data.html"

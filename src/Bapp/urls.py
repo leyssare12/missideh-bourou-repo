@@ -91,7 +91,7 @@ urlpatterns = [
     path("edition-article/", editorial_view, name="edition_article"),
 
     path("dashboard/", dashboard_view, name="dashboard"),
-    path("dashboard-2/", dashboard_view2, name="dashboard2"),
+    path("missideh-bourou-leytiba/", dashboard_view2, name="dashboard2"),
 
     path("document-pdf/", pdf_listings, name="pdf_listings"),
 

@@ -3,7 +3,11 @@ __pycache__/
 *.pyo
 *.pyd
 *.sqlite3
-.env
-.mail_login_env
-.login_env
+mb_envfiles/.env
+mb_envfiles/.mail_login_env
+src/.login_env
+src/.aappgenv
+src/.telegram_env
+src/.login_data_env
+src_copy/
 .db.sqlite3

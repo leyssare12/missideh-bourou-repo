@@ -1,6 +1,10 @@
       :root {
+          /*
             --primary-color: #4361ee;
             --secondary-color: #3f37c9;
+            */
+            --primary-color: #151829;
+            --secondary-color: #292747;
             --accent-color: #4895ef;
             --text-color: #2b2d42;
             --sidebar-width: 280px;

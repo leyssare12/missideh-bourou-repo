@@ -16,7 +16,7 @@ def notify_login(sender, request, user, **kwargs):
     # Exemple : créer une notification
     print(f"{user.prenoms} s'est connecté à {now()} depuis {get_client_ip(request)}")
     ip = get_client_ip(request)
-    message = f"🔔 <b>Nouvelle connexion</b>\n👤 Utilisateur : {user.prenoms}\n🌐 IP : {ip}\n⏰ {now().strftime('%d-%m-%Y %H:%M:%S')}"
+    message = f"🔔 <b>Nouvelle connexion</b>\nsur Missidhe-bourou\n👤 Utilisateur : {user.prenoms}\n🌐 IP : {ip}\n⏰ {now().strftime('%d-%m-%Y %H:%M:%S')}"
     send_telegram_message(message)
 
 def get_client_ip(request):

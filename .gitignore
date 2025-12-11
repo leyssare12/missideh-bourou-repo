@@ -4,14 +4,18 @@
 *.pyc
 *.pdf
 *.txt
- .dockerignore
+ src/.dockerignore
 /src/dumps
 src/entrypoint.sh
-src/.infobipenv
-src/.login_data_env
-src/.login_env
-src/.mail_login_env
+src/mb_envfiles/.infobipenv
+src/mb_envfiles/.login_data_env
+src/mb_envfiles/.login_env
+src/mb_envfiles/.mail_login_env
 src/.telegram_env
 src/media
 .idea/
 src/.dockerignroe
+src/mb_envfiles/*
+*.log
+*.yml
+*.gz

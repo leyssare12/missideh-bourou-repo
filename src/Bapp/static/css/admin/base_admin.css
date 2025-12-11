@@ -1,90 +1,152 @@
+      /* Header responsive */
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #0f172a;
+        color: #fff;
+      }
+      .site-nav {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: .75rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .nav-left {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        min-width: 0;
+      }
+      .brand {
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: .2px;
+        white-space: nowrap;
+      }
 
-        /* Reset CSS de base */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+      .nav-menu {
+        list-style: none;
+        display: flex;
+        gap: 1rem;
+        margin: 0;
+        padding: 0;
+      }
+      .nav-menu a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        opacity: .95;
+      }
+      .nav-menu a:hover { opacity: 1; text-decoration: underline; }
+
+      .nav-toggle {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 8px;
+        flex: 0 0 auto;
+      }
+      .nav-toggle:focus-visible {
+        outline: 2px solid rgba(59,130,246,.7);
+        outline-offset: 2px;
+      }
+      .nav-toggle-bars {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 22px;
+        height: 16px;
+        transform: translate(-50%, -50%);
+      }
+      .nav-toggle-bars span {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #fff;
+        border-radius: 2px;
+        transition: transform .2s ease, opacity .2s ease, top .2s ease;
+      }
+      .nav-toggle-bars span:nth-child(1) { top: 0; }
+      .nav-toggle-bars span:nth-child(2) { top: 7px; }
+      .nav-toggle-bars span:nth-child(3) { top: 14px; }
+
+      .nav-toggle.is-active .nav-toggle-bars span:nth-child(1) {
+        top: 7px; transform: rotate(45deg);
+      }
+      .nav-toggle.is-active .nav-toggle-bars span:nth-child(2) {
+        opacity: 0;
+      }
+      .nav-toggle.is-active .nav-toggle-bars span:nth-child(3) {
+        top: 7px; transform: rotate(-45deg);
+      }
+
+      /* Mobile / Tablette: tiroir à 50% gauche + bouton de fermeture */
+      @media (max-width: 992px) {
+        .nav-menu {
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
+          width: 50vw;                 /* moitié de l'écran */
+          min-width: 260px;            /* garde une largeur minimale confortable */
+          max-width: 420px;            /* limite sur tablettes */
+          background: #0f172a;
+          padding: 88px 24px 24px;     /* espace pour la croix */
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1.25rem;
+          transform: translateX(-100%);
+          transition: transform .3s ease-in-out;
+          box-shadow: 4px 0 24px rgba(0,0,0,.35);
         }
+        .nav-menu.open { transform: translateX(0); }
 
-        html {
-            font-size: 16px;
-            font-family: Arial, sans-serif;
-            line-height: 1.5;
+        /* bouton de fermeture (croix) placé dans le tiroir */
+        .nav-close-item { list-style: none; }
+        .nav-close {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          width: 36px;
+          height: 36px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
         }
-
-        body {
-            max-width: 100%;
-            overflow-x: hidden;
+        .nav-close:focus-visible {
+          outline: 2px solid rgba(59,130,246,.7);
+          outline-offset: 2px;
         }
-
-        /* En-tête */
-        header {
-            background-color: #4256e5;
-            color: white;
-            padding: 1rem;
-            width: 100%;
+        .nav-close::before,
+        .nav-close::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 22px;
+          height: 2px;
+          background: #fff;
+          transform-origin: center;
         }
+        .nav-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+        .nav-close::after  { transform: translate(-50%, -50%) rotate(-45deg); }
 
-        /* Navigation */
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* bouton hamburger visible et à côté du titre */
+        .nav-toggle { display: inline-block; }
+        /* le menu de navigation (liens) n'est pas affiché en ligne sur mobile */
+      }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-        }
-
-        .nav-links li {
-            margin-left: 1.5rem;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-        }
-
-
-        /* Media Queries pour différentes tailles d'écran */
-
-        /* Tablettes */
-        @media (max-width: 768px) {
-            html {
-                font-size: 14px;
-            }
-
-            nav {
-                flex-direction: column;
-            }
-
-            .nav-links {
-                margin-top: 1rem;
-            }
-
-            .nav-links li {
-                margin-left: 1rem;
-            }
-        }
-
-        /* Mobiles */
-        @media (max-width: 480px) {
-            html {
-                font-size: 12px;
-            }
-
-            .nav-links {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .nav-links li {
-                margin: 0.5rem 0;
-            }
-        }
+      /* Desktop */
+      @media (min-width: 993px) {
+        .nav-toggle { display: none; }
+        .nav-menu { position: static; transform: none; padding: 0; height: auto; width: auto; box-shadow: none; }
+      }

@@ -30,9 +30,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 #On charge le fichier qui gére les donnés de connxion à l'email
 #config = Config(RepositoryEnv(BASE_DIR / '.mail_login_env'))
-load_dotenv(BASE_DIR / '.mail_login_env')
-load_dotenv(BASE_DIR / '.login_env')
-load_dotenv(BASE_DIR / '.telegram_env')
+enfiles = Path(BASE_DIR).resolve() / 'mb_envfiles'
+print(enfiles)
+load_dotenv(BASE_DIR / 'mb_envfiles/.mail_login_env')
+load_dotenv(BASE_DIR / 'mb_envfiles/.login_env')
+load_dotenv(BASE_DIR / 'mb_envfiles/.telegram_env')
+
+#load_dotenv(BASE_DIR / '.mail_login_env')
+#load_dotenv(BASE_DIR / '.login_env')
+#load_dotenv(BASE_DIR / '.telegram_env')
 
 #Variable d'environnement'
 
@@ -53,9 +59,18 @@ TELEGRAM_CHAT_ID_2 = getenv('TELEGRAM_CHAT_ID_2')
 TELEGRAM_API_URL_2 = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN_2}'
 
 
-HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-ALLOWED_HOSTS = [host.strip() for host in HOSTS if host.strip()]
 
+def split_csv_env(name):
+    raw = os.getenv(name, "")
+    parts = [p.strip() for p in raw.split(",") if p.strip()]
+    # Normalise: pas de slash final
+    parts = [p[:-1] if p.endswith("/") else p for p in parts]
+    return parts
+
+ALLOWED_HOSTS = split_csv_env("ALLOWED_HOSTS") or ["localhost", "127.0.0.1"]
+CSRF_TRUSTED_ORIGINS = split_csv_env("CSRF_TRUSTED_ORIGINS")
+
+print(f"CRSF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS}")
 #Database login
 DB_NAME = os.getenv('DB_NAME')
 PG_ADMIN_USER = os.getenv('PG_ADMIN_USER')
@@ -188,6 +203,14 @@ USE_I18N = True
 USE_TZ = True
 
 
+#Trusted origins
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+
 #Systéme de gestion des sessions django
 
 SESSION_COOKIE_NAME = 'bapp_sessionid'
@@ -207,8 +230,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'Bapp/static'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Répertoires où Django cherchera les fichiers statiques
 
 # Configuration pour les PDFs

@@ -35,11 +35,16 @@ def member_login_view(request):
             user = Members.objects.get(identifiant__iexact=identifiant)
             # ✅ Renouveler la session pour limiter la fixation de session
             request.session.cycle_key()
+            # ✅ AUTHENTIFIER l'utilisateur avec Django
+            #On permet le login de l'utilsateur avec Django temporairement
+            login(request, user)
             # ✅ Stocker temporairement l’utilisateur en session
             request.session["pending_user_id"] = user.id
             message = mark_safe(f"Salam, <strong> {user.prenoms}</strong>")
             messages.success(request, message)
-            return redirect("Bapp:load_2fa_method")
+            #On rediriger temporairement vers le user_menu
+            return redirect('Bapp:users_menu')
+            #return redirect("Bapp:load_2fa_method")
         except Members.MultipleObjectsReturned:
             messages.error(request, "Plusieurs comptes correspondent à cet identifiant. Contactez le support.")
             return render(request, template_name=template)

@@ -1,0 +1,94 @@
+services:
+  traefik:
+    image: ghcr.io/diamaa12/traefik:v3.3.7 # ou traefik:latest
+    command:
+      - "--configFile=/traefik/traefik.yml"
+      # - "--entrypoints.traefik.address=:8080"
+      # - "--entrypoints.web.address=:80"
+      # - "--entrypoints.websecure.address=:443"
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - ./traefik/traefik.yml:/traefik/traefik.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/traefik/acme.json:/letsencrypt/acme.json
+    labels:
+      - "traefik.enable=true"
+      # Router pour le dashboard
+      - "traefik.http.routers.dashboard.rule=Host(`mytraefik-dashbord.duckdns.org`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_TOKEN}"
+      # Middlewares sécurisés
+      # - "traefik.http.routers.traefik.middlewares=traefik-auth,traefik-ratelimit,traefik-whitelist"
+      # Authentification basique
+      # Rate limit (100 req/10s par client IP)
+      # - "traefik.http.middlewares.traefik-ratelimit.ratelimit.average=10"
+      # - "traefik.http.middlewares.traefik-ratelimit.ratelimit.burst=20"
+      # - "traefik.http.middlewares.traefik-ratelimit.ratelimit.period=1s"
+    networks:
+      - traefik
+
+  db:
+    image: postgres:16.9
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Galle11
+      - POSTGRES_DB=bourou_test
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+
+  bourou-app:
+    image: ghcr.io/diamaa12/missideh-bourou:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bourou-app.rule=Host(`missideh-bourou.duckdns.org`)"
+      - "traefik.http.routers.bourou-app.entrypoints=websecure"
+      - "traefik.http.routers.bourou-app.tls.certresolver=myresolver"
+      - "traefik.http.services.bourou-app.loadbalancer.server.port=8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # - mb_media:/*
+      - ${MBAPP}:/MBourou/BTest
+      - ${MBAPP}:/MBourou/Bapp
+      - ${MBAPP}:/MBourou/Caroussel
+      - ${MBAPP}:/MBourou/media
+    env_file:
+      - mb_envfiles/.env
+      - .telegram_env
+      - mb_envfiles/.mail_login_env
+      - mb_envfiles/.login_env
+    environment:
+      - DJANGO_SETTINGS_MODULE=BTest.settings
+      # DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    networks:
+      - traefik
+      - backend
+
+networks:
+  traefik:
+    external: true # Réseau existant (créé manuellement)
+  backend:
+    driver: bridge # Réseau interne (créé automatiquement)
+
+volumes:
+  mb_media:
+  db_data:

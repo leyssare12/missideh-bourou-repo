@@ -194,7 +194,7 @@ class ParticipationAnnuelManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -208,7 +208,7 @@ class ParticipationAnnuelManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -244,7 +244,7 @@ class ParticipationOcasionnelleManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -258,7 +258,7 @@ class ParticipationOcasionnelleManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -297,7 +297,7 @@ class DonsManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -311,7 +311,7 @@ class DonsManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -351,7 +351,7 @@ class DepensesManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
@@ -365,7 +365,7 @@ class DepensesManager(View):
                 return self.crud_manager.handle_edit(request, item_id)
             elif action == 'delete':
                 return self.crud_manager.handle_delete(request, item_id)
-            messages.warning(request, "Action non reconnue")
+            #messages.warning(request, "Action non reconnue")
             return self.crud_manager.handle_list(request)
         except Exception as e:
             messages.error(request, f"Une erreur s'est produite : {str(e)}")
