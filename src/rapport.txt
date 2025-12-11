@@ -1,9 +1,0 @@
-Dans cette fichier ai inscrit tout les diffuclté technique rencontré pendant la mise en place du projet
-
-Difficulté 1: Pour ne pas avoir de probleme avec les fichier de configuration .env, il faut toujour les mettre à la racine du projet
-au niveau du fichier manage.py, et ainsi le charger comme suit avec load_env(BASEDIR / '.env')
-
-Note: Pour acceder à un table avec un nom qui contient des espaces ou des tirets, il faut entourer le nom du table d'un double guillemets
-comme ceci SELECT * FROM "Bapp_btestcustomuser";
-
-Note: en cas de probleme pendant les migrations, il faut supprimer tous les historiques de migrations et refaire une nouvelle migrations
