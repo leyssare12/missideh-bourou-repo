@@ -6,10 +6,10 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 
-
 import uuid
 from .models import ResetPasswordToken
-from .models import BTestCustomUser
+from .models import BtestCustomUser
+
 
 def request_password_reset(request):
     template_name = 'site/admin/password/reset_password_request.html'
@@ -18,7 +18,7 @@ def request_password_reset(request):
     if request.method == 'POST':
         identifiant = request.POST.get('identifiant')
         try:
-            user = BTestCustomUser.objects.get(identifiant=identifiant)
+            user = BtestCustomUser.objects.get(identifiant=identifiant)
 
             # Créer un token de réinitialisation
             token = ResetPasswordToken.objects.create(

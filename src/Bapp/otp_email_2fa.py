@@ -6,14 +6,14 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.safestring import mark_safe
-from twilio.rest import Client
+#from twilio.rest import Client
 
 from BTest import settings
 
 from django.contrib.auth import login
 from django.core.mail import send_mail
 
-from Bapp.models import TwoFactorAuth, BTestCustomUser
+from Bapp.models import TwoFactorAuth, BtestCustomUser
 
 logger = logging.getLogger(__name__)
 
@@ -39,21 +39,21 @@ def send_2fa_code_email(user, code):
         logger.error(f"Erreur lors de l'envoi du code 2FA via email: {str(e)}")
         return False
 
-def send_2fa_code_whatsapp(user, code):
-    # Nécessite: pip install twilio et variables d'environnement
-    # TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM='whatsapp:+14155238886'
-
-    account_sid = getenv("TWILIO_ACCOUNT_SID")
-    auth_token = getenv("TWILIO_AUTH_TOKEN")
-    from_whatsapp = getenv("TWILIO_WHATSAPP_FROM")  # ex: 'whatsapp:+14155238886'
-    to_whatsapp = f"whatsapp:{user.telephone}"   # Assurez-vous que le numéro est au format E.164
-
-    client = Client(account_sid, auth_token)
-    client.messages.create(
-        from_=from_whatsapp,
-        to=to_whatsapp,
-        body=f"Votre code de vérification est {code}. Il expire dans 5 minutes."
-    )
+#def send_2fa_code_whatsapp(user, code):
+#    # Nécessite: pip install twilio et variables d'environnement
+#    # TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM='whatsapp:+14155238886'
+#
+#    account_sid = getenv("TWILIO_ACCOUNT_SID")
+#    auth_token = getenv("TWILIO_AUTH_TOKEN")
+#    from_whatsapp = getenv("TWILIO_WHATSAPP_FROM")  # ex: 'whatsapp:+14155238886'
+#    to_whatsapp = f"whatsapp:{user.telephone}"   # Assurez-vous que le numéro est au format E.164
+#
+#    client = Client(account_sid, auth_token)
+#    client.messages.create(
+#        from_=from_whatsapp,
+#        to=to_whatsapp,
+#        body=f"Votre code de vérification est {code}. Il expire dans 5 minutes."
+#    )
 
 
 
@@ -122,12 +122,12 @@ def members_authentification_email(request):
 
     # Récupération de l'utilisateur
     try:
-        user = BTestCustomUser.objects.get(pk=user_id)
+        user = BtestCustomUser.objects.get(pk=user_id)
         #On verifies d'abord que l'utilisateur a un email déjà verifier
         if not user.email_verified:
             messages.error(request, "Vous n'avez pas un email dèjà validé, veuillez choisir un autre methode d'authentification.")
             return redirect("Bapp:load_2fa_method")  # sécurité : retour login
-    except BTestCustomUser.DoesNotExist:
+    except BtestCustomUser.DoesNotExist:
         messages.error(request, "Utilisateur introuvable")
         return redirect("Bapp:member_login_view")
 

@@ -312,6 +312,12 @@
                                 </div>
                             </div>
 
+                            <div class="form-group">
+                                <label for="telephone-id">Ville <strong class="asterisque">*</strong></label>
+                                {{ form.city }}
+                                <p class="error-message" style="color:red;">{{ form.city.errors }}</p>
+                            </div>
+
                             <div class="nav-buttons end">
                                 <button type="button" class="btn-nav btn-next" onclick="window.goToStep(2)">
                                     Suivant <i class="fas fa-arrow-right"></i>

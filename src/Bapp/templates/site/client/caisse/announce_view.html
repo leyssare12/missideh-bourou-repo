@@ -6,6 +6,10 @@
 {% block extra_css %}<link href="{% static 'css/client/caisse/announce.css'%}" rel="stylesheet" type="text/css">{% endblock %}
 
 {% block content %}
+<style>
+  .pagination{background-color:#0d6efd !important; border: 2px solid #0d6efd !important; /* Force la bordure sur le lien */}
+  ul li{margin-bottom:inherit;}
+</style>
 <div class="wrap">
     <header class="site" role="banner">
         <div>
@@ -38,7 +42,7 @@
                                 <span class="badge" title="Auteur">Par {{ article.author }}</span>
                             {% endif %}
                             {% if article.published_at %}
-                                <time datetime="{{ article.published_at|date:'c' }}" itemprop="datePublished">
+                                <time datetime="{{ article.published_at|date:'d/m/Y' }}" itemprop="datePublished">
                                     Publié le {{ article.published_at }}
                                 </time>
                             {% endif %}
@@ -64,43 +68,31 @@
                     </div>
                 </article>
             {% endfor %}
-                <!-- Pagination améliorée -->
-             {% if is_paginated and page_obj and paginator %}
-             <nav class="pagination" aria-label="Pagination" style="margin: 1.2rem 0; display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
-                 {# Lien "Précédent" #}
-                 {% if page_obj.has_previous %}
-                     <a class="ghost" href="?page={{ page_obj.previous_page_number }}{{ querystring }}" rel="prev" aria-label="Page précédente">Précédent</a>
-                 {% else %}
-                     <span class="ghost" aria-disabled="true">Précédent</span>
-                 {% endif %}
-
-                 {# Pages avec ellipses #}
-                 {% for p in page_range %}
-                     {% if p == page_obj.number %}
-                         <span class="button" aria-current="page"> {{ p }} </span>
-                     {% elif p == '…' or p == '...' %}
-                         <span class="ghost" aria-hidden="true" style="pointer-events:none;">…</span>
-                     {% else %}
-                         <a class="ghost" href="?page={{ p }}{{ querystring }}" aria-label="Aller à la page {{ p }}">{{ p }}</a>
-                     {% endif %}
-                 {% endfor %}
-
-                 {# Lien "Suivant" #}
-                 {% if page_obj.has_next %}
-                     <a class="ghost" href="?page={{ page_obj.next_page_number }}{{ querystring }}" rel="next" aria-label="Page suivante">Suivant</a>
-                 {% else %}
-                     <span class="ghost" aria-disabled="true">Suivant</span>
-                 {% endif %}
-
-                 <span class="ghost" aria-label="Position" style="pointer-events:none;">
-                     Page {{ page_obj.number }} / {{ paginator.num_pages }}
-                 </span>
-             </nav>
-             {% endif %}
-        </section>
-    {% else %}
-        <p>Aucun article disponible pour le moment.</p>
     {% endif %}
 
+     </section>
+        {% if is_paginated %}
+           {% if page_obj.has_other_pages %}
+               <nav class="mt-4 d-flex justify-content-center">
+                   <ul class="pagination shadow-sm rounded-pill overflow-hidden">
+                       {% if page_obj.has_previous %}
+                           <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+                       {% endif %}
+
+                       <li class="page-item active"><span class="page-link border-0 px-4">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span></li>
+
+                       {% if page_obj.has_next %}
+                           <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+                       {% endif %}
+                   </ul>
+               </nav>
+            {% endif %}
+     {% else %}
+         <!-- ETAT VIDE -->
+         <div class="coti-empty" role="status">
+             <p><i class="fa-regular fa-folder-open fa-3x" aria-hidden="true"></i></p>
+             <p>Aucune donnée disponible pour le moment.</p>
+         </div>
+     {% endif %}
 </div>
 {% endblock %}

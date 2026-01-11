@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from BTest import settings
-from .models import BTestCustomUser, TelegramOTP2FA
+from .models import BtestCustomUser, TelegramOTP2FA
 
 
 
@@ -268,10 +268,10 @@ def telegram_webhook(request):
 
             # Charger l'utilisateur
             try:
-                user = BTestCustomUser.objects.get(pk=user_id)
+                user = BtestCustomUser.objects.get(pk=user_id)
                 print(f"✅ Utilisateur trouvé: {user}")
                 _safe_send(chat_id, f'Salam {display_name}')
-            except BTestCustomUser.DoesNotExist:
+            except BtestCustomUser.DoesNotExist:
                 print(f"❌ User {user_id} not found")
                 _safe_send(chat_id, "Utilisateur introuvable.")
                 return HttpResponse("ok")
@@ -357,7 +357,7 @@ def login_with_2fa_by_telegram(request):
 
         otp_code = request.POST.get('otp_code')
         action = request.POST.get('action')
-        user = BTestCustomUser.objects.filter(pk=user_id).first()
+        user = BtestCustomUser.objects.filter(pk=user_id).first()
         identifiant = user.identifiant
         if user is not None:
             # Vérifier si l'utilisateur a le 2FA activé

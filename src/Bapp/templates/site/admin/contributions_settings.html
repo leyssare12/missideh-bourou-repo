@@ -1,0 +1,56 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}<title>{{ title }}</title>{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-dark">Configuration du Système</h2>
+        <p class="text-muted">Choisissez l'élément que vous souhaitez configurer ou lister</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <!-- Carte pour les Montants Annuels -->
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-4 transition-all hover-shadow">
+                <div class="card-body">
+                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                        <i class="fas fa-money-check-alt fa-2x"></i>
+                    </div>
+                    <h4 class="card-title fw-bold mb-3">Montants Annuels</h4>
+                    <p class="card-text text-muted mb-4">Définissez les montants de référence pour les cotisations de chaque année.</p>
+                    <a href="{% url 'Bapp:list_amountcontributionyear' %}" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">
+                        Créer un montant annuel
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carte pour les Événements Occasionnels -->
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 text-center p-4 transition-all hover-shadow">
+                <div class="card-body">
+                    <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                        <i class="fa-solid fa-hourglass-start fa-2x"></i>
+                    </div>
+                    <h4 class="card-title fw-bold mb-3">Cotisation Occasionnelle</h4>
+                    <p class="card-text text-muted mb-4">Créez et gérez les motifs pour les cotisations occasionnelles (fêtes, projets, etc.)</p>
+                    <a href="{% url 'Bapp:list_occasionalcontribution' %}" class="btn btn-success w-100 rounded-pill py-2 fw-bold text-white">
+                        Créer une cotisation occasionnelle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-all { transition: all 0.3s ease; }
+    .hover-shadow:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+    .rounded-4 { border-radius: 1.25rem !important; }
+</style>
+{% endblock %}

@@ -7,11 +7,15 @@
 {% block extra_css %}<link href="{% static 'css/client/caisse/has_annual_particpated.css'%}" rel="stylesheet" type="text/css">{% endblock %}
 
 
-
 {% block content %}
+
+<style>
+  .pagination{background-color:#0d6efd !important; border: 2px solid #0d6efd !important; /* Force la bordure sur le lien */}
+  ul li{margin-bottom:inherit;}
+</style>
 <div class="pa-container">
   <header class="pa-header">
-    <h1 class="pa-title">Participation annuelle des membres</h1>
+    <h1 class="pa-title">Participation annuelle de membres</h1>
     <div class="pa-legend">
       <span class="pa-badge pa-badge--ok" title="A participé">✓ Participé</span>
       <span class="pa-badge pa-badge--no" title="Pas de participation">✗ Non Participé</span>
@@ -80,27 +84,31 @@
     </table>
   </div>
 
+  <!-- PAGINATION -->
   {% if is_paginated %}
-    <nav class="pa-pagination" role="navigation" aria-label="Pagination" style="margin-top:16px; display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;">
-      {% if page_obj.has_previous %}
-        <a class="pa-page-btn" href="?page=1" aria-label="Première page" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">«</a>
-        <a class="pa-page-btn" href="?page={{ page_obj.previous_page_number }}" aria-label="Page précédente" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">Précédent</a>
+          {% if page_obj.has_other_pages %}
+              <nav class="mt-4 d-flex justify-content-center">
+                  <ul class="pagination shadow-sm rounded-pill overflow-hidden">
+                      {% if page_obj.has_previous %}
+                          <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+                      {% endif %}
+
+                      <li class="page-item active"><span class="page-link border-0 px-4">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span></li>
+
+                      {% if page_obj.has_next %}
+                          <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+                      {% endif %}
+                  </ul>
+              </nav>
       {% endif %}
 
-      <span class="pa-page-info" aria-live="polite" style="padding:.5rem .75rem; border-radius:8px; background:#f1f5f9; border:1px solid #e5e7eb;">
-        Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-      </span>
-
-      {% if page_obj.has_next %}
-        <a class="pa-page-btn" href="?page={{ page_obj.next_page_number }}" aria-label="Page suivante" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">Suivant</a>
-        <a class="pa-page-btn" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Dernière page" style="padding:.5rem .75rem; border:1px solid #e5e7eb; border-radius:8px; text-decoration:none;">»</a>
-      {% endif %}
-    </nav>
-  {% else %}
-    <div class="pa-empty" role="status" style="margin-top:16px; text-align:center; color:#64748b;">
-      Aucun membre trouvé.
-    </div>
-  {% endif %}
+    {% else %}
+        <!-- ETAT VIDE -->
+        <div class="coti-empty" role="status">
+            <p><i class="fa-regular fa-folder-open fa-3x" aria-hidden="true"></i></p>
+            <p>Aucune donnée disponible pour le moment.</p>
+        </div>
+    {% endif %}
 
 </div>
 {% endblock %}

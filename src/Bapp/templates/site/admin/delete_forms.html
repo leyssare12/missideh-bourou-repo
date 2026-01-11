@@ -1,0 +1,99 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+
+{% block title %}<title>Delete items</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/admin/list_items_forms.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="card border-danger shadow-lg mx-auto rounded-4 overflow-hidden" style="max-width: 550px;">
+        <!-- En-tête avec alerte visuelle forte -->
+        <div class="card-header bg-danger text-white py-3 px-4 border-0">
+            <h5 class="mb-0 d-flex align-items-center">
+                <i class="fas fa-trash-alt me-3 fs-4"></i>
+                Confirmation de suppression
+            </h5>
+        </div>
+
+        <div class="card-body p-4 p-md-5 bg-white text-center">
+            <div class="mb-4">
+                <p class="text-muted mb-3">Voulez-vous vraiment supprimer cet enregistrement ?</p>
+
+                <!-- Détails de l'élément (Dynamique selon le modèle) -->
+                <div class="p-4 bg-light rounded-3 border mb-4 text-dark shadow-sm">
+
+                    {# 1. Affichage du Nom ou du Membre #}
+                    <h4 class="mb-2 fw-bold">
+                        {% if item.member_id %}
+                            {{ item.member_id.prenoms }}
+                        {% elif item.participant_id %}
+                            {{ item.participant_id.prenoms }}
+                        {% elif item.nom %}
+                            {{ item.nom }} {{ item.prenom }}
+                        {% elif item.event_name %}
+                            {{ item.event_name }}
+                        {% else %}
+                            {{ item }}
+                        {% endif %}
+                    </h4>
+
+                    {# 2. Affichage du Montant avec Badge #}
+                    <div class="mb-2">
+                        {% if item.montant_cotisation %}
+                            <span class="badge bg-danger fs-6 px-3">{{ item.montant_cotisation }} FGN</span>
+                        {% elif item.montant_participation %}
+                            <span class="badge bg-danger fs-6 px-3">{{ item.montant_participation }} FGN</span>
+                        {% elif item.montant_don %}
+                            <span class="badge bg-danger fs-6 px-3">{{ item.montant_don }} FGN</span>
+                        {% elif item.montant_depense %}
+                            <span class="badge bg-warning text-dark fs-6 px-3">{{ item.montant_depense }} FGN</span>
+                        {% endif %}
+                    </div>
+
+                    {# 3. Affichage de la Date et Identifiant #}
+                    <div class="small text-muted mt-3 pt-3 border-top">
+                        {% if item.date_cotisation or item.date_participation or item.updated_at %}
+                            <p class="mb-1">
+                                <i class="far fa-calendar-alt me-2"></i>
+                                <strong>Date :</strong>
+                                {{ item.date_cotisation|date:"d/m/Y" }}{{ item.date_participation|date:"d/m/Y" }}{{ item.updated_at|date:"d/m/Y" }}
+                            </p>
+                        {% endif %}
+
+                        {% if item.member_id.identifiant or item.participant_id.identifiant %}
+                            <p class="mb-0">
+                                <i class="fas fa-id-card me-2"></i>
+                                <strong>ID :</strong> {{ item.member_id.identifiant }}{{ item.participant_id.identifiant }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="alert alert-warning py-2 small border-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Cette action est définitive et ne peut pas être annulée.
+                </div>
+            </div>
+
+            <!-- Formulaire de confirmation -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-danger btn-lg fw-bold py-3 rounded-3 shadow transition-all">
+                        <i class="fas fa-check-circle me-2"></i> Supprimer l'élément
+                    </button>
+                    <a href="javascript:history.back()" class="btn btn-light btn-lg py-2 border text-muted">
+                        Annuler et fermer
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-all { transition: all 0.3s ease; }
+    .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3) !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .shadow-lg { box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important; }
+</style>
+{% endblock %}

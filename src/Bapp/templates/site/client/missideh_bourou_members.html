@@ -152,11 +152,7 @@
     white-space: nowrap;
   }
 
-  .phone-link-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
+
   .phone-link {
     color: var(--accent);
     text-decoration: none;
@@ -167,17 +163,23 @@
     outline: none;
   }
 
+        .cell-attr, .phone-link-wrapper {
+        display: inline-flex;
+        align-items: center; /* Aligne l'icône et le texte sur la même ligne horizontale */
+        gap: 0.75rem;        /* Espace constant entre l'icône et le texte */
+        width: 100%;         /* Permet l'alignement à gauche dans la cellule */
+        text-align: left;
+      }
+
+      .cell-attr i, .phone-link-wrapper i {
+        color: var(--accent);
+        width: 1.25rem;      /* Largeur fixe cruciale pour que le texte soit aligné verticalement */
+        display: inline-flex;
+        justify-content: center; /* Centre l'icône dans sa zone réservée */
+        flex-shrink: 0;      /* Empêche l'icône de s'écraser */
+      }
+
   /* Icônes d’attribut dans les cellules (desktop) */
-  .cell-attr {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-  }
-  .cell-attr i {
-    color: var(--accent);
-    width: 1.1em;
-    text-align: center;
-  }
 
   /* Pagination */
   .pagination {
@@ -287,7 +289,13 @@
     height: 1px !important;
     overflow: hidden !important;
   }
-
+  .users_number{
+    background-color: #2563eb;
+    color: white;
+    padding: 5px;
+    border-radius: 60px;
+    font-size: 1.1rem;
+  }
 </style>
 
 
@@ -300,10 +308,11 @@
 <div class="table-container">
   <div class="panel">
     <div class="panel-header">
-      <h1 class="title">
-        <i class="fas fa-users" aria-hidden="true"></i>
-        Liste de membres Missideh Bourou
-      </h1>
+      <h3 class="title">
+        <i class="fas fa-users" aria-hidden="true"> <span class="users_number">{{users_number}} </span></i>
+        Membres Missideh Bourou
+      </h3>
+
       <label class="search searchTerm">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="#9ca3af" aria-hidden="true">
           <path d="M21 21l-4.3-4.3m1.8-5.2a7 7 0 11-14 0 7 7 0 0114 0z" stroke="#9ca3af" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -318,8 +327,10 @@
         <thead>
           <tr>
             <th scope="col"><span class="th-label"><i class="fas fa-id-badge" aria-hidden="true"></i> Prénom</span>:</th>
+            <th scope="col"><span class="th-label"><i class="fa-solid fa-id-card" aria-hidden="true"></i> Identifiant</span>:</th>
             <th scope="col"><span class="th-label"><i class="fas fa-location-dot" aria-hidden="true"></i> Quartier</span>:</th>
             <th scope="col"><span class="th-label"><i class="fas fa-flag" aria-hidden="true"></i> Pays</span>:</th>
+            <th scope="col"><span class="th-label"><i class="fas fa-city" aria-hidden="true"></i> Ville</span>:</th>
             <th scope="col"><span class="th-label"><i class="fas fa-phone" aria-hidden="true"></i> Téléphone</span>:</th>
             <th scope="col"><span class="th-label"><i class="fas fa-envelope" aria-hidden="true"></i> Email</span>:</th>
           </tr>
@@ -331,11 +342,17 @@
                 <td data-label="Prénoms">
                   <span class="cell-attr"><i class="fas fa-id-badge" aria-hidden="true"></i>{{ m.prenoms }}</span>
                 </td>
+                <td data-label="Identifiant">
+                  <span class="cell-attr"><i class="fa-solid fa-id-card" aria-hidden="true"></i>{{ m.identifiant }}</span>
+                </td>
                 <td data-label="Quartier">
                   <span class="cell-attr"><i class="fas fa-location-dot" aria-hidden="true"></i>{{ m.quartier }}</span>
                 </td>
                 <td data-label="Pays">
                   <span class="cell-attr"><i class="fas fa-flag" aria-hidden="true"></i><span class="tag">{{ m.pays }}</span></span>
+                </td>
+                <td data-label="City">
+                  <span class="cell-attr"><i class="fas fa-city" aria-hidden="true"></i><span class="tag">{{ m.city }}</span></span>
                 </td>
                 <td data-label="Telephone">
                   {% if m.telephone %}

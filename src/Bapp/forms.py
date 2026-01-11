@@ -13,11 +13,12 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.validators import RegexValidator, EmailValidator
 
-from Bapp.models import BTestCustomUser, ParticipationAnnual, ParticipationOccasionnelle, Dons, AddDepenses,\
-    EditorialCommunity
+from Bapp.form_mixin import StyledFormMixin
+from Bapp.models import BtestCustomUser, ParticipationAnnual, ParticipationOccasionnelle, Dons, AddDepenses, \
+    EditorialCommunity, AmountContributionYear, EvenementOccasionnelle, CotisationOccasionnelle
 
 # Détection des motifs suspects (injection JS)
-SUSPICIOUS_PATTERNS= [
+SUSPICIOUS_PATTERNS = [
     r'<script.*?>',
     r'javascript:',
     r'onclick=',
@@ -32,6 +33,7 @@ SUSPICIOUS_PATTERNS= [
 ]
 # Vérification des caractères spéciaux suspects
 SUSPICIOUS_CHARS = ['<!--', '-->', '`', '$', '{', '}']
+
 
 class BtestUserCreationsForms(forms.ModelForm):
     QUARTIERS = [
@@ -49,7 +51,7 @@ class BtestUserCreationsForms(forms.ModelForm):
     ]
     PAYS = [
         ('Guinée', 'Guinée'),
-        ('Senégal', 'Senégal'),
+        ('Sénégal', 'Senégal'),
         ("Côte d'ivoir", "Côte d'Ivoire"),
         ("Benin", "Benin"),
         ("Togo", "Togo"),
@@ -74,32 +76,35 @@ class BtestUserCreationsForms(forms.ModelForm):
 
     confirm_password = forms.CharField(required=False,
                                        widget=forms.PasswordInput(attrs={
-                                            'class': 'text-field w-input"',
-                                            'id': 'confirm-password-id',
-                                            'name': 'confirm_password',
-                                            'placeholder': 'Confirmer le mot de passe'
-                                        }))
+                                           'class': 'text-field w-input"',
+                                           'id': 'confirm-password-id',
+                                           'name': 'confirm_password',
+                                           'placeholder': 'Confirmer le mot de passe'
+                                       }))
+
     class Meta:
-        model = BTestCustomUser
+        model = BtestCustomUser
         fields = (
-                  'prenoms',
-                  'pays',
-                  'quartier',
-                  'email',
-                  'telephone',
-                  'profile_picture',
-                  'profession',
-                  'role',
-                  'password',
-                  )
+            'prenoms',
+            'pays',
+            'quartier',
+            'email',
+            'telephone',
+            'city',
+            'profile_picture',
+            'profession',
+            'role',
+            'password',
+        )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Créer une nouvelle liste de choix en excluant ADMIN
-        choices = [(role, label) for role, label in BTestCustomUser.ROLE_CHOICES if role != 'ADMIN']
+        choices = [(role, label) for role, label in BtestCustomUser.ROLE_CHOICES if role != 'ADMIN']
 
         self.fields['role'] = forms.ChoiceField(choices=choices,
                                                 required=True,
-                                                initial='USER', #comme valeur par defaut dans le select
+                                                initial='USER',  #comme valeur par defaut dans le select
                                                 widget=forms.Select(attrs={
                                                     'class': 'text-field w-input"',
                                                     'id': 'role-id',
@@ -113,7 +118,7 @@ class BtestUserCreationsForms(forms.ModelForm):
                 'class': 'text-field w-input"',
                 'id': 'quartier-id',
                 'name': 'quartier',
-            } ))
+            }))
         self.fields['pays'] = forms.ChoiceField(
             choices=self.PAYS,
             required=True,
@@ -125,13 +130,14 @@ class BtestUserCreationsForms(forms.ModelForm):
             })
         )
         self.fields['profession'] = forms.ChoiceField(choices=self.PROFESSION,
-            required=False,
-            initial="Professeur",
-            widget=forms.Select(attrs={
-            'class': 'text-field w-input"',
-            'id': 'profession-id',
-            'name': 'profession',
-        }))
+                                                      required=False,
+                                                      initial="Professeur",
+                                                      widget=forms.Select(attrs={
+                                                          'class': 'text-field w-input"',
+                                                          'id': 'profession-id',
+                                                          'name': 'profession',
+                                                      }))
+
     prenoms = forms.CharField(
         max_length=100,
         required=True,
@@ -141,7 +147,7 @@ class BtestUserCreationsForms(forms.ModelForm):
             'name': 'firstName',
             'placeholder': 'Votre prenom '
         })
-     )
+    )
 
     email = forms.EmailField(
         validators=[EmailValidator(message="Please enter a valid email address.")],
@@ -151,19 +157,29 @@ class BtestUserCreationsForms(forms.ModelForm):
             'id': 'email-id',
             'name': 'email',
             'placeholder': 'Votre mail '
-         })
-     )
+        })
+    )
     telephone = forms.CharField(
         max_length=15,
         required=True,
         validators=[RegexValidator(regex=r'^\+?1?(?:[- .]?\d){9,20}$'
-,
+                                   ,
                                    message="Phone number must be entered in the format: '+999999999'. Up to 20 digits allowed.")],
         widget=forms.TextInput(attrs={
             'class': 'text-field w-input"',
             'id': 'telephone-id',
             'name': 'telephone',
             'placeholder': 'Votre numéro de Tél'
+        })
+    )
+    city = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'text-field w-input"',
+            'id': 'cityId',
+            'name': 'city',
+            'placeholder': 'Ville de residence...'
         })
     )
     profile_picture = forms.ImageField(
@@ -183,18 +199,23 @@ class BtestUserCreationsForms(forms.ModelForm):
         required=False,
         min_length=6,
         max_length=100
-     )
+    )
+
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        # S'assurer que l'email entré est disponible, et n'a pas été encore pris
-        if BTestCustomUser.objects.filter(email=email).exists():
-            raise ValidationError("Cet email est déjà utilisé, veillez-en choisir un autre.")
+        # Vérifie si l'email existe chez UN AUTRE utilisateur
+        qs = BtestCustomUser.objects.filter(email=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Cet email est déjà utilisé.")
         # Regular expression for validating an email
         regex = r'^[A-Za-z0-9._%+-]{4,50}+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$'
         # Check if email matches the regex
         if not re.match(regex, email):
             raise forms.ValidationError("Entrez un email au format valide.")
         return email
+
     def clean_telephone(self):
         telephone = self.cleaned_data.get('telephone')
         if not telephone.startswith('+'):
@@ -235,6 +256,7 @@ class BtestUserCreationsForms(forms.ModelForm):
                 raise forms.ValidationError("Erreur lors du traitement de l'image : " + str(e))
 
         return image
+
     def clean_password(self):
         """Validation spécifique pour le mot de passe"""
         password = self.cleaned_data.get('password')
@@ -271,6 +293,7 @@ class BtestUserCreationsForms(forms.ModelForm):
             raise forms.ValidationError({'pays': 'Le pays est obligatoire'})
 
         return cleaned_data
+
     def get_validated_data(self):
         """Récupération des données validées avec traitement supplémentaire si nécessaire"""
         if self.is_valid():
@@ -283,7 +306,6 @@ class BtestUserCreationsForms(forms.ModelForm):
         return None
 
 
-
 class RechercheUserForm(forms.Form):
     recherche = forms.CharField(label='Code personnel ou prénom', max_length=100)
 
@@ -292,6 +314,7 @@ class RechercheUserForm(forms.Form):
         if len(query) < 2:
             raise forms.ValidationError("Veuillez entrer au moins 2 caractères.")
         return query
+
 
 class UserSearchForm(forms.Form):
     search_term = forms.CharField(
@@ -302,6 +325,7 @@ class UserSearchForm(forms.Form):
             'placeholder': 'Rechercher par prénom ou identifiant'
         })
     )
+
     def clean_search_term(self):
         search_term = self.cleaned_data.get('search_term')
         search_term = search_term.strip()
@@ -312,141 +336,89 @@ class UserSearchForm(forms.Form):
         return search_term
 
 
-
-
-class ParticipationAnnuelForm_save(forms.ModelForm):
-    # Ajout d'un champ personnalisé pour le montant_participation avec des widgets et validations
-    user_id = forms.CharField(widget=forms.HiddenInput())
-    montant_participation = forms.DecimalField(
-        min_value=Decimal('1000.00'),
-        max_value=Decimal('9999999.99'),
-        decimal_places=2,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Entrez le montant ici',
-            'step': '0.01',
-            'min': '0.01'
-        }),
-        error_messages={
-            'required': 'Le montant_participation est obligatoire',
-            'min_value': 'Le montant_participation doit être supérieur à 1000',
-            'max_value': 'Le montant_participation est trop élevé',
-            'invalid': 'Veuillez entrer un montant_participation valide'
-        }
-    )
+class ParticipationAnnuelForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Ajouter une cotisation annuelle",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer l'événement",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
 
     class Meta:
         model = ParticipationAnnual
-        fields = ['montant_participation']
-
-    def clean_montant_participation(self):
-        """
-        Méthode pour nettoyer et valider le montant_participation
-        """
-        montant_participation = self.cleaned_data.get('montant_participation')
-
-        if montant_participation is None:
-            raise forms.ValidationError("Le montant_participation ne peut pas être vide")
-
-        # Conversion en Decimal pour une précision exacte
-        try:
-            montant_participation = Decimal(str(montant_participation))
-        except (TypeError, ValueError):
-            raise forms.ValidationError("Le montant_participation doit être un nombre valide")
-
-        # Vérification du montant_participation minimal
-        if montant_participation < Decimal('1000.01'):
-            raise forms.ValidationError("Le montant_participation doit être supérieur à 1000 FGN")
-
-        # Arrondir à 2 décimales
-        montant_participation = montant_participation.quantize(Decimal('1000.01'))
-
-        # Vérification du format (pas plus de 2 décimales)
-        if str(montant_participation)[::-1].find('.') > 2:
-            raise forms.ValidationError("Le montant_participation ne peut avoir que 2 décimales maximum")
-
-        return montant_participation
-
-    def clean(self):
-        """
-        Validation globale du formulaire
-        """
-        cleaned_data = super().clean()
-        montant_participation = cleaned_data.get('montant_participation')
-
-        # Vérifications supplémentaires si nécessaire
-        if montant_participation:
-            # Exemple : Vérifier si le montant_participation ne dépasse pas un certain seuil
-            if montant_participation > Decimal('1000000'):
-                self.add_error('montant_participation', 'Le montant_participation ne peut pas dépasser 1 000 000')
-
-            # Exemple : Vérifier si le montant_participation est un multiple de 100
-            if montant_participation % Decimal('50') != 0:
-                self.add_error('montant_participation', 'Le montant_participation doit être un multiple de 100')
-
-        return cleaned_data
-
-    def save(self, commit=True, user=None):
-        """
-        Surcharge de la méthode save pour ajouter des traitements supplémentaires
-        """
-        instance = super().save(commit=False)
-
-        if user:
-            instance.user = user
-
-        # Formatage final du montant_participation
-        instance.montant_participation = self.cleaned_data['montant_participation']
-
-        if commit:
-            try:
-                instance.save()
-            except Exception as e:
-                raise forms.ValidationError(f"Erreur lors de l'enregistrement : {str(e)}")
-
-        return instance
-class ParticipationAnnuelForm(forms.ModelForm):
-    class Meta:
-        model = ParticipationAnnual
-        fields = ['montant_participation']
+        fields = ['participant', 'montant_participation', 'year']
         widgets = {
             'montant_participation': forms.NumberInput(attrs={
-                'class': 'form-control error_message',
-                'step': '0.01'
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Ex: 5000'
+            }),
+            'year': forms.Select(attrs={
+                'class': 'form-control'
             })
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['participant'].label = "Nom de l'utilisateur"
         self.fields['montant_participation'].label = "Montant de participation"
+        self.fields['year'].label = "Année de cotisation"
+        # On s'assure que la liste des années est triée par la plus récente
+        self.fields['year'].queryset = AmountContributionYear.objects.all().order_by('-year')
+        self.fields['year'].empty_label = "-- Sélectionnez l'année --"
+        self.fields['participant'].empty_label = "-- Sélectionnez un membre--"
 
     def clean_montant_participation(self):
         """
-        Méthode pour nettoyer et valider le montant_participation
+        Nettoie et valide le montant par rapport au montant fixé pour l'année choisie
         """
         montant_participation = self.cleaned_data.get('montant_participation')
 
         if montant_participation is None:
             raise forms.ValidationError("Le montant de participation ne peut pas être vide")
 
-        # Conversion en Decimal pour une précision exacte
+        # Conversion en Decimal pour la précision
         try:
             montant_participation = Decimal(str(montant_participation))
         except (TypeError, ValueError):
             raise forms.ValidationError("Le montant de participation doit être un nombre valide")
+        if montant_participation > Decimal('20000.00'):
+            self.add_error('montant_participation',
+                           'Le montant ne peut pas depassé 20.000 fcfa')
+        # Arrondir à 2 décimales pour la précision financière
+        return montant_participation.quantize(Decimal('0.01'))
 
-        # Vérification du montant_participation minimal
-        if montant_participation < Decimal('1000.01'):
-            raise forms.ValidationError("Le montant de participation doit être supérieur à 1000 FGN")
+    def clean(self):
+        """Validation croisée entre le montant et l'année sélectionnée"""
+        cleaned_data = super().clean()
+        montant = cleaned_data.get('montant_participation')
+        year_obj = cleaned_data.get('year')
+        participant = cleaned_data.get('participant')
 
-        # Arrondir à 2 décimales
-        montant_participation = montant_participation.quantize(Decimal('1000.01'))
+        # On vérifie que les deux champs sont présents avant de comparer
+        if montant and year_obj:
+            # On vérifie si une participation existe déjà pour ce membre cette année
+            # .exclude(pk=self.instance.pk) permet de ne pas bloquer lors d'une modification (edit)
+            exists = ParticipationAnnual.objects.filter(
+                participant=participant,
+                year=year_obj
+            ).exclude(pk=self.instance.pk).exists()
 
-        # Vérification du format (pas plus de 2 décimales)
-        if str(montant_participation)[::-1].find('.') > 2:
-            raise forms.ValidationError("Le montant de participation ne peut avoir que 2 décimales maximum")
+            if exists:
+                raise ValidationError(
+                    f"Action refusée : {participant.prenoms} a déjà validé sa participation pour l'année {year_obj.year}."
+                )
+            montant_requis = Decimal(str(year_obj.amount_to_paid_pro_year))
 
-        return montant_participation
+            if montant < montant_requis:
+                # On ajoute l'erreur spécifiquement au champ montant_participation
+                self.add_error('montant_participation',
+                               f"Pour l'année {year_obj.year}, le montant doit être au minimum de {montant_requis} FGN."
+                               )
+
+        return cleaned_data
+
 
 class ParticipationOccasionnelleForm(forms.ModelForm):
     class Meta:
@@ -491,12 +463,13 @@ class ParticipationOccasionnelleForm(forms.ModelForm):
             raise forms.ValidationError("Le montant de participation ne peut avoir que 2 décimales maximum")
 
         return montant_participation
+
     def clean_motif_participation(self):
         motif_participation = self.cleaned_data.get('motif_participation')
         motif_participation = motif_participation.capitalize()
         if motif_participation is None:
             raise forms.ValidationError("Le champs motif participation ne peut pas être vide")
-        #S'assurer qu'il n'y ai pas de caractères non valide dans le textarea
+        # S'assurer qu'il n'y ai pas de caractères non valide dans le textarea
         for pattern in SUSPICIOUS_PATTERNS:
             if re.search(pattern, motif_participation, re.IGNORECASE):
                 raise ValidationError(
@@ -511,7 +484,192 @@ class ParticipationOccasionnelleForm(forms.ModelForm):
         return motif_participation
 
 
-class DonsForm(forms.ModelForm):
+class AmountContributionYearForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Intialisation du montant annuel de contribution",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer l'événement",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
+
+    class Meta:
+        model = AmountContributionYear
+        fields = ['year', 'amount_to_paid_pro_year']
+        widgets = {
+            'amount_to_paid_pro_year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Montant annuel (ex: 5000)'
+            }),
+            'year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Année (ex: 2024)'
+            })
+        }
+
+    def clean_year(self):
+        year = self.cleaned_data.get('year')
+        # Vérification de l'année (pas dans le futur lointain ou le passé trop lointain)
+        from datetime import date
+        current_year = date.today().year
+        if year < 2000 or year > current_year + 5:
+            raise forms.ValidationError(f"L'année {year} n'est pas valide.")
+        # Vérification de l'unicité (le modèle a unique=True, mais un message personnalisé est mieux)
+        if AmountContributionYear.objects.filter(year=year).exists():
+            if not self.instance.pk:  # Si c'est une création
+                raise forms.ValidationError("L'année existe déjà.")
+        return year
+
+    def clean_amount_to_paid_pro_year(self):
+        amount = self.cleaned_data.get('amount_to_paid_pro_year')
+        if amount is None:
+            raise forms.ValidationError("Le montant est obligatoire.")
+        try:
+            amount = Decimal(str(amount))
+        except (TypeError, ValueError):
+            raise forms.ValidationError("Veuillez entrer un nombre valide.")
+        # Sécurité : montant minimum (ex: 1000 fcfa)
+        if amount < Decimal('1000'):
+            raise forms.ValidationError("Le montant doit être au minimum de 1000 F.")
+        # Arrondi à 2 décimales pour la sécurité financière
+        amount = amount.quantize(Decimal('0.01'))
+        return amount
+
+
+class EvenementOccasionnelleForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Création de Cotisation occasionnelle",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer l'événement",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
+
+    class Meta:
+        model = EvenementOccasionnelle
+        fields = ['event_name', 'event_description', 'date_event']
+        widgets = {
+            'event_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': "Nom de l'événement (ex: Mariage, Baptême)"
+            }),
+            'event_description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': "Description détaillée..."
+            }),
+            'date_event': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            })
+        }
+
+    def clean_event_name(self):
+        name = self.cleaned_data.get('event_name')
+        if name:
+            # Sécurité contre les scripts
+            for pattern in SUSPICIOUS_PATTERNS:
+                if re.search(pattern, name, re.IGNORECASE):
+                    raise ValidationError("Le nom contient des motifs non autorisés.")
+            return name.strip()
+        return name
+
+    def clean_event_description(self):
+        description = self.cleaned_data.get('event_description')
+        if description:
+            # Utilisation de bleach pour nettoyer le HTML si présent
+            cleaned_desc = bleach.clean(description, tags=[], strip=True)
+            if len(cleaned_desc) < 10:
+                raise ValidationError("La description doit faire au moins 10 caractères.")
+            return cleaned_desc
+        return description
+
+
+class CotisationOccasionnelleForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Ajouter une cotisation occasionnelle",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer les données",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
+
+    class Meta:
+        model = CotisationOccasionnelle
+        fields = ['member', 'event_name', 'montant_cotisation']
+        widgets = {
+            'member': forms.Select(attrs={'class': 'form-control select2'}),
+            # On change 'year' par 'event_name' ici aussi
+            'event_name': forms.Select(attrs={'class': 'form-control'}),
+            'montant_cotisation': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Montant en FGN'
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['member'].queryset = BtestCustomUser.objects.filter(is_active=True).order_by('prenoms')
+        self.fields['member'].empty_label = "Sélectionnez un membre"
+
+        # On remplace self.fields['year'] par self.fields['event_name']
+        self.fields['event_name'].queryset = EvenementOccasionnelle.objects.all().order_by('-date_event')
+        self.fields['event_name'].empty_label = "Sélectionnez l'événement"
+        self.fields['event_name'].label = "Événement"
+
+        # On rend les champs obligatoires
+        self.fields['member'].required = True
+        self.fields['event_name'].required = True
+        self.fields['montant_cotisation'].required = True
+
+    def clean_montant_cotisation(self):
+        montant = self.cleaned_data.get('montant_cotisation')
+
+        if montant is None:
+            raise ValidationError("Le montant est obligatoire.")
+
+        try:
+            montant = Decimal(str(montant))
+        except (TypeError, ValueError):
+            raise ValidationError("Le format du montant est invalide.")
+
+        if montant < Decimal('10000.00'):
+            raise ValidationError("Le montant minimum de cotisation est de 10.000 FGN.")
+
+        # Précision financière
+        return montant.quantize(Decimal('0.01'))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        member = cleaned_data.get('member')
+        event_name = cleaned_data.get('event_name')
+
+        # Vérification si une cotisation existe déjà pour ce membre et cet événement
+        if member and event_name:
+            exists = CotisationOccasionnelle.objects.filter(
+                member=member,
+                event_name=event_name
+            ).exclude(pk=self.instance.pk).exists()
+
+            if exists:
+                raise ValidationError(
+                    f"Ce membre ({member}) a déjà enregistré une cotisation pour l'événement '{event_name}'."
+                )
+
+        return cleaned_data
+
+
+class DonsForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Ajout d'un nouveau don",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer l'événement",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
+
     class Meta:
         model = Dons
         fields = ['nom', 'prenom', 'montant_don', 'motif_don']
@@ -573,6 +731,7 @@ class DonsForm(forms.ModelForm):
                 )
 
         return nom.strip()
+
     def clean_prenom(self):
         prenom = self.cleaned_data['prenom']
         if len(prenom.strip()) < 4:
@@ -659,7 +818,15 @@ class DonsForm(forms.ModelForm):
         return cleaned_data
 
 
-class AddDepensesForm(forms.ModelForm):
+class AddDepensesForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Ajouter une nouvelle dépense",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer l'événement",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
+
     class Meta:
         model = AddDepenses
         fields = ['montant_depense', 'motif_depense']
@@ -771,7 +938,15 @@ class AddDepensesForm(forms.ModelForm):
         return cleaned_text
 
 
-class EditorialCommunityForm(forms.ModelForm):
+class EditorialCommunityForm(StyledFormMixin, forms.ModelForm):
+    ui_config = {
+        'title': "Publier une information !",
+        'icon': 'fas fa-calendar-plus',
+        'btn_text': "Enregistrer l'événement",
+        'btn_class': 'btn-primary',
+        'header_class': 'bg-primary text-white'
+    }
+
     class Meta:
         model = EditorialCommunity
         fields = ['title', 'content', 'image', 'extra_links']
@@ -819,7 +994,6 @@ class EditorialCommunityForm(forms.ModelForm):
         if link and not link.startswith(('http://', 'https://')):
             raise forms.ValidationError("Le lien doit commencer par http:// ou https://")
         return link
-
 
     def clean_content(self):
         """
@@ -907,7 +1081,7 @@ class EditorialCommunityForm(forms.ModelForm):
 
 class UserEditForm(UserChangeForm):
     class Meta:
-        model = BTestCustomUser
+        model = BtestCustomUser
         fields = [
             'prenoms', 'name', 'identifiant', 'email', 'profile_picture',
             'is_active', 'groups', 'user_permissions',

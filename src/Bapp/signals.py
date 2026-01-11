@@ -11,6 +11,7 @@ from BTest import settings
 TELEGRAM_URL = settings.TELEGRAM_API_URL_2
 TELEGRAM_CHAT_ID = settings.TELEGRAM_CHAT_ID_2
 
+
 @receiver(user_logged_in)
 def notify_login(sender, request, user, **kwargs):
     # Exemple : créer une notification
@@ -19,14 +20,18 @@ def notify_login(sender, request, user, **kwargs):
     message = f"🔔 <b>Nouvelle connexion</b>\nsur Missidhe-bourou\n👤 Utilisateur : {user.prenoms}\n🌐 IP : {ip}\n⏰ {now().strftime('%d-%m-%Y %H:%M:%S')}"
     send_telegram_message(message)
 
+
 def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
         return x_forwarded_for.split(",")[0]
     return request.META.get("REMOTE_ADDR")
+
+
 def send_telegram_message(message):
     url = f"{TELEGRAM_URL}/sendMessage"
-    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, 'parse_mode': 'HTML', 'disable_web_page_preview': True, 'disable_notification': False}
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, 'parse_mode': 'HTML', 'disable_web_page_preview': True,
+               'disable_notification': False}
     try:
         print('Le chat_id: ', TELEGRAM_CHAT_ID)
         print('On essaie d envoyer le message! avec l url: ', url)

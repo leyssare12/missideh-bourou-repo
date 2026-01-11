@@ -1,0 +1,184 @@
+{% extends "site/client/base_client.html" %}
+{% load static %} {# On charge le template static}
+{% load json_extra %} {# On charge le templatetags}
+{% load twined_tags %}
+{% block title %}<title>{{ title }}</title>{% endblock %}
+{% block extra_css %}
+<link href="{% static 'css/client/caisse/cotisation_occasionnelle.css' %}" rel="stylesheet" type="text/css">
+<style>
+    /* Styles pour la pagination et les messages */
+    .coti-pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 2rem; padding-bottom: 2rem; }
+    .coti-page-btn { padding: 8px 16px; border: 1px solid #e2e8f0; border-radius: 8px; color: #475569; text-decoration: none; transition: all 0.2s; }
+    .coti-page-btn:hover { background-color: #f8fafc; border-color: #cbd5e1; }
+    .coti-page-info { font-weight: 600; color: #1e293b; background: #f1f5f9; padding: 8px 16px; border-radius: 8px; }
+    .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
+    .alert-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .alert-info { background-color: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
+    .pagination{border: 2px solid #0d6efd !important; /* Force la bordure sur le lien */}
+    ul li{margin-bottom: inherit;}
+    .coti-row{text-align:inherit}
+    .coti-row .label{text-align:left;}
+
+    /* Style pour la ligne de dépense dans le bilan */
+    .row-danger-highlight {
+        background-color: rgba(220, 53, 69, 0.05) !important; /* Rouge très léger en fond */
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .fw-bold {
+        font-weight: 700 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="coti-container" aria-labelledby="coti-title">
+    <div class="coti-header">
+        <h1 id="coti-title" class="coti-title">
+            <i class="{{ icon_class }}" aria-hidden="true"></i>
+            {{ title }}
+        </h1>
+        {% if users_number %}
+
+        <div class="member-count-badge">
+            <i class="fas fa-users"></i> <span class="badge bg-success">{{ users_number }}</span> membre(s) inscrit(s)
+        </div>
+        {% endif %}
+
+        <div class="coti-tools">
+            <div class="coti-search">
+                <input type="search" id="cotiFilter" placeholder="Rechercher dans la liste..." aria-label="Filtrer">
+                <i class="fa-solid fa-search" aria-hidden="true"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- GESTION DES MESSAGES -->
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {% if message.tags == 'error' %}<i class="fas fa-exclamation-circle"></i>
+                    {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle"></i>
+                    {% elif message.tags == 'success' %}<i class="fas fa-check-circle"></i>
+                    {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if page_obj %}
+        <!-- AFFICHAGE CARTES (MOBILE) -->
+        <div class="coti-grid" id="cotiGrid">
+            {% for item in page_obj %}
+                <article class="coti-card">
+                    {% for label, field, icon in columns %}
+                        <div class="coti-row">
+                            <span class="label"><i class="fa-solid {{ icon }}" aria-hidden="true"></i> {{ label }}</span>
+
+                            <strong>
+                                {% if "montant" in field %}
+                                    <span class="tbl-amount {% if forloop.parentloop.last and title == 'Bilan Financier Global' %}text-danger fw-bold{% endif %}">
+                                         {{ item|get_item:field|format_currency }} FGN
+                                     </span>
+                                {% else %}
+                                    {{ item|get_item:field }}
+                                {% endif %}
+                            </strong>
+                        </div>
+                    {% endfor %}
+                </article>
+            {% endfor %}
+        </div>
+
+        <!-- AFFICHAGE TABLEAU (DESKTOP) -->
+        <div class="coti-table-wrapper" id="cotiTableWrapper">
+            <table class="coti-table" id="cotiTable">
+                <thead>
+                    <tr>
+                        {% for label, field, icon in columns %}
+                                <th>
+                                    <i class="fa-solid {{ icon }}" aria-hidden="true"></i> {{ label }}
+                                </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                        <tr class="{% if forloop.last and title == 'Bilan Financier Global' %}row-danger-highlight{% endif %}">
+                            {% for label, field, icon in columns %}
+                            <td>
+                                 {% if "montant" in field %}
+                                     <span class="tbl-amount {% if forloop.parentloop.last and title == 'Bilan Financier Global' %}text-danger fw-bold{% endif %}">
+                                         {{ item|get_item:field|format_currency }} FGN
+                                     </span>
+                                 {% else %}
+                                     {{ item|get_item:field }}
+                                 {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        {% if is_paginated %}
+                {% if page_obj.has_other_pages %}
+                    <nav class="mt-4 d-flex justify-content-center">
+                        <ul class="pagination shadow-sm rounded-pill overflow-hidden">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+                            {% endif %}
+
+                            <li class="page-item active"><span class="page-link border-0 px-4">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span></li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+            {% endif %}
+        {% endif %}
+
+    {% else %}
+        <!-- ETAT VIDE -->
+        <div class="coti-empty" role="status">
+            <p><i class="fa-regular fa-folder-open fa-3x" aria-hidden="true"></i></p>
+            <p>Aucune donnée disponible pour le moment.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Script de filtrage dynamique (Prénom/Quartier par défaut)
+    (function() {
+        const input = document.getElementById('cotiFilter');
+        if (!input) return;
+
+        input.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+
+            // Filtrer les cartes
+            document.querySelectorAll('.coti-card').forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? '' : 'none';
+            });
+
+            // Filtrer le tableau
+            document.querySelectorAll('#cotiTable tbody tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    })();
+</script>
+{% endblock %}

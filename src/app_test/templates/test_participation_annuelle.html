@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+
+        /* --- Gestion des Messages Django --- */
+.messages-container {
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.alert-msg {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid transparent;
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Couleurs selon les tags */
+.alert-msg.success {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border-color: #10b981;
+}
+
+.alert-msg.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-color: #ef4444;
+}
+
+.alert-msg.info, .alert-msg.debug {
+    background-color: #eff6ff;
+    color: #1e40af;
+    border-color: #3b82f6;
+}
+
+.alert-msg.warning {
+    background-color: #fffbeb;
+    color: #92400e;
+    border-color: #f59e0b;
+}
+
+/* Animation d'entrée */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Icônes optionnelles (si tu as FontAwesome) */
+.alert-msg::before {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    flex-shrink: 0;
+}
+.alert-msg.success::before { content: "\f058"; }
+.alert-msg.error::before { content: "\f06a"; }
+.alert-msg.info::before { content: "\f05a"; }
+.alert-msg.warning::before { content: "\f071"; }
+
+/* Responsive : texte plus petit sur mobile */
+@media (max-width: 480px) {
+    .alert-msg {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+}
+
+     /* Style par défaut pour le select (couleur du label vide) */
+select.form-control, select.select2 {
+    color: #6c757d; /* Gris plus clair pour le empty_label */
+    font-weight: 400;
+}
+
+/* Style pour les options à l'intérieur (on les remet en sombre) */
+select.form-control option {
+    color: #212529; /* Texte sombre pour les vrais choix */
+    background-color: #fff;
+}
+
+/* Style quand une option est sélectionnée (via JS) */
+select.form-control.is-selected {
+    color: #007f24; /* Devient sombre quand on a choisi */
+}
+
+/* On force la première option (vide) à être grise dans la liste */
+select option[value=""], select option:first-child {
+    color: #9ca3af !important;
+    font-style: italic;
+}
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-success text-white"><h4>{{ title }}</h4></div>
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="messages-container">
+                                {% for message in messages %}
+                                    <div class="alert-msg {{ message.tags }}" role="alert">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <form method="post" class="p-3 border rounded bg-white shadow-sm">
+                            {% csrf_token %}
+
+                            <!-- Champ Membre (Manuel) -->
+                            <div class="mb-3">
+                                <label class="form-label font-weight-bold">1. Membre</label>
+                                <select name="user_id" id="user_id" class="form-control select2" required>
+                                    <option value="">-- Sélectionnez le membre --</option>
+                                    {% for membre in membres %}
+                                        <option value="{{ membre.id }}">{{ membre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Champ Année (Depuis le Form) -->
+                            <div class="mb-3">
+                                <label class="form-label font-weight-bold">2. {{ form.year_id.label }}</label>
+                                {{ form.year_id }}
+                                {% if form.year_id.errors %}<div class="text-danger small">{{ form.year_id.errors }}</div>{% endif %}
+                            </div>
+
+                            <!-- Champ Montant (Depuis le Form) -->
+                            <div class="mb-3">
+                                <label class="form-label font-weight-bold">3. {{ form.montant_participation.label }}</label>
+                                {{ form.montant_participation }}
+                                {% if form.montant_participation.errors %}
+                                    <div class="text-danger small">{{ form.montant_participation.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 mt-2">Valider la Cotisation</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const selectElements = document.querySelectorAll('select');
+
+    selectElements.forEach(select => {
+        // Vérifier au chargement si une valeur existe déjà
+        if (select.value !== "") {
+            select.classList.add('is-selected');
+        }
+
+        // Changer la couleur lors du changement de sélection
+        select.addEventListener('change', function() {
+            if (this.value !== "") {
+                this.classList.add('is-selected');
+            } else {
+                this.classList.remove('is-selected');
+            }
+        });
+    });
+});
+    </script>
+</body>
+</html>

@@ -23,12 +23,14 @@ class MediaDebugMiddleware:
 
         return self.get_response(request)
 
+
 class AuthRequiredMiddleware:
     """
     Middleware qui redirige les utilisateurs non connectés
     vers une page de connexion personnalisée
     si l’URL demandée est protégée.
     """
+
     def __init__(self, get_response):
         self.get_response = get_response
         # liste des préfixes d'URL à protéger

@@ -46,9 +46,9 @@
                     <tbody>
                         {% for cotisation in page_obj %}
                         <tr>
-                            <td data-label="Membre:">{{ cotisation.participant_id.prenoms|default:cotisation.participant_id }} - {{cotisation.participant_id.quartier}}</td>
-                            <td data-label="Montant:">{{ cotisation.montant_participation }} €</td>
-                            <td data-label="Date paiement :">{{ cotisation.date_participation|date:"d/m/Y" }}</td>
+                            <td data-label="Membre:">{{ cotisation.member_id.prenoms|default:cotisation.member_id }} - {{cotisation.member_id.quartier}}</td>
+                            <td data-label="Montant:">{{ cotisation.montant_cotisation }} €</td>
+                            <td data-label="Date paiement :">{{ cotisation.date_cotisation|date:"d/m/Y" }}</td>
                             <td data-label="Mise à jour le : ">{{ cotisation.updated_at|date:"d/m/Y" }}</td>
                             <td>
                                 <div class="action-buttons">

@@ -102,6 +102,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'Bapp.apps.BappConfig',
     'Caroussel.apps.ImageConfig',
+    'app_test',
 
 ]
 
@@ -120,7 +121,7 @@ MIDDLEWARE = [
 
 ]
 
-AUTH_USER_MODEL = 'Bapp.BTestCustomUser'
+AUTH_USER_MODEL = 'Bapp.BtestCustomUser'
 ROOT_URLCONF = 'BTest.urls'
 
 TEMPLATES = [

@@ -35,6 +35,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('Caroussel.urls', namespace='Caroussel')),
     path('Bourou/', include('Bapp.urls', namespace='Bapp')),
+    path('test/', include('app_test.urls', namespace='test')),
     # Ajout explicite de l'URL pour servir les médias
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT,}),
 

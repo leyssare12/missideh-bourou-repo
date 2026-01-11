@@ -1,0 +1,92 @@
+{% extends "site/client/base_client.html" %}
+{% load static %}
+
+{% block title %}<title>MB Monde - Missideh Bourou</title>{% endblock %}
+
+{% block extra_css %}
+<style>
+    .monde-container { padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
+    .country-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px; margin-bottom: 50px;
+    }
+    .country-card {
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        border-radius: 12px; padding: 20px; text-align: center;
+        transition: all 0.3s ease; text-decoration: none !important;
+    }
+    .country-card:hover, .country-card.active {
+        background: #1e40af; border-color: #1e40af; transform: translateY(-3px);
+    }
+    .country-card h3 { font-size: 1rem; color: #1e40af; margin-bottom: 10px; }
+    .country-card:hover h3, .country-card.active h3 { color: white; }
+
+    .btn-view { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .country-card:hover .btn-view, .country-card.active .btn-view { color: rgba(255,255,255,0.8); }
+
+    /* Liste des membres */
+    .members-results { animation: fadeIn 0.5s ease; }
+    .member-row {
+        display: flex; align-items: center; padding: 15px;
+        background: white; border-bottom: 1px solid #f1f5f9;
+    }
+    .member-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eff6ff; margin-right: 15px; display: flex; align-items: center; justify-content: center; color: #1e40af; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="monde-container">
+    <div class="text-center mb-5">
+        <h1 style="font-weight: 800; color: #1e40af;">Missideh Bourou dans le Monde</h1>
+        <p class="text-muted">Sélectionnez un pays pour voir les membres résidents.</p>
+    </div>
+
+    <!-- Grille des pays -->
+    <div class="country-grid">
+        {% for country in countries %}
+            <a href="?country={{ country }}" class="country-card {% if selected_country == country %}active{% endif %}">
+                <h3>{{ country }}</h3>
+                <span class="btn-view">Voir les inscrits</span>
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Résultats du filtrage -->
+    {% if selected_country %}
+        <div class="members-results">
+            <h2 class="mb-4" style="color: #1e40af; font-weight: 700;">
+                <i class="fas fa-globe-africa"></i> Résidents en {{ selected_country }}
+                <span class="badge bg-primary ms-2">{{ members.count }}</span>
+            </h2>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    {% for member in members %}
+                        <div class="member-row">
+                            <div class="member-avatar">
+                                {% if member.profile_picture %}
+                                    <img src="{{ member.profile_picture.url }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                                {% else %}
+                                    <i class="fas fa-user"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h5 class="mb-0" style="font-size: 1rem; font-weight: 600;">{{ member.prenoms }}</h5>
+                                <small class="text-muted">{{ member.quartier }} | {{ member.city }}</small>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="p-5 text-center text-muted">
+                            <i class="fas fa-user-slash fa-3x mb-3"></i>
+                            <p>Aucun membre inscrit dans ce pays pour le moment.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

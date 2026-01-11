@@ -1,0 +1,207 @@
+{% extends "site/admin/base_admin.html" %}
+{% load static %}
+{% load twined_tags %}
+
+
+{% block title %}<title>List items</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/admin/list_items_forms.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% block content %}
+<div class="crud-container px-3 py-4">
+    <!-- En-tête avec bouton d'ajout dynamique -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 fw-bold text-dark mb-0">Gestion des {{ model_name|capfirst }}</h2>
+            <p class="text-muted small mb-0">{{ page_obj.paginator.count }} enregistrement(s) au total</p>
+        </div>
+        {# LIEN ADD : Utilise l'URL passée par le manager #}
+        {% if can_add %}
+            <a href="{% url url_add %}?action=add" class="btn btn-primary rounded-pill px-4 shadow-sm transition-all btn-add-custom">
+                <i class="fas fa-plus-circle me-2"></i>Nouveau
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Alertes Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 custom-table">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">{% if crud_type == 'ADDDEPENSES' %}Détails Dépense
+                            {% elif crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}Configuration Annuelle
+                            {% elif crud_type == 'DONS' %}Donateur
+                            {% elif crud_type == 'EVENEMENTOCCASIONNELLE' %}Nom de l'evénement
+                            {% else %}Membre {% endif %}</th>
+                        <th class="py-3">{% if crud_type == 'EVENEMENTOCCASIONNELLE' %}Motif de Cotisantion {% else %}Montant{% endif %}</th>
+                        <th class="py-3">Date d'opération</th>
+                        <th class="text-end pe-4 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td data-label="{%if crud_type == 'ADDDEPENSES' %}Dépense
+                        {% elif crud_type == 'DONS' %}Donateur
+                        {% elif crud_type == 'EVENEMENTOCCASIONNELLE'%}Évènement
+                        {% elif crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}Info
+                        {% else %}Membre{% endif %}" class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fw-bold text-dark">
+                                    {% if crud_type == 'DONS' %}{{ item.nom }} {{ item.prenom }}
+                                    {% elif crud_type == 'COTISATIONOCCASIONNELLE' %}{{ item.member.prenoms }}
+                                    {% elif crud_type == 'PARTICIPATIONANNUAL' %}{{ item.participant.prenoms }}
+                                    {% elif crud_type == 'ADDDEPENSES' %}{{ item.motif_depense|truncatechars:30 }}
+                                     {% elif crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}Cotisation Année {{ item.year }}
+                                    {% else %}{{ item }}{% endif %}
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-1">
+                                {% if crud_type == 'COTISATIONOCCASIONNELLE' %}<i class="fas fa-tag me-1"></i>{{ item.event_name.event_name }}
+                                {% elif crud_type == 'DONS' %}Donateur externe{% endif %}
+                            </small>
+                        </td>
+
+                        <td  data-label="{% if crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}Montant fixé
+                                         {% elif crud_type == 'EVENEMENTOCCASIONNELLE'%}Motif
+                                        {% else %}Montant{% endif %}">
+                            <span style="{% if crud_type == 'EVENEMENTOCCASIONNELLE' %}white-space: pre-line;{% endif %}"
+                                  class="badge {% if crud_type == 'ADDDEPENSES' %}bg-soft-danger text-info
+                                  {% else %}bg-soft-success text-success
+                                  {% endif %} fs-6 px-3 py-2 rounded-3 border">
+                                {% if crud_type == 'DONS' %}{{ item.montant_don|format_currency }}
+                                {% elif crud_type == 'ADDDEPENSES' %}{{ item.montant_depense|format_currency }}
+                                {% elif crud_type == 'COTISATIONOCCASIONNELLE' %}{{ item.montant_cotisation|format_currency }}
+                                {% elif crud_type == 'PARTICIPATIONANNUAL' %}{{ item.montant_participation|format_currency }}
+                                {% elif crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}{{ item.amount_to_paid_pro_year|format_currency }}
+                                {% elif crud_type == 'EVENEMENTOCCASIONNELLE' %}{{ item.event_description|split_long_text:8 }}
+                                {% else %}{{ item.montant_participation }}{% endif %}
+
+                            <small class="fw-bold">{% if crud_type == 'EVENEMENTOCCASIONNELLE' %}{% else %}FGN{% endif%}</small>
+
+                            </span>
+                        </td>
+
+                        <td data-label="{% if crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}Année
+                                        {% elif crud_type == 'EVENEMENTOCCASIONNELLE'%}Crée le
+                                        {% else %}Date{% endif %}">
+                                <div class="text-muted">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    {% if crud_type == 'AMOUNTCONTRIBUTIONYEAR' %}
+                                        Pour {{ item.year }}
+                                    {% else %}
+                                        {{ item.date_don|date:"d/m/Y" }}
+                                        {{ item.date_cotisation|date:"d/m/Y" }}
+                                        {{ item.date_participation|date:"d/m/Y" }}
+                                        {{ item.date_depense|date:"d/m/Y" }}
+                                        {{ item.date_event|date:"d/m/Y" }}
+                                    {% endif %}
+                                </div>
+                            </td>
+
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm rounded-3 bg-white">
+                                {# LIEN EDIT : Dynamique #}
+                                {% if can_edit %}
+                                    <a href="{% url url_edit item.id %}?action=edit&item_id={{ item.id }}" class="btn btn-sm btn-outline-light text-warning py-2 px-3" title="Modifier">
+                                        <i class="fas fa-pencil-alt" style="color:#0d6efd;"></i>
+                                    </a>
+                                {% endif %}
+                                {# LIEN DELETE : Dynamique #}
+                                {% if can_delete %}
+                                    <a href="{% url url_delete item.id %}?action=delete&item_id={{ item.id }}" class="btn btn-sm btn-outline-light text-danger py-2 px-3" title="Supprimer">
+                                        <i class="fas fa-trash-alt" style="color:white;"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="text-muted opacity-50 mb-3"><i class="fas fa-folder-open fa-3x"></i></div>
+                            <p class="text-muted italic">Aucun enregistrement pour cette catégorie.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Dynamique -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4 d-flex justify-content-center">
+        <ul class="pagination shadow-sm rounded-pill overflow-hidden">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+            {% endif %}
+
+            <li class="page-item active"><span class="page-link border-0 px-4">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span></li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .bg-soft-success { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-soft-danger { background-color: rgba(220, 53, 69, 0.1); }
+    .transition-all { transition: all 0.3s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .pagination{
+        background-color:#4b5165 !important;
+        border: 2px solid #0d6efd !important; /* Force la bordure sur le lien */
+        }
+    .pagination:hover{background-color:#4b5165 !important;}
+    .btn-primary{background-color:#252c42;}
+    .btn-primary:hover{}
+
+    .text-warning{background-color:#F5BC36;}
+    .text-warning:hover{background-color:#C4F552;}
+    .text-danger{background-color:#F53639;}
+    .text-danger:hover{background-color:#F534EA;}
+    .rounded-3 { border-radius: 0.75rem !important;}
+    /* Responsive : Le tableau se transforme en cartes sur mobile */
+    @media (max-width: 767.98px) {
+        .custom-table thead { display: none; }
+        .custom-table tbody tr {
+            display: block; margin-bottom: 1.2rem; border: 1px solid #eee;
+            border-radius: 1rem; padding: 1.25rem; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .custom-table td {
+            display: flex; justify-content: space-between; align-items: center;
+            border: none; padding: 0.6rem 0 !important;
+        }
+        .custom-table td::before {
+            content: attr(data-label); font-weight: 700; color: #adb5bd; font-size: 0.7rem; text-transform: uppercase;
+        }
+        .btn-group { width: 100%; margin-top: 1rem; border: 1px solid #eee; }
+        .btn-group .btn { width: 50%; padding: 0.8rem; }
+    }
+    @media (min-width: 992px) {
+        .btn-add-custom {
+            min-width: 150px;
+            max-width: 200px;
+        }
+    }
+
+    /* Sur petit écran, on peut le laisser s'adapter au texte */
+    @media (max-width: 767px) {
+        .btn-add-custom {
+            width: auto;
+        }
+    }
+</style>
+{% endblock %}

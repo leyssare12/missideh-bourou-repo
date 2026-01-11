@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 """
 On vérifie si l'utilisateur a le droit de faire une action
 """""""""
+
+
 def has_secretor_role(required_roles):
     def decorator(func):
         def wrapper(request, *args, **kwargs):
@@ -35,21 +37,27 @@ def has_secretor_role(required_roles):
             if request.user.role not in required_roles:
                 userole = request.user.role
                 user_name = request.user.prenoms
-                message = PermissionError(f"Bonjour {user_name}, vous faites partie de l'équipe '{userole}', vous n'avez donc pas les permissions nécessaires pour accéder à cette page.")
-               # 🔁 Redirige aussi vers acces_refuse avec message personnalisé si besoin
+                message = PermissionError(
+                    f"Bonjour {user_name}, vous faites partie de l'équipe '{userole}', vous n'avez donc pas les permissions nécessaires pour accéder à cette page.")
+                # 🔁 Redirige aussi vers acces_refuse avec message personnalisé si besoin
                 request.GET = request.GET.copy()
                 request.GET['next'] = request.get_full_path()
-                return not_allowed_users(request ,exception=message)
+                return not_allowed_users(request, exception=message)
 
             # ✅ L'utilisateur est autorisé
             print('Vous avez le droit de faire cette action.')
             return func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 '''
 on vérifie si l'utilisateur a le droit d'inscrire d'autres utilisateurs
 '''
+
+
 def can_add_user(required_roles):
     def decorator(func):
         def wrapper(request, *args, **kwargs):
@@ -57,7 +65,8 @@ def can_add_user(required_roles):
             print(request.user)
             if not request.user.is_authenticated:
                 print('page d identification')
-                message = PermissionError('Vous devez vous authentifier pour accéder à cette page.')       # 🔁 Redirige vers la page d'accès refusé avec ?next=current_url
+                message = PermissionError(
+                    'Vous devez vous authentifier pour accéder à cette page.')  # 🔁 Redirige vers la page d'accès refusé avec ?next=current_url
                 request.GET = request.GET.copy()
                 request.GET['next'] = request.get_full_path()
                 return not_allowed_users(request, exception=message)
@@ -66,16 +75,19 @@ def can_add_user(required_roles):
             if request.user.role not in required_roles:
                 userole = request.user.role
                 user_name = request.user.prenoms
-                message = PermissionError(f"Bonjour {user_name}, vous faites partie de l'équipe '{userole}', vous n'avez donc pas les permissions nécessaires pour accéder à cette page.")
+                message = PermissionError(
+                    f"Bonjour {user_name}, vous faites partie de l'équipe '{userole}', vous n'avez donc pas les permissions nécessaires pour accéder à cette page.")
                 # 🔁 Redirige aussi vers acces_refuse avec message personnalisé si besoin
                 request.GET = request.GET.copy()
                 request.GET['next'] = request.get_full_path()
-                return not_allowed_users(request ,exception=message)
+                return not_allowed_users(request, exception=message)
 
             # ✅ L'utilisateur est autorisé
             print('Vous avez le droit de faire cette action.')
             return func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -99,8 +111,10 @@ def can_add_user_save(required_roles):
 
     return decorator
 
+
 '''ON vérifie si l'utilsateur a le droit de publier un article sur le site
 '''
+
 
 def can_edit_article(required_roles):
     def decorator(func):
@@ -117,17 +131,21 @@ def can_edit_article(required_roles):
             if request.user.role not in required_roles:
                 userole = request.user.role
                 user_name = request.user.prenoms
-                message = PermissionError(f"Bonjour {user_name}, vous faites partie de l'équipe '{userole}', vous n'avez donc pas les permissions nécessaires pour accéder à cette page.")
+                message = PermissionError(
+                    f"Bonjour {user_name}, vous faites partie de l'équipe '{userole}', vous n'avez donc pas les permissions nécessaires pour accéder à cette page.")
                 # 🔁 Redirige aussi vers acces_refuse avec message personnalisé si besoin
                 request.GET = request.GET.copy()
                 request.GET['next'] = request.get_full_path()
-                return not_allowed_users(request ,exception=message)
+                return not_allowed_users(request, exception=message)
 
             # ✅ L'utilisateur est autorisé
             print('Vous avez le droit de faire cette action.')
             return func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 #Gestion de deconnexion via les sessions
 def auto_logout(view_func):
@@ -165,7 +183,6 @@ def auto_logout(view_func):
     return wrapper
 
 
-
 def login_required_by_urlname(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
@@ -182,5 +199,3 @@ def login_required_by_urlname(view_func):
         return redirect("Bapp:home_page")  # fallback
 
     return _wrapped_view
-
-

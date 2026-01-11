@@ -14,7 +14,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from Bapp.models import BTestCustomUser
+from Bapp.models import BtestCustomUser
 
 def generate_otp_secret():
     return pyotp.random_base32()
@@ -30,8 +30,8 @@ def get_qr_code_uri(user, secret):
 #Génère l'image QR code
 def qrcode_view(request, user_id):
     try:
-        user = BTestCustomUser.objects.get(id=user_id)
-    except BTestCustomUser.DoesNotExist:
+        user = BtestCustomUser.objects.get(id=user_id)
+    except BtestCustomUser.DoesNotExist:
         raise Http404("Utilisateur introuvable")
 
     uri = get_qr_code_uri(user, user.otp_secret)
@@ -64,7 +64,7 @@ def members_authentification_qrcode(request):
     if not user_id:
         return redirect("Bapp:identifiant_over_otp")
 
-    user = BTestCustomUser.objects.get(id=user_id)
+    user = BtestCustomUser.objects.get(id=user_id)
     print('On affiche le OTP secret', user.otp_secret)
 
     # 🔹 Ici, on donne directement l’URL de l’image
@@ -115,7 +115,7 @@ def identifiant_otp(request):
         return redirect("Bapp:member_login_view")
 
     try:
-        user = BTestCustomUser.objects.get(pk=user_id)
+        user = BtestCustomUser.objects.get(pk=user_id)
         print('L utilisateur est: ', user.prenoms)
         # Génération d’un secret si pas déjà défini
         if not user.otp_secret:
@@ -126,7 +126,7 @@ def identifiant_otp(request):
         # Stocker l'ID dans la session pour étape suivante
         print(request.session["2fa_setup_user_id"])
         return redirect("Bapp:two_fa_qrcode_auth")
-    except BTestCustomUser.DoesNotExist:
+    except BtestCustomUser.DoesNotExist:
         messages.error(request, "Utilisateur introuvable")
         return redirect("Bapp:member_login_view")
 

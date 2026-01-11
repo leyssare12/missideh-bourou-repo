@@ -1,0 +1,109 @@
+
+{% extends "site/client/base_client.html" %}
+{% load static %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                {# Extraction sécurisée de ui_config #}
+                {% with cfg=form.ui_config %}
+
+                <!-- En-tête Dynamique -->
+                <div class="card-header {{ cfg.header_class|default:'bg-primary text-white' }} py-3 px-4 border-0">
+                    <h4 class="mb-0 d-flex align-items-center">
+                        <i class="{{ cfg.icon|default:'fas fa-edit' }} me-3 fs-4"></i>
+                        <span>{{ cfg.title|default:title|default:"Formulaire de gestion" }}</span>
+                    </h4>
+                </div>
+
+                <div class="card-body p-4 p-md-5 bg-white">
+
+                    <!-- Affichage des Messages (Succès/Erreurs de vue) -->
+                    {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show rounded-3 shadow-sm">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Affichage des Erreurs Globales du Formulaire (non liées à un champ précis) -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger rounded-3 shadow-sm">
+                            {% for error in form.non_field_errors %}
+                                <p class="mb-0 small"><i class="fas fa-exclamation-circle me-2"></i>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Section Spécifique aux Membres (si passés par la vue) -->
+                        {% if membres %}
+                        <div class="mb-4 p-3 border rounded-3 bg-light shadow-sm">
+                            <label for="user_id" class="form-label fw-bold text-secondary small">1. SÉLECTION DU MEMBRE</label>
+                            <select name="user_id" id="user_id" class="form-select select2" required>
+                                <option value="">-- Choisir un membre --</option>
+                                {% for m in membres %}
+                                    <option value="{{ m.id }}">{{ m.prenoms }} ({{ m.identifiant }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <hr class="my-4 border-secondary opacity-25">
+                        {% endif %}
+
+                        <!-- BOUCLE DE RENDU DES CHAMPS DU FORMULAIRE -->
+                        <div class="row g-3">
+                            {% for field in form %}
+                                <div class="col-12">
+                                     {% include "includes/form_field.html" with field=field %}
+                                </div>
+                            {% empty %}
+                                {# Message de secours si le formulaire ne contient aucun champ itérable #}
+                                <div class="col-12 text-center py-4">
+                                    <p class="text-muted italic"><i class="fas fa-info-circle me-2"></i>Aucun champ supplémentaire requis.</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Bouton de Soumission -->
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn {{ cfg.btn_class|default:'btn-primary' }} btn-lg py-3 rounded-3 shadow-sm transition-all fw-bold text-uppercase">
+                                <i class="fas fa-check-circle me-2"></i>
+                                {% if cfg.btn_text %}{{ cfg.btn_text }}{% elif btn_text %}{{ btn_text }}{% else %}Enregistrer{% endif %}
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Lien de retour -->
+                    <div class="text-center mt-4 border-top pt-3">
+                        <a href="javascript:history.back()" class="text-decoration-none text-muted small hover-primary transition-all">
+                            <i class="fas fa-arrow-left me-1"></i> Revenir en arrière
+                        </a>
+                    </div>
+                </div>
+                {% endwith %}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-all { transition: all 0.25s ease-in-out; }
+    .btn:hover { transform: translateY(-2px); filter: contrast(1.1); }
+    .hover-primary:hover { color: #2563eb !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .form-control:focus, .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    }
+    .invalid-feedback { font-size: 0.82rem; font-weight: 500; }
+</style>
+{% endblock %}

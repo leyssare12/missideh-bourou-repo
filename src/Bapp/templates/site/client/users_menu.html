@@ -1,111 +1,310 @@
 {% extends "site/client/base_client.html" %}
-
-
 {% load static %}
-{% block title %}<title>Dashboard users</title>{% endblock %}
-{% block extra_css %}<link href="{% static 'css/client/users_menu.css'%}" rel="stylesheet" type="text/css">{% endblock %}
+{% load json_extra %}
+{% load twined_tags %}
+
+{% block title %}<title>Espace Membres - Missideh Bourou</title>{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/client/users_menu.css' %}" rel="stylesheet" type="text/css">
+<style>
+    /* --- SYSTÈME D'ANIMATION --- */
+    @keyframes hubRevealUp {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .fade-in {
+        animation: hubRevealUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    /* --- LAYOUT --- */
+    .member-space { padding: 10px, 5px; max-width:1400px; margin: 0 auto; }
+
+    /* --- HEADER AVEC ANIMATION ROTATE --- */
+    .member-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #003d99 100%) !important;
+        color: white !important;
+        padding: 60px 30px;
+        border-radius: 20px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(13, 110, 253, 0.2);
+        position: relative; /* Obligatoire pour le positionnement du pseudo-élément */
+        overflow: hidden; /* Pour masquer le surplus du halo qui tourne */
+    }
+    .member-space {
+        padding: 20px;
+        max-width: 100%; /* Permet d'utiliser toute la largeur sur écran géant */
+        width: 100%;    /* Force l'occupation de l'espace */
+        margin: 0 auto;
+        box-sizing: border-box; /* Crucial pour que le padding n'ajoute pas de largeur extra */
+  }
+    /* Le halo lumineux qui tourne */
+    .member-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+        animation: rotate 25s linear infinite;
+        z-index: 0;
+    }
+
+    .member-header-content {
+        position: relative;
+        z-index: 1; /* Place le texte au-dessus du halo */
+    }
+
+    .member-header h1 {
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: white !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            word-wrap: break-word; /* Force le retour à la ligne si un mot est trop long */
+            overflow-wrap: break-word;
+            max-width: 100%; /* Empêche de dépasser le parent */
+        }
+    .member-header p { font-size: 1.2rem; opacity: 0.95; color: white !important; }
+
+    .member-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(5px);
+    }
+
+    /* --- GRILLE DE SERVICES --- */
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 colonnes par défaut (Grand écran) */
+        gap: 25px;
+        margin-bottom: 50px;
+    }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 50px; }
+
+    .feature-card {
+        background: white; padding: 30px; border-radius: 18px; border: 1px solid #e2e8f0;
+        transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%;
+        text-decoration: none !important; color: inherit !important;
+    }
+
+    .feature-card:hover { transform: translateY(-8px); border-color: #0d6efd; box-shadow: 0 15px 35px rgba(13, 110, 253, 0.1); }
+
+    .feature-icon { font-size: 2.5rem; margin-bottom: 20px; color: #0d6efd; }
+    .feature-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: #1e293b; }
+    .feature-card p { color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; flex-grow: 1; }
+
+    .btn-feature {
+        display: block; padding: 12px; background: #f8fbff; color: #0d6efd; border-radius: 10px;
+        font-weight: 700; text-align: center; transition: 0.2s; border: 1px solid #e0f2fe;
+    }
+
+    .feature-card:hover .btn-feature { background: #0d6efd; color: white; border-color: #0d6efd; }
+
+    .section-title { font-size: 1.6rem; font-weight: 800; color: #1e293b; margin-bottom: 30px; }
+
+    /* Activité Récente */
+    .recent-activity {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #f1f5f9;
+        gap: 20px;
+    }
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+        width: 45px;
+        height: 45px;
+        background: #eff6ff;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .activity-content { flex-grow: 1; }
+    .activity-content h4 { font-size: 1rem; font-weight: 700; margin: 0; color: #1e293b; }
+    .activity-content p { font-size: 0.9rem; color: #64748b; margin: 2px 0 0; }
+    .activity-time { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
+
+    .section-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 25px; }
+    /* Écrans Moyens / Tablettes (max-width: 992px) */
+    @media (max-width: 992px) {
+        .features-grid {
+            grid-template-columns: repeat(2, 1fr); /* Passage à 2 colonnes */
+        }
+        .member-header h1 {
+            font-size: 2.2rem;
+        }
+    }
+
+    /* --- RESPONSIVE FIXES --- */
+    @media (max-width: 768px) {
+        .member-header {
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+        .member-header h1 {
+            font-size: 1.8rem; /* Réduction pour mobile */
+        }
+        .member-header p {
+            font-size: 1rem;
+        }
+        .features-grid {
+            grid-template-columns: 1fr; /* Passage à 1 colonne */
+            gap: 15px;
+           }
+        .member-space {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-
-
-<div class="dash-shell">
-  <div class="dash-container">
-
-    <header class="dash-header" aria-label="Entête du tableau de bord">
-      <h1 class="dash-title">Espace membres</h1>
-       <div class="dash-messages" role="status" aria-live="polite">
-          <div class="dash-alert dash-alert-success">
-              {% if request.session.user_prenom %}
-              Bonjour <strong style="color:#1e40af;">{{ request.session.user_prenom }}</strong>, Bienvenu sur l'<strong style="text-decoration:underline;">ESPACE MEMBRES</strong> Missideh-Bourou
-              {% endif %}
-          </div>
-      </div>
-        <h4 style="text-align:left;">Ici, vous pouvez:</h4>
-          <ul class="dash-sub">
-            <li>Consulter la liste des membres, accéder à leurs profils.</li>
-            <li>Rechercher un membre par identifiant, prénom ou quartier.</li>
-            <li>Ouvrir les documents PDF publiés.</li>
-            <li>Suivre les cotisations annuelles et occasionnelles.</li>
-            <li>Visualiser les dons et les dépenses.</li>
-            <li>Voir le bilan global des entrées et sorties.</li>
-            <li>Astuce: utilisez les cartes du tableau de bord pour accéder rapidement à chaque module.</li>
-        </ul>
+<div class="member-space">
+    <!-- Header avec Halo tournant -->
+    <header class="member-header fade-in">
+        <div class="member-header-content">
+            <h1>Bienvenue sur l'espace Membres</h1>
+            <p>
+                {% if request.user.is_authenticated %}
+                    Salam, <strong>{{ request.user.prenoms }}</strong>. Parcourez les modules de la plateforme.
+                {% else %}
+                    Gérez et consultez les activités de la communauté Missideh Bourou.
+                {% endif %}
+            </p>
+            <span class="member-badge">✨ Missideh Bourou ko fii fow</span>
+        </div>
     </header>
 
-    <section class="modules-grid" aria-label="Modules du tableau de bord">
+    <section class="member-features">
+        <h2 class="section-title">Services Disponibles</h2>
+        <div class="features-grid">
 
-      <a class="module-card" href="{% url 'Bapp:missideh_bourou_members'%}" aria-label="Voir les membres">
-        <i class="fas fa-users" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Membres</h2>
-          <p>Liste, profil et recherche par quartier.</p>
-        </div>
-      </a>
-      <a class="module-card" aria-label="Tableau de synthèse" href="{% url 'Caroussel:album_view'%}">
-        <i class="fas fa-images" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Galerie d'images</h2>
-          <p>Images de, et pour Missideh-Bourou.</p>
-        </div>
-      </a>
+            <a href="{% url 'Bapp:missideh_bourou_members' %}" class="feature-card fade-in" style="animation-delay: 0.1s;">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Membres</h3>
+                <p>Liste complète des membres, recherche par quartier et profils détaillés.</p>
+                <div class="btn-feature">Accéder</div>
+            </a>
 
-      <a class="module-card" href="{% url 'Bapp:announce_view' %}" aria-label="Voir les documents PDF">
-        <i class="fas fa-bullhorn" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Annonces</h2>
-          <p>Annonces et publications pour la communauté.</p>
-        </div>
-      </a>
+            <a href="{% url 'Bapp:hub_contributions_annuel' %}" class="feature-card fade-in" style="animation-delay: 0.2s;">
+                <div class="feature-icon"><i class="fas fa-money-check-alt"></i></div>
+                <h3>Contributions Annuelles</h3>
+                <p>Historiques des participations obligatoires et statistiques par année.</p>
+                <div class="btn-feature">Voir les détails</div>
+            </a>
 
-      <a class="module-card" href="{% url 'Bapp:cotisation_annuelles_view'%}" aria-label="Rapport cotisations annuelles">
-        <i class="fas fa-money-check-alt" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Cotisations annuelles</h2>
-          <p>Montants, années et historiques par membre</p>
-        </div>
-      </a>
+            <a href="{% url 'Bapp:hub_contributions_occasionnel' %}" class="feature-card fade-in" style="animation-delay: 0.3s;">
+                <div class="feature-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                <h3>Contributions Occasionnelles</h3>
+                <p>Suivi des collectes pour événements spéciaux et solidarité communautaire.</p>
+                <div class="btn-feature">Consulter</div>
+            </a>
 
-      <a class="module-card" href="{% url 'Bapp:cotisation_occasionnelle_view'%}" aria-label="Rapport cotisations occasionnelles">
-        <i class="fas fa-money-check-alt" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Cotisations occasionnelles</h2>
-          <p>Contributions ponctuelles et motifs.</p>
-        </div>
-      </a>
+            <a href="{% url 'Bapp:hub_dons' %}" class="feature-card fade-in" style="animation-delay: 0.4s;">
+                <div class="feature-icon"><i class="fas fa-gift"></i></div>
+                <h3>Dons Reçus</h3>
+                <p>Récapitulatif des générosités extérieures et des fonds collectés hors cotisations.</p>
+                <div class="btn-feature">Voir les stats</div>
+            </a>
 
-      <a class="module-card" href="{% url 'Bapp:dons_view'%}" aria-label="Rapport dons">
-        <i class="fas fa-donate" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Dons</h2>
-          <p>Donateurs, montants et historique.</p>
-        </div>
-      </a>
+            <a href="{% url 'Bapp:hub_depenses' %}" class="feature-card fade-in" style="animation-delay: 0.4s;">
+                <div class="feature-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                <h3>Dépenses effectuées</h3>
+                <p>Récapitulatif de toutes les dépenses effectuées par année.</p>
+                <div class="btn-feature">Voir les stats</div>
+            </a>
+            <a href="{% url 'Bapp:has_participed_annuel' %}" class="feature-card fade-in" style="animation-delay: 0.4s;">
+                <div class="feature-icon"><i class="fas fa-calendar-alt"></i></div>
+                <h3>Historique de participations</h3>
+                <p>Historiques et statistiques de participations des membres par année.</p>
+                <div class="btn-feature">Voir les stats</div>
+            </a>
+            <a href="{% url 'Bapp:bilan_totaux_view' %}" class="feature-card fade-in" style="animation-delay: 0.5s;">
+                <div class="feature-icon"><i class="fas fa-balance-scale"></i></div>
+                <h3>Comptes & Totaux</h3>
+                <p>Situation financière globale : total en caisse, dépenses et bilan actualisé.</p>
+                <div class="btn-feature">Bilan complet</div>
+            </a>
 
-      <a class="module-card" href="{% url 'Bapp:depenses_view'%}" aria-label="Rapport dépenses">
-        <i class="fas fa-edit" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Dépenses</h2>
-          <p>Historique des sorties et détails.</p>
-        </div>
-      </a>
+            <a href="{% url 'Bapp:announce_view' %}" class="feature-card fade-in" style="animation-delay: 0.6s;">
+                <div class="feature-icon"><i class="fas fa-bullhorn"></i></div>
+                <h3>Annonces</h3>
+                <p>Dernières nouvelles, publications officielles et informations aux membres.</p>
+                <div class="btn-feature">Lire les infos</div>
+            </a>
 
-      <a class="module-card" href="{% url 'Bapp:bilan_totaux_view'%}" aria-label="Bilan global">
-        <i class="fas fa-balance-scale" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Bilan global</h2>
-          <p>Vue consolidée des entrées et sorties.</p>
         </div>
-      </a>
-
-      <a class="module-card" href="{% url 'Bapp:has_participed_annuel' %}" aria-label="Tableau de synthèse">
-        <i class="fas fa-chart-area" aria-hidden="true"></i>
-        <div class="card-text">
-          <h2>Statistiques</h2>
-          <p>Indicateurs et vues analytiques pour les années passés.</p>
-        </div>
-      </a>
-
     </section>
-  </div>
+     <!-- Recent Activity -->
+     <div class="recent-activity fade-in" style="animation-delay: 0.7s;">
+         <h2 class="section-title" style="margin-bottom: 1.5rem;">Résumé d'activité récente</h2>
+
+         <!-- Dernières Nouvelles -->
+         <div class="activity-item">
+             <div class="activity-icon">📢</div>
+             <div class="activity-content">
+                 <h4>Dernière information</h4>
+                 {% if last_news %}
+                     <p>{{ last_news.title|truncatechars:60 }}</p>
+                 {% else %}
+                     <p>Aucune annonce publiée récemment.</p>
+                 {% endif %}
+             </div>
+             {% if last_news %}
+                 <a href="{% url 'Bapp:announce_view' %}" style="text-decoration:none; font-size:0.8rem; color:#0d6efd; font-weight:700;">LIRE</a>
+             {% endif %}
+         </div>
+
+         <!-- Dernière Opération Financière -->
+         <div class="activity-item">
+             <div class="activity-icon">{% if last_op %}{{ last_op.icon }}{% else %}💰{% endif %}</div>
+             <div class="activity-content">
+                 <h4>Dernière opération : {% if last_op %}{{ last_op.type }}{% else %}Flux récents{% endif %}</h4>
+                 {% if last_op %}
+                     <p>Enregistrée le {{ last_op.date|date:"d/m/Y" }}</p>
+                 {% else %}
+                     <p>Consultez le détail des flux récents dans le bilan global.</p>
+                 {% endif %}
+             </div>
+             <div class="activity-time">
+                 <a href="{% url 'Bapp:bilan_totaux_view' %}" style="text-decoration:none; font-size:0.8rem; color:#0d6efd; font-weight:700;">BILAN</a>
+             </div>
+         </div>
+
+         <!-- Statistiques de participation -->
+         <div class="activity-item">
+             <div class="activity-icon">📊</div>
+             <div class="activity-content">
+                 <h4>Statistiques de participation</h4>
+                 <p>Découvrez qui a déjà validé sa participation pour cette année.</p>
+             </div>
+             <a href="{% url 'Bapp:has_participed_annuel' %}" style="text-decoration:none; font-size:0.8rem; color:#0d6efd; font-weight:700;">VOIR</a>
+         </div>
+     </div>
 </div>
 {% endblock %}

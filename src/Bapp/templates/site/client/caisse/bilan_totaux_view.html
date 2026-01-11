@@ -38,7 +38,7 @@
                 <strong>{{ item.type_dons }}</strong>
               {% endif %}
               {% if item.type_depenses %}
-                <strong>{{ item.type_depenses }}</strong>
+                <strong  style="color:orange;">{{ item.type_depenses }}</strong>
               {% endif %}
           </div>
 
@@ -104,7 +104,7 @@
                 <td>{{ item.type_dons }}</td>
               {% endif %}
               {% if item.type_depenses %}
-                <td>{{ item.type_depenses }}</td>
+                <td style="color:orange;">{{ item.type_depenses }}</td>
               {% endif %}
             <td class="tbl-annuel">
               {% if item.montant_cotisationannuel %}{{ item.montant_cotisationannuel }}{% else %}-{% endif %}

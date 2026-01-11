@@ -22,8 +22,9 @@ from Bapp.models import PDFManager
 PDFS_PATH = Path(settings.PDFS_ROOT)
 LOGO_IMAGE = settings.MEDIA_ROOT / "images/profile_pictures/logo_b289906d-56b1-44f8-8472-a5fb7bc4947f.png"
 
+
 class PDFGenerator:
-    def __init__(self, title, auteur=None, paragraph=None,):
+    def __init__(self, title, auteur=None, paragraph=None, ):
         self.styles = getSampleStyleSheet()
         # Création des styles personnalisés
         self.custom_styles = {
@@ -59,7 +60,6 @@ class PDFGenerator:
             self.directory.mkdir()
 
         # Chemins des ressources
-        #self.logo_path = Path("/home/bombilafou/Documents/Pyton/Bourotest/src/Bapp/static/images/logo.png")
         self.logo_path = LOGO_IMAGE
         if not self.logo_path.exists():
             raise FileNotFoundError("Le fichier logo.png n'existe pas.")
@@ -109,7 +109,6 @@ class PDFGenerator:
 
         canvas.restoreState()
 
-
     def pdfs_file_generator(self, data, headers):
         pdf_fil_name = f"{self.title}.pdf"
         destination = os.path.join(self.directory, pdf_fil_name)
@@ -123,7 +122,6 @@ class PDFGenerator:
             topMargin=100,
             bottomMargin=50
         )
-
 
         # Configuration des frames et template
         frame = Frame(
@@ -234,7 +232,7 @@ class PDFGenerator:
         return max_widths
 
 
-#Gestionnaire d'affichage et de téléchargement de PDFs
+# Gestionnaire d'affichage et de téléchargement de PDFs
 class PDFView:
 
     @staticmethod

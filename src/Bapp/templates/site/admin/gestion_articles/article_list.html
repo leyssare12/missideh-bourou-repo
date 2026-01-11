@@ -1,81 +1,171 @@
 {% extends "site/admin/base_admin.html" %}
 {% load static %}
 
-{% block extra_css %}<link rel="stylesheet" href="{% static 'css/admin/list_items/article_list.css' %}">{% endblock %}
+{% block title %}<title>Liste des Articles</title>{% endblock %}
+{% block extra_css %}<link href="{% static 'css/admin/list_items_forms.css'%}" rel="stylesheet" type="text/css">{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/admin/gestion_articles/list_articles.css'%}">
-<div class="container">
-  <h1>Liste des Articles</h1>
-    <div class="header-controls">
-    {% if request.user.is_superuser %}
-      <p class="superuser-badge">
-        <i class="fas fa-shield-alt"></i> Mode Superutilisateur
-      </p>
-      {% elif request.user.is_authenticated %}
-       <p class="superuser-badge">
-        <i class="fas fa-shield-alt"></i> Mode Editeur
-      </p>
-    {% endif %}
-      <button class="mon_bouton">
-        <a href="{% url 'Bapp:edition_article' %}" class="add-article">
-          <i class="fas fa-book"></i> Ajouter un article
-        </a>
-      </button>
-  </div>
+<div class="crud-container px-3 py-4">
+    <!-- En-tête avec bouton d'ajout -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 fw-bold text-dark mb-0">Gestion des Articles</h2>
+            <p class="text-muted small mb-0">
+                {% if request.user.is_superuser %}
+                    <i class="fas fa-shield-alt me-1"></i> Mode Superutilisateur
+                {% else %}
+                    <i class="fas fa-user-edit me-1"></i> Mode Éditeur
+                {% endif %}
+                | {{ page_obj.paginator.count }} article(s) au total
+            </p>
+        </div>
+        {% if can_add %}
+            <a href="{% url url_add %}?action=add" class="btn btn-primary rounded-pill px-4 shadow-sm transition-all btn-add-custom">
+                <i class="fas fa-plus-circle me-2"></i>Nouveau
+            </a>
+        {% endif %}
+    </div>
 
-  <table class="article-table">
-    <thead>
-      <tr>
-        <th>Titre</th>
-        <th>Contenu</th>
-        <th>Auteur</th>
-        <th>Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for article in page_obj %}
-      <tr>
-        <td data-label="Titre:" class="article-title">{{ article.title }}</td>
-        <td data-label="Contenu:" class="article-content">{{ article.content }}</td>
-        <td data-label="Auteur:" class="article-author">{{ article.author }}</td>
-        <td data-label="Date:" class="article-date">{{ article.created_at|date:"d/m/Y" }}</td>
-        <td class="actions-cell">
-          <a href="{% url 'Bapp:edit_article' article.pk %}" class="action-btn edit-btn">
-            <i class="fas fa-edit"></i> Modifier
-          </a>
-          <a href="{% url 'Bapp:delete_article' article.pk %}" class="action-btn delete-btn">
-            <i class="fas fa-trash-alt"></i> Supprimer
-          </a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="5" style="text-align: center; padding: 2rem;">
-          Aucun article disponible.
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- Pagination (optionnel) -->
-  <div class="pagination">
-    {% if page_obj.has_previous %}
-      <a href="?page=1" class="pagination-link">&laquo; Première</a>
-      <a href="?page={{ page_obj.previous_page_number }}" class="pagination-link">Précédent</a>
+    <!-- Alertes Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
     {% endif %}
 
-    <span class="current-page">
-      Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
-    </span>
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 custom-table">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">Titre & Contenu</th>
+                        <th class="py-3">Auteur</th>
+                        <th class="py-3">Date de publication</th>
+                        <th class="text-end pe-4 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in page_obj %}
+                    <tr>
+                        <td data-label="Article" class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="fw-bold text-dark">
+                                    {{ article.title|truncatechars:40 }}
+                                </div>
+                            </div>
 
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}" class="pagination-link">Suivant</a>
-      <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-link">Dernière &raquo;</a>
+                        </td>
+
+                        <td data-label="Auteur">
+                            <span class="badge bg-soft-info text-info fs-6 px-3 py-2 rounded-3 border">
+                                <i class="fas fa-user-pen me-1"></i>
+                                {% if article.created_by %}
+                                {{ article.created_by.prenoms}}
+                                {% else %}
+                                    Admin
+                                {% endif %}
+                            </span>
+                        </td>
+
+                        <td data-label="Date">
+                            <div class="text-muted">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                {{ article.updated_at|date:"d/m/Y" }}
+                            </div>
+                        </td>
+
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm rounded-3 bg-white">
+                                {# LIEN EDIT : Dynamique #}
+                                {% if can_edit %}
+                                <a href="{% url url_edit article.pk %}?action=edit" class="btn btn-sm btn-outline-light text-warning py-2 px-3" title="Modifier">
+                                    <i class="fas fa-pencil-alt" style="color:#0d6efd;"></i>
+                                </a>
+                                {% endif %}
+                                {# LIEN DELETE : Dynamique #}
+                                {% if can_delete %}
+                                <a href="{% url url_delete article.pk %}?action=delete" class="btn btn-sm btn-outline-light text-danger py-2 px-3" title="Supprimer">
+                                    <i class="fas fa-trash-alt" style="color:white;"></i>
+                                </a>
+                                {% endif %}
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="text-muted opacity-50 mb-3"><i class="fas fa-folder-open fa-3x"></i></div>
+                            <p class="text-muted italic">Aucun article disponible pour le moment.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Dynamique -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4 d-flex justify-content-center">
+        <ul class="pagination shadow-sm rounded-pill overflow-hidden">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.previous_page_number }}"><i class="fas fa-chevron-left"></i></a></li>
+            {% endif %}
+
+            <li class="page-item active"><span class="page-link border-0 px-4">Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span></li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link border-0" href="?page={{ page_obj.next_page_number }}"><i class="fas fa-chevron-right"></i></a></li>
+            {% endif %}
+        </ul>
+    </nav>
     {% endif %}
-  </div>
 </div>
 
+<style>
+    .bg-soft-info { background-color: rgba(13, 202, 240, 0.1); }
+    .transition-all { transition: all 0.3s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .pagination{
+        border: 2px solid #0d6efd !important; /* Force la bordure sur le lien */
+        }
+    .text-warning{background-color:#F5BC36;}
+    .text-warning:hover{background-color:#C4F552;}
+    .text-danger{background-color:#F53639;}
+    .text-danger:hover{background-color:#F534EA;}
+    .rounded-3 { border-radius: 0.75rem !important;}
+    @media (max-width: 767.98px) {
+        .custom-table thead { display: none; }
+        .custom-table tbody tr {
+            display: block; margin-bottom: 1.2rem; border: 1px solid #eee;
+            border-radius: 1rem; padding: 1.25rem; background: #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .custom-table td {
+            display: flex; justify-content: space-between; align-items: center;
+            border: none; padding: 0.6rem 0 !important;
+        }
+        .custom-table td::before {
+            content: attr(data-label); font-weight: 700; color: #adb5bd; font-size: 0.7rem; text-transform: uppercase;
+        }
+        .btn-group { width: 100%; margin-top: 1rem; border: 1px solid #eee; }
+        .btn-group .btn { width: 50%; padding: 0.8rem; }
+    }
+    @media (min-width: 992px) {
+    .btn-add-custom {
+        min-width: 150px;
+        max-width: 200px;
+        }
+    }
+
+    /* Sur petit écran, on peut le laisser s'adapter au texte */
+    @media (max-width: 767px) {
+        .btn-add-custom {
+            width: auto;
+        }
+    }
+</style>
 {% endblock %}

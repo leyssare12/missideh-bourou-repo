@@ -7,6 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Missideh Bourou</title>
     {% block title %}{% endblock %}
+     <!-- Bootstrap 5 obligatoire pour la mise en forme -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/client/home_page.css'%}">
     {% block extra_css %}{% endblock %}
@@ -26,23 +28,9 @@
       <nav class="nav-links" id="nav-links">
         <a href="{% url 'Bapp:missideh_bourou_members'%}">Membres</a>
         <a href="{% url 'Bapp:telegram_otp_login'%}">Whatsapp</a>
-          <label for="country">Pays:</label>
-
-          <select class="country" name="country" id="country">
-
-              <option value="Guinee">Guinée</option>
-
-              <option value="senegal">Sénégal</option>
-
-              <option value="ci"> Côte d'Ivoire</option>
-
-              <option value="eu">Europe</option>
-
-              <option value="usa">USA</option>
-
-          </select>
-
-        <a href="{% url 'Bapp:member_login_view'%}" class="auth-btn">S'authentifier</a>
+        <a href="{% url 'Bapp:contact_page'%}">Contacts</a>
+        <a href="{% url 'Bapp:mb_monde'%}">MB Monde</a>
+        <a href="{% url 'Bapp:member_login_view'%}" class="auth-btn">Log in</a>
       </nav>
       <button class="hamburger" id="hamburger" aria-label="Menu">
         <i class="fas fa-bars"></i>
@@ -69,6 +57,7 @@
 
   <script>
     const hamburger = document.getElementById('hamburger');
+    const closeMenu = document.getElementById('close-menu');
     const navLinks = document.getElementById('nav-links');
     const body = document.body;
 
